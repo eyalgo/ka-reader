@@ -21,6 +21,20 @@
 //! `open_read`) where `link_file` answers a file. Folder mode refuses a pass that reached either of
 //! the two zero times.
 //!
+//! Beside those calls it keeps each Markdown document a `select_file` answer gives, whatever the
+//! file's extension, and asks `asset_bytes` once for every image node in it: a resolved node by its
+//! folder-relative path, a placeholder node by its source as written. The answers are dropped and none
+//! stops the walk. A pass in which a Markdown file's `asset_bytes` calls do not equal its image nodes
+//! is refused, naming the file.
+//!
+//! Pages mode, taken when the second argument is `--pages`: the same descent and `select_file` calls,
+//! then, for each Markdown file in path byte order, `asset_bytes` for each image node the collector
+//! names. It prints one line per Markdown file, the folder-relative path, a tab and the page, which is
+//! the `select_file` answer with the `asset_bytes` answers in the single-line debug form, and nothing
+//! else. It drives no model operation, reads no Git and prints no call count. It exits 0 once the walk
+//! is complete, and non-zero with nothing on stdout when the folder did not open or a listed path
+//! holds a tab or a newline.
+//!
 //! Long mode, taken when the second argument is `--long`: the same pass, then one line on stdout
 //! that is exactly `pass-complete`, then the same pass again for as long as the process lives. It
 //! never exits on its own; `checks/read-only.sh --kill` ends it with `SIGKILL` after the marker.
@@ -41,9 +55,11 @@ use std::thread::sleep;
 use std::time::Duration;
 
 use ka_reader_core::{
-    EntryKind, FileRead, FileRequest, FolderContainment, FolderModel, ItemState, Libgit2,
-    OpenedFolder, PathReports, ReadingPosition, TreeRequest, asset_bytes, link_file, list_tree,
-    open_folder, read_file, read_git, select_file,
+    Block, EmphasisStrength, EntryKind, FileRead, FileRequest, FileView, FolderContainment,
+    FolderModel, HeadingLevel, ImageTarget, Inline, ItemState, Libgit2, LinkTarget, ListKind,
+    MarkdownDocument, OpenFolderOutcome, OpenedFolder, PathReports, PlaceholderCondition,
+    ReadingPosition, TreeRequest, asset_bytes, link_file, list_tree, open_folder, read_file,
+    read_git, select_file,
 };
 
 /// The one line long mode prints, after its first completed pass.
@@ -54,6 +70,9 @@ const LONG_MODE_ARGUMENT: &str = "--long";
 
 /// How long long mode rests between passes, so a process waiting to be killed does not spin.
 const PASS_PAUSE: Duration = Duration::from_millis(50);
+
+/// The second argument that selects pages mode.
+const PAGES_MODE_ARGUMENT: &str = "--pages";
 
 /// What a fixture's walk is held to beyond the coverage judge.
 type FixtureCheck = fn(&Walk) -> Result<(), String>;
@@ -76,7 +95,13 @@ const PLAIN_FILE_ENTRIES: [&str; 5] = [
 
 /// The file entries of the `repo` fixture that its committed tree holds whether or not `.git` has
 /// been restored beside them.
-const REPO_TREE_FILE_ENTRIES: [&str; 3] = ["README.md", "src/main.rs", "src/deep/leaf.txt"];
+const REPO_TREE_FILE_ENTRIES: [&str; 5] = [
+    "README.md",
+    "guide.md",
+    "diagram.png",
+    "src/main.rs",
+    "src/deep/leaf.txt",
+];
 
 /// How many times a walk drove each model operation. Each count is raised at the one site its
 /// operation goes through, so the tally is the walk's own record and nothing is derived from it.
@@ -114,55 +139,266 @@ struct Walk {
     listed_files: BTreeSet<String>,
     /// The number of `select_file` calls made at each path.
     selected: BTreeMap<String, usize>,
+    /// What the walk asked `asset_bytes` for the images of the Markdown files it read.
+    images: ImageTally,
+}
+
+/// One thing `asset_bytes` is asked for an image node of a rendered document.
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum ImageAsk {
+    /// A node resolved inside the folder, asked with its folder-relative path.
+    Resolved(String),
+    /// A node that is a placeholder, asked with its source as written.
+    Placeholder {
+        condition: PlaceholderCondition,
+        source: String,
+    },
+}
+
+impl ImageAsk {
+    /// The text `asset_bytes` is asked.
+    fn path(&self) -> &str {
+        match self {
+            Self::Resolved(path) => path,
+            Self::Placeholder { source, .. } => source,
+        }
+    }
+}
+
+/// What a walk did about images. The node counts are fed by the collector and the call counts by the
+/// ask loop, so neither is derived from the other.
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+struct ImageTally {
+    /// The image nodes of each Markdown file's document.
+    nodes: BTreeMap<String, usize>,
+    /// The `asset_bytes` calls made for each Markdown file's image nodes.
+    calls: BTreeMap<String, usize>,
+    /// The resolved nodes `asset_bytes` answered bytes for.
+    resolved_answered: usize,
+    /// The placeholder nodes that carry `OutsideTheFolder`.
+    outside_the_folder: usize,
+}
+
+impl ImageTally {
+    /// Raises the call count of `path` for one ask, and the resolved or outside-the-folder count
+    /// the ask belongs to. `answered` is whether bytes came back.
+    fn record_call(&mut self, path: &str, ask: &ImageAsk, answered: bool) {
+        *self.calls.entry(path.to_string()).or_insert(0) += 1;
+        match ask {
+            ImageAsk::Resolved(_) if answered => self.resolved_answered += 1,
+            ImageAsk::Placeholder {
+                condition: PlaceholderCondition::OutsideTheFolder,
+                ..
+            } => self.outside_the_folder += 1,
+            ImageAsk::Resolved(_) | ImageAsk::Placeholder { .. } => {}
+        }
+    }
+}
+
+/// The document of a `select_file` answer when it is a Markdown document, and nothing otherwise.
+fn markdown_document(answer: ItemState<FileView>) -> Option<MarkdownDocument> {
+    match answer {
+        ItemState::Observed(FileView::Markdown(document)) => Some(document),
+        ItemState::Pending | ItemState::Failed(_) | ItemState::Observed(_) => None,
+    }
+}
+
+/// What `asset_bytes` is asked for each image node of `document`, in document order.
+fn image_asks(document: &MarkdownDocument) -> Vec<ImageAsk> {
+    let mut asks = Vec::new();
+    collect_block_asks(&document.blocks, &mut asks);
+    asks
+}
+
+/// Appends the asks of `blocks` to `asks`, each block's in source order. The match names every
+/// variant, so a node kind added later is a compile error here and never a silently skipped image.
+fn collect_block_asks(blocks: &[Block], asks: &mut Vec<ImageAsk>) {
+    for block in blocks {
+        match block {
+            Block::Heading { content, .. } | Block::Paragraph(content) => {
+                collect_inline_asks(content, asks);
+            }
+            Block::List { items, .. } => {
+                for item in items {
+                    collect_block_asks(item, asks);
+                }
+            }
+            Block::Quote(inner) => collect_block_asks(inner, asks),
+            Block::Rule | Block::Code { .. } => {}
+        }
+    }
+}
+
+/// Appends the asks of `inlines` to `asks`, descending into an emphasis and a link's content.
+fn collect_inline_asks(inlines: &[Inline], asks: &mut Vec<ImageAsk>) {
+    for inline in inlines {
+        match inline {
+            Inline::Image { target, .. } => asks.push(match target {
+                ImageTarget::Resolved(path) => {
+                    ImageAsk::Resolved(path.to_string_lossy().into_owned())
+                }
+                ImageTarget::Placeholder { condition, source } => ImageAsk::Placeholder {
+                    condition: *condition,
+                    source: source.clone(),
+                },
+            }),
+            Inline::Emphasis { content, .. } | Inline::Link { content, .. } => {
+                collect_inline_asks(content, asks);
+            }
+            Inline::Text(_) | Inline::Code(_) => {}
+        }
+    }
+}
+
+/// Judges the image tally of one walk: every Markdown file's calls must equal its image nodes.
+/// The `Err` names the first such file in path order.
+fn judge_images(tally: &ImageTally) -> Result<(), String> {
+    let paths: BTreeSet<&String> = tally.nodes.keys().chain(tally.calls.keys()).collect();
+    for path in paths {
+        let nodes = tally.nodes.get(path).copied().unwrap_or(0);
+        let calls = tally.calls.get(path).copied().unwrap_or(0);
+        if calls < nodes {
+            return Err(format!(
+                "an image node of the Markdown file {path} got no asset_bytes call (image nodes: {nodes}, asset_bytes calls: {calls})"
+            ));
+        }
+        if calls > nodes {
+            return Err(format!(
+                "the Markdown file {path} got more asset_bytes calls than it has image nodes (image nodes: {nodes}, asset_bytes calls: {calls})"
+            ));
+        }
+    }
+    Ok(())
+}
+
+/// The page lines of `documents`, one per Markdown file in path byte order: the folder-relative path,
+/// a tab, then the page. `ask` answers `asset_bytes` for one text. A listed path holding a tab or a
+/// newline cannot be carried by a line, so it is an `Err` naming it and no line is produced.
+fn page_lines(
+    documents: &BTreeMap<String, MarkdownDocument>,
+    mut ask: impl FnMut(&str) -> Option<Vec<u8>>,
+) -> Result<Vec<String>, String> {
+    if let Some(path) = documents.keys().find(|path| path.contains(['\t', '\n'])) {
+        return Err(format!(
+            "the walk listed a path holding a tab or a newline, which a page line cannot carry, so no page was printed: {path:?}"
+        ));
+    }
+    Ok(documents
+        .iter()
+        .map(|(path, document)| {
+            let answers: Vec<Option<Vec<u8>>> = image_asks(document)
+                .iter()
+                .map(|image| ask(image.path()))
+                .collect();
+            // The single-line debug form escapes every control character inside a string, so the
+            // line holds no raw tab or newline beyond the one that separates the path.
+            format!("{path}\t{document:?} {answers:?}")
+        })
+        .collect())
+}
+
+/// The folder at `folder` opened, or the refusal that names it as `label`.
+fn opened_or_refused(label: &str, folder: &Path) -> Result<OpenedFolder, String> {
+    match open_folder(folder) {
+        OpenFolderOutcome::Opened(opened) => Ok(opened),
+        OpenFolderOutcome::Failed(_) => Err(format!("{label} did not open as a folder")),
+    }
+}
+
+/// The page lines of the folder at `folder`, which `label` names in a refusal: the walk's descent,
+/// then `asset_bytes` through the real containment check for each image node. It reads no Git and
+/// drives no model operation.
+fn pages_over(label: &str, folder: &Path) -> Result<Vec<String>, String> {
+    let opened = opened_or_refused(label, folder)?;
+    let reading = opened_or_refused(label, folder)?;
+    let check = FolderContainment::new(opened.root().to_path_buf());
+    let mut gathered = Gathered::default();
+    walk_from(&opened, "", &mut gathered);
+    page_lines(&gathered.documents, |path| {
+        asset_bytes(&reading, path, &check)
+    })
+    .map_err(|message| format!("{label}: {message}"))
+}
+
+/// Pages mode: prints one page line per Markdown file under `folder`, and nothing when the folder
+/// did not open or a line cannot be carried.
+fn run_pages(folder: &str) -> Result<(), String> {
+    let canonical = Path::new(folder)
+        .canonicalize()
+        .map_err(|_| format!("{folder} did not open as a folder"))?;
+    let lines = pages_over(folder, &canonical)?;
+    let mut stdout = std::io::stdout();
+    for line in lines {
+        writeln!(stdout, "{line}").map_err(|error| error.to_string())?;
+    }
+    stdout.flush().map_err(|error| error.to_string())
+}
+
+/// Judges what the `repo` fixture's walk exercised of its images.
+fn judge_repo_images(tally: &ImageTally) -> Result<(), String> {
+    if tally.resolved_answered == 0 {
+        return Err("fixture repo: the walk answered bytes for no resolved image node, so no image inside the folder was exercised. Check that diagram.png is beside guide.md in the fixture.".to_string());
+    }
+    if tally.outside_the_folder == 0 {
+        return Err("fixture repo: the walk met no image node outside the folder, so no remote image was exercised. Check that guide.md in the fixture still holds its https:// image.".to_string());
+    }
+    Ok(())
 }
 
 /// Reads the file at `path` and counts the call. This is the one site every `select_file` call goes
-/// through. The answer is dropped: the proof is that the folder is unchanged afterwards, whatever
-/// the file reads as, so no answer stops the walk or reaches stdout.
-fn select_counted(opened: &OpenedFolder, path: &str, selected: &mut BTreeMap<String, usize>) {
+/// through. The answer is handed back for the walk to keep a Markdown document; the proof is that
+/// the folder is unchanged afterwards, whatever the file reads as, so no answer stops the walk or
+/// reaches stdout.
+fn select_counted(
+    opened: &OpenedFolder,
+    path: &str,
+    selected: &mut BTreeMap<String, usize>,
+) -> ItemState<FileView> {
     *selected.entry(path.to_string()).or_insert(0) += 1;
-    select_file(opened, path);
+    select_file(opened, path)
+}
+
+/// What one descent over a folder gathers.
+#[derive(Default)]
+struct Gathered {
+    /// The paths already listed, so no path is listed twice.
+    listed: HashSet<String>,
+    /// The `list_tree` calls made.
+    calls: usize,
+    listed_files: BTreeSet<String>,
+    listed_folders: BTreeSet<String>,
+    selected: BTreeMap<String, usize>,
+    /// The document of each Markdown file the walk read, by path.
+    documents: BTreeMap<String, MarkdownDocument>,
 }
 
 /// Calls `list_tree` on `path`, then on each entry it returns. A folder entry is walked in turn, and
-/// every other entry is listed once and not descended, then read once with `select_file`. A failed
+/// every other entry is listed once and not descended, then read once with `select_file`, whose
+/// Markdown document is kept. A failed
 /// answer stops nothing: it has no entries to go on to. No path is listed twice, so folder links that reach each other end.
-fn walk_from(
-    opened: &OpenedFolder,
-    path: &str,
-    listed: &mut HashSet<String>,
-    calls: &mut usize,
-    listed_files: &mut BTreeSet<String>,
-    listed_folders: &mut BTreeSet<String>,
-    selected: &mut BTreeMap<String, usize>,
-) -> bool {
-    if !listed.insert(path.to_string()) {
+fn walk_from(opened: &OpenedFolder, path: &str, gathered: &mut Gathered) -> bool {
+    if !gathered.listed.insert(path.to_string()) {
         return false;
     }
-    *calls += 1;
+    gathered.calls += 1;
     let ItemState::Observed(entries) = list_tree(opened, path) else {
         return false;
     };
     for entry in &entries {
         match entry.kind {
             EntryKind::Folder => {
-                listed_folders.insert(entry.path.clone());
-                walk_from(
-                    opened,
-                    &entry.path,
-                    listed,
-                    calls,
-                    listed_files,
-                    listed_folders,
-                    selected,
-                );
+                gathered.listed_folders.insert(entry.path.clone());
+                walk_from(opened, &entry.path, gathered);
             }
             EntryKind::File => {
-                listed_files.insert(entry.path.clone());
-                if listed.insert(entry.path.clone()) {
-                    *calls += 1;
+                gathered.listed_files.insert(entry.path.clone());
+                if gathered.listed.insert(entry.path.clone()) {
+                    gathered.calls += 1;
                     list_tree(opened, &entry.path);
-                    select_counted(opened, &entry.path, selected);
+                    let answer = select_counted(opened, &entry.path, &mut gathered.selected);
+                    if let Some(document) = markdown_document(answer) {
+                        gathered.documents.insert(entry.path.clone(), document);
+                    }
                 }
             }
         }
@@ -232,10 +468,16 @@ impl Driven {
             .map(|model| model.open_read(read, ReadingPosition::new(position)));
     }
 
-    /// Asks for the bytes of `path` and drops the answer: the proof is that the folder is unchanged.
-    fn asset_bytes(&mut self, folder: &OpenedFolder, check: &FolderContainment, path: &str) {
+    /// Asks for the bytes of `path` and drops them: the proof is that the folder is unchanged. True
+    /// when bytes came back.
+    fn asset_bytes(
+        &mut self,
+        folder: &OpenedFolder,
+        check: &FolderContainment,
+        path: &str,
+    ) -> bool {
         self.acts.asset_bytes += 1;
-        let _ = asset_bytes(folder, path, check);
+        asset_bytes(folder, path, check).is_some()
     }
 
     /// Asks whether `path` is a file a link may open. True when it answered one.
@@ -265,8 +507,14 @@ impl Driven {
 /// Drives `asset_bytes` and `link_file` on the root and on every file, with the open a link makes
 /// where `link_file` answers a file, then `Expand` on every folder, `Select` and the open's two halves
 /// on every file, `Position` on the open file, `Invalidate` with the root and every folder reported,
-/// `reread_open_file`, then `Collapse` on every folder, over `folder`. The fixture is only read.
-fn drive_model(folder: &Path, folders: &BTreeSet<String>, files: &BTreeSet<String>) -> Acts {
+/// `reread_open_file`, then `Collapse` on every folder, over `folder`. Each Markdown document in
+/// `documents` is also asked `asset_bytes` once per image node. The fixture is only read.
+fn drive_model(
+    folder: &Path,
+    folders: &BTreeSet<String>,
+    files: &BTreeSet<String>,
+    documents: &BTreeMap<String, MarkdownDocument>,
+) -> (Acts, ImageTally) {
     let opened = open_folder(folder).expect("the folder that was just walked opens");
     let root = opened.root().to_path_buf();
     let reading = open_folder(folder).expect("the folder that was just walked opens");
@@ -281,6 +529,16 @@ fn drive_model(folder: &Path, folders: &BTreeSet<String>, files: &BTreeSet<Strin
             driven.select(path);
             let read = driven.read(&reading, path);
             driven.open_read(read, OPEN_POSITION);
+        }
+    }
+    // `asset_bytes` touches no model, so the last open above still decides the open file.
+    let mut images = ImageTally::default();
+    for (path, document) in documents {
+        let asks = image_asks(document);
+        images.nodes.insert(path.clone(), asks.len());
+        for ask in &asks {
+            let answered = driven.asset_bytes(&reading, &check, ask.path());
+            images.record_call(path, ask, answered);
         }
     }
     for path in folders {
@@ -299,32 +557,26 @@ fn drive_model(folder: &Path, folders: &BTreeSet<String>, files: &BTreeSet<Strin
     for path in folders {
         driven.collapse(path);
     }
-    driven.acts
+    (driven.acts, images)
 }
 
 fn walk_folder(folder: &Path) -> Option<Walk> {
     let opened = open_folder(folder).expect("the read-only fixture opens");
-    let mut calls = 0;
-    let mut listed = HashSet::new();
-    let mut listed_files = BTreeSet::new();
-    let mut listed_folders = BTreeSet::new();
-    let mut selected = BTreeMap::new();
-    let root_has_entries = walk_from(
-        &opened,
-        "",
-        &mut listed,
-        &mut calls,
-        &mut listed_files,
-        &mut listed_folders,
-        &mut selected,
+    let mut gathered = Gathered::default();
+    let root_has_entries = walk_from(&opened, "", &mut gathered);
+    let (acts, images) = drive_model(
+        folder,
+        &gathered.listed_folders,
+        &gathered.listed_files,
+        &gathered.documents,
     );
-    let acts = drive_model(folder, &listed_folders, &listed_files);
     Some(Walk {
-        calls,
+        calls: gathered.calls,
         root_has_entries,
         acts,
-        listed_files,
-        selected,
+        listed_files: gathered.listed_files,
+        selected: gathered.selected,
+        images,
     })
 }
 
@@ -553,6 +805,349 @@ fn judge_refuses_a_selected_path_never_listed() -> Result<(), String> {
     )
 }
 
+/// A resolved image node on `path`.
+fn resolved_image(path: &str) -> Inline {
+    Inline::Image {
+        alt: String::new(),
+        target: ImageTarget::Resolved(PathBuf::from(path)),
+    }
+}
+
+/// A placeholder image node for `source` that carries `condition`.
+fn placeholder_image(condition: PlaceholderCondition, source: &str) -> Inline {
+    Inline::Image {
+        alt: String::new(),
+        target: ImageTarget::Placeholder {
+            condition,
+            source: source.to_string(),
+        },
+    }
+}
+
+/// What the collector asked for `document`, as the texts `asset_bytes` is asked.
+fn asked_texts(document: &MarkdownDocument) -> Vec<String> {
+    image_asks(document)
+        .iter()
+        .map(|ask| ask.path().to_string())
+        .collect()
+}
+
+fn collector_asks_every_position_in_order() -> Result<(), String> {
+    let document = MarkdownDocument {
+        blocks: vec![
+            Block::Paragraph(vec![
+                Inline::Text("text".to_string()),
+                resolved_image("paragraph.png"),
+            ]),
+            Block::Heading {
+                level: HeadingLevel::One,
+                content: vec![resolved_image("heading.png")],
+            },
+            Block::Rule,
+            Block::Paragraph(vec![Inline::Emphasis {
+                strength: EmphasisStrength::Strong,
+                content: vec![resolved_image("emphasis.png")],
+            }]),
+            Block::Paragraph(vec![Inline::Link {
+                content: vec![resolved_image("link.png")],
+                destination: "page.md".to_string(),
+                target: LinkTarget::External,
+            }]),
+            Block::Quote(vec![Block::List {
+                kind: ListKind::Unordered,
+                items: vec![vec![Block::Paragraph(vec![resolved_image(
+                    "quoted-list-item.png",
+                )])]],
+            }]),
+        ],
+    };
+    let expected = [
+        "paragraph.png",
+        "heading.png",
+        "emphasis.png",
+        "link.png",
+        "quoted-list-item.png",
+    ];
+    let asked = asked_texts(&document);
+    if asked == expected {
+        Ok(())
+    } else {
+        Err(format!(
+            "the image collector asked {asked:?} for the hand-built document with an image in each position, expected {expected:?}"
+        ))
+    }
+}
+
+fn collector_asks_a_resolved_node_by_its_path_and_a_placeholder_by_its_source() -> Result<(), String>
+{
+    let document = MarkdownDocument {
+        blocks: vec![Block::Paragraph(vec![
+            resolved_image("diagram.png"),
+            resolved_image("diagram.png"),
+            placeholder_image(
+                PlaceholderCondition::OutsideTheFolder,
+                "https://example.com/c.png",
+            ),
+        ])],
+    };
+    let expected = ["diagram.png", "diagram.png", "https://example.com/c.png"];
+    let asked = asked_texts(&document);
+    if asked == expected {
+        Ok(())
+    } else {
+        Err(format!(
+            "the image collector asked {asked:?} for the hand-built document with three images, expected {expected:?}"
+        ))
+    }
+}
+
+fn markdown_predicate_answers_only_for_a_markdown_answer() -> Result<(), String> {
+    let document = MarkdownDocument {
+        blocks: vec![Block::Rule],
+    };
+    let from_markdown =
+        markdown_document(ItemState::Observed(FileView::Markdown(document.clone())));
+    if from_markdown.as_ref() != Some(&document) {
+        return Err("the Markdown predicate gave no document for a Markdown answer".to_string());
+    }
+    let text = FileView::Text {
+        content: String::new(),
+        language: ka_reader_core::Language::Plain,
+        spans: Vec::new(),
+    };
+    for (case, answer) in [
+        ("a text answer", ItemState::Observed(text)),
+        (
+            "a cannot-display answer",
+            ItemState::Observed(FileView::CannotDisplay(
+                ka_reader_core::CannotDisplayReason::InvalidUtf8,
+            )),
+        ),
+        ("a pending answer", ItemState::Pending),
+        (
+            "a failed answer",
+            ItemState::Failed(ka_reader_core::Condition::Unreadable),
+        ),
+    ] {
+        if markdown_document(answer).is_some() {
+            return Err(format!("the Markdown predicate gave a document for {case}"));
+        }
+    }
+    Ok(())
+}
+
+/// A hand-built image tally: the node counts and the call counts of each file.
+fn image_tally(nodes: &[(&str, usize)], calls: &[(&str, usize)]) -> ImageTally {
+    let counts = |pairs: &[(&str, usize)]| {
+        pairs
+            .iter()
+            .map(|(path, count)| (path.to_string(), *count))
+            .collect()
+    };
+    ImageTally {
+        nodes: counts(nodes),
+        calls: counts(calls),
+        ..ImageTally::default()
+    }
+}
+
+fn image_judge_accepts_a_tally_where_every_node_got_its_call() -> Result<(), String> {
+    judge_images(&image_tally(
+        &[("guide.md", 2), ("notes.md", 1)],
+        &[("guide.md", 2), ("notes.md", 1)],
+    ))
+    .map_err(|message| {
+        format!("a tally in which every image node got its asset_bytes call was refused: {message}")
+    })
+}
+
+fn image_judge_refuses_a_file_with_an_unasked_node_naming_it() -> Result<(), String> {
+    match judge_images(&image_tally(&[("guide.md", 2)], &[("guide.md", 1)])) {
+        Ok(()) => Err(
+            "the image judge accepted a tally in which an image node of guide.md got no asset_bytes call"
+                .to_string(),
+        ),
+        Err(message) if message.contains("guide.md") => Ok(()),
+        Err(message) => Err(format!(
+            "the image judge refused a tally in which an image node of guide.md got no asset_bytes call without naming guide.md: {message}"
+        )),
+    }
+}
+
+fn image_judge_refuses_a_file_asked_more_times_than_it_has_nodes() -> Result<(), String> {
+    match judge_images(&image_tally(&[("guide.md", 1)], &[("guide.md", 2)])) {
+        Ok(()) => Err(
+            "the image judge accepted a tally in which guide.md got more asset_bytes calls than it has image nodes"
+                .to_string(),
+        ),
+        Err(message) if message.contains("guide.md") => Ok(()),
+        Err(message) => Err(format!(
+            "the image judge refused a tally in which guide.md got more asset_bytes calls than it has image nodes without naming guide.md: {message}"
+        )),
+    }
+}
+
+/// The image tally of one Markdown file whose asks were recorded as the ask loop records them, each
+/// with whether bytes came back.
+fn recorded_tally(asks: &[(ImageAsk, bool)]) -> ImageTally {
+    let mut tally = ImageTally::default();
+    for (ask, answered) in asks {
+        tally.record_call("guide.md", ask, *answered);
+    }
+    tally
+}
+
+fn repo_image_check_refuses_a_walk_where_no_resolved_node_was_answered_bytes() -> Result<(), String>
+{
+    // A resolved node that was asked and answered no bytes, beside a placeholder outside the folder:
+    // the tally is fed by the recording the ask loop uses, so an unanswered resolved node counting as
+    // answered fails here too.
+    let tally = recorded_tally(&[
+        (ImageAsk::Resolved("diagram.png".to_string()), false),
+        (
+            ImageAsk::Placeholder {
+                condition: PlaceholderCondition::OutsideTheFolder,
+                source: "https://example.com/diagram.png".to_string(),
+            },
+            false,
+        ),
+    ]);
+    match judge_repo_images(&tally) {
+        Ok(()) => Err(
+            "the image check of fixture repo accepted an image tally in which no resolved image node was answered bytes"
+                .to_string(),
+        ),
+        Err(message) if message.contains("repo") => Ok(()),
+        Err(message) => Err(format!(
+            "the image check of fixture repo refused an image tally in which no resolved image node was answered bytes without naming repo: {message}"
+        )),
+    }
+}
+
+fn repo_image_check_refuses_a_placeholder_that_is_not_outside_the_folder() -> Result<(), String> {
+    // A resolved node answered bytes, and a placeholder carrying another condition than outside the
+    // folder: a placeholder of any condition counting as outside the folder fails here.
+    let tally = recorded_tally(&[
+        (ImageAsk::Resolved("diagram.png".to_string()), true),
+        (
+            ImageAsk::Placeholder {
+                condition: PlaceholderCondition::Missing,
+                source: "missing.png".to_string(),
+            },
+            false,
+        ),
+    ]);
+    match judge_repo_images(&tally) {
+        Ok(()) => Err(
+            "the image check of fixture repo accepted an image tally in which no placeholder node was outside the folder"
+                .to_string(),
+        ),
+        Err(message) if message.contains("repo") => Ok(()),
+        Err(message) => Err(format!(
+            "the image check of fixture repo refused an image tally in which no placeholder node was outside the folder without naming repo: {message}"
+        )),
+    }
+}
+
+/// A document holding one paragraph of `text` and one image resolved to `path`.
+fn page_document(text: &str, path: &str) -> MarkdownDocument {
+    MarkdownDocument {
+        blocks: vec![Block::Paragraph(vec![
+            Inline::Text(text.to_string()),
+            resolved_image(path),
+        ])],
+    }
+}
+
+/// The page lines for one file `path` holding `document`, where `asset_bytes` answers `bytes`.
+fn one_page_line(
+    path: &str,
+    document: MarkdownDocument,
+    bytes: Option<Vec<u8>>,
+) -> Result<Vec<String>, String> {
+    let documents = BTreeMap::from([(path.to_string(), document)]);
+    page_lines(&documents, |_| bytes.clone())
+}
+
+fn page_line_holds_no_tab_and_no_newline() -> Result<(), String> {
+    let document = MarkdownDocument {
+        blocks: vec![Block::Paragraph(vec![
+            Inline::Text("tab\there\nnewline\rreturn".to_string()),
+            Inline::Image {
+                alt: "alt\tand\nmore".to_string(),
+                target: ImageTarget::Placeholder {
+                    condition: PlaceholderCondition::OutsideTheFolder,
+                    source: "https://example.com/a\tb\nc.png".to_string(),
+                },
+            },
+        ])],
+    };
+    let lines = one_page_line("page.md", document, None)?;
+    let [line] = lines.as_slice() else {
+        return Err(format!(
+            "the pages gave {} lines for one file, expected 1",
+            lines.len()
+        ));
+    };
+    let tabs = line.matches('\t').count();
+    if tabs != 1 || line.contains(['\n', '\r']) {
+        return Err(format!(
+            "the page line for a page holding a tab, a newline and a carriage return held {tabs} tabs or a line break: {line:?}"
+        ));
+    }
+    Ok(())
+}
+
+fn equal_answers_give_equal_page_lines_and_a_differing_answer_a_differing_one() -> Result<(), String>
+{
+    let line = |document: MarkdownDocument, bytes: &[u8]| {
+        one_page_line("page.md", document, Some(bytes.to_vec()))
+    };
+    let base = line(page_document("text", "a.png"), b"one")?;
+    if base != line(page_document("text", "a.png"), b"one")? {
+        return Err("two equal answers gave differing page lines".to_string());
+    }
+    if base == line(page_document("text", "a.png"), b"two")? {
+        return Err("a differing asset_bytes answer gave an equal page line".to_string());
+    }
+    if base == line(page_document("other text", "a.png"), b"one")? {
+        return Err("a differing document gave an equal page line".to_string());
+    }
+    Ok(())
+}
+
+fn a_listed_path_holding_a_tab_or_a_newline_is_refused() -> Result<(), String> {
+    for path in ["tab\there.md", "new\nline.md"] {
+        let documents = BTreeMap::from([(path.to_string(), page_document("text", "a.png"))]);
+        match page_lines(&documents, |_| None) {
+            Err(message) if message.contains("a page line cannot carry") => {}
+            Err(message) => {
+                return Err(format!(
+                    "the pages refused the path {path:?} without saying a page line cannot carry it: {message}"
+                ));
+            }
+            Ok(lines) => {
+                return Err(format!("the pages carried the path {path:?}: {lines:?}"));
+            }
+        }
+    }
+    Ok(())
+}
+
+fn the_pages_mode_lists_only_markdown_files_in_byte_order() -> Result<(), String> {
+    let lines = pages_over("fixture repo", &fixture_path("repo"))?;
+    let paths: Vec<&str> = lines
+        .iter()
+        .filter_map(|line| line.split_once('\t').map(|(path, _)| path))
+        .collect();
+    if paths != ["README.md", "guide.md"] || paths.len() != lines.len() {
+        return Err(format!(
+            "the pages over fixture repo listed {lines:?}, expected a line for README.md and one for guide.md, each with a tab"
+        ));
+    }
+    Ok(())
+}
+
 /// Runs the judge on tallies built by hand, so every no-argument run shows that it accepts the walk
 /// CP-327 wants and refuses the three it forbids.
 fn judge_self_check() -> Result<(), String> {
@@ -561,7 +1156,19 @@ fn judge_self_check() -> Result<(), String> {
     judge_refuses_a_listed_file_selected_twice()?;
     judge_refuses_a_selected_path_never_listed()?;
     judge_accepts_every_act_reached()?;
-    judge_refuses_every_act_left_out()
+    judge_refuses_every_act_left_out()?;
+    collector_asks_every_position_in_order()?;
+    collector_asks_a_resolved_node_by_its_path_and_a_placeholder_by_its_source()?;
+    markdown_predicate_answers_only_for_a_markdown_answer()?;
+    image_judge_accepts_a_tally_where_every_node_got_its_call()?;
+    image_judge_refuses_a_file_with_an_unasked_node_naming_it()?;
+    image_judge_refuses_a_file_asked_more_times_than_it_has_nodes()?;
+    repo_image_check_refuses_a_walk_where_no_resolved_node_was_answered_bytes()?;
+    repo_image_check_refuses_a_placeholder_that_is_not_outside_the_folder()?;
+    page_line_holds_no_tab_and_no_newline()?;
+    equal_answers_give_equal_page_lines_and_a_differing_answer_a_differing_one()?;
+    a_listed_path_holding_a_tab_or_a_newline_is_refused()?;
+    the_pages_mode_lists_only_markdown_files_in_byte_order()
 }
 
 fn fixture_path(name: &str) -> PathBuf {
@@ -581,6 +1188,7 @@ fn check_fixture(name: &str, extra: FixtureCheck) -> Result<(), String> {
     judge_coverage(&walk.listed_files, &walk.selected)
         .map_err(|message| format!("fixture {name}: {message}"))?;
     judge_acts(&walk.acts).map_err(|message| format!("fixture {name}: {message}"))?;
+    judge_images(&walk.images).map_err(|message| format!("fixture {name}: {message}"))?;
     extra(&walk)
 }
 
@@ -613,7 +1221,7 @@ fn check_repo(walk: &Walk) -> Result<(), String> {
             return Err(format!("fixture repo did not list the file entry {path}"));
         }
     }
-    Ok(())
+    judge_repo_images(&walk.images)
 }
 
 /// One complete pass over `folder`: the `list_tree` and `select_file` walk, the model's own
@@ -625,6 +1233,7 @@ fn pass(folder: &str) -> Result<usize, String> {
     let walk =
         walk_folder(&canonical).ok_or_else(|| format!("{folder} did not open as a folder"))?;
     judge_bridge_operations(&walk.acts).map_err(|message| format!("{folder}: {message}"))?;
+    judge_images(&walk.images).map_err(|message| format!("{folder}: {message}"))?;
     // The answer is dropped: the proof is that the folder is unchanged afterwards, `.git/index`
     // included. `canonical` is canonical, as the adapter compares it against the locations it
     // verifies.
@@ -652,13 +1261,14 @@ pub(crate) fn run() -> Result<(), String> {
         .next()
         .filter(|argument| argument.starts_with('/'));
     match folder {
-        Some(folder) if arguments.next().as_deref() == Some(LONG_MODE_ARGUMENT) => {
-            run_long(&folder)
-        }
-        Some(folder) => {
-            println!("{}", pass(&folder)?);
-            Ok(())
-        }
+        Some(folder) => match arguments.next().as_deref() {
+            Some(LONG_MODE_ARGUMENT) => run_long(&folder),
+            Some(PAGES_MODE_ARGUMENT) => run_pages(&folder),
+            _ => {
+                println!("{}", pass(&folder)?);
+                Ok(())
+            }
+        },
         None => {
             judge_self_check()?;
             let failures: Vec<String> = FIXTURES
