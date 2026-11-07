@@ -41,9 +41,10 @@ use std::thread::sleep;
 use std::time::Duration;
 
 use ka_reader_core::{
-    EntryKind, FileRead, FileRequest, FolderContainment, FolderModel, ItemState, Libgit2,
-    OpenedFolder, PathReports, ReadingPosition, TreeRequest, asset_bytes, link_file, list_tree,
-    open_folder, read_file, read_git, select_file,
+    Block, EmphasisStrength, EntryKind, FileRead, FileRequest, FileView, FolderContainment,
+    FolderModel, HeadingLevel, ImageTarget, Inline, ItemState, Libgit2, LinkTarget, ListKind,
+    MarkdownDocument, OpenedFolder, PathReports, PlaceholderCondition, ReadingPosition,
+    TreeRequest, asset_bytes, link_file, list_tree, open_folder, read_file, read_git, select_file,
 };
 
 /// The one line long mode prints, after its first completed pass.
@@ -76,7 +77,13 @@ const PLAIN_FILE_ENTRIES: [&str; 5] = [
 
 /// The file entries of the `repo` fixture that its committed tree holds whether or not `.git` has
 /// been restored beside them.
-const REPO_TREE_FILE_ENTRIES: [&str; 3] = ["README.md", "src/main.rs", "src/deep/leaf.txt"];
+const REPO_TREE_FILE_ENTRIES: [&str; 5] = [
+    "README.md",
+    "guide.md",
+    "diagram.png",
+    "src/main.rs",
+    "src/deep/leaf.txt",
+];
 
 /// How many times a walk drove each model operation. Each count is raised at the one site its
 /// operation goes through, so the tally is the walk's own record and nothing is derived from it.
@@ -114,6 +121,64 @@ struct Walk {
     listed_files: BTreeSet<String>,
     /// The number of `select_file` calls made at each path.
     selected: BTreeMap<String, usize>,
+    /// What the walk asked `asset_bytes` for the images of the Markdown files it read.
+    images: ImageTally,
+}
+
+/// One thing `asset_bytes` is asked for an image node of a rendered document.
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum ImageAsk {
+    /// A node resolved inside the folder, asked with its folder-relative path.
+    Resolved(String),
+    /// A node that is a placeholder, asked with its source as written.
+    Placeholder {
+        condition: PlaceholderCondition,
+        source: String,
+    },
+}
+
+impl ImageAsk {
+    /// The text `asset_bytes` is asked.
+    fn path(&self) -> &str {
+        match self {
+            Self::Resolved(path) => path,
+            Self::Placeholder { source, .. } => source,
+        }
+    }
+}
+
+/// What a walk did about images. The node counts are fed by the collector and the call counts by the
+/// ask loop, so neither is derived from the other.
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+struct ImageTally {
+    /// The image nodes of each Markdown file's document.
+    nodes: BTreeMap<String, usize>,
+    /// The `asset_bytes` calls made for each Markdown file's image nodes.
+    calls: BTreeMap<String, usize>,
+    /// The resolved nodes `asset_bytes` answered bytes for.
+    resolved_answered: usize,
+    /// The placeholder nodes that carry `OutsideTheFolder`.
+    outside_the_folder: usize,
+}
+
+/// The document of a `select_file` answer when it is a Markdown document, and nothing otherwise.
+fn markdown_document(_answer: ItemState<FileView>) -> Option<MarkdownDocument> {
+    None
+}
+
+/// What `asset_bytes` is asked for each image node of `document`, in document order.
+fn image_asks(_document: &MarkdownDocument) -> Vec<ImageAsk> {
+    Vec::new()
+}
+
+/// Judges the image tally of one walk: every Markdown file's calls must equal its image nodes.
+fn judge_images(_tally: &ImageTally) -> Result<(), String> {
+    Ok(())
+}
+
+/// Judges what the `repo` fixture's walk exercised of its images.
+fn judge_repo_images(_tally: &ImageTally) -> Result<(), String> {
+    Ok(())
 }
 
 /// Reads the file at `path` and counts the call. This is the one site every `select_file` call goes
@@ -325,6 +390,7 @@ fn walk_folder(folder: &Path) -> Option<Walk> {
         acts,
         listed_files,
         selected,
+        images: ImageTally::default(),
     })
 }
 
@@ -553,6 +619,213 @@ fn judge_refuses_a_selected_path_never_listed() -> Result<(), String> {
     )
 }
 
+/// A resolved image node on `path`.
+fn resolved_image(path: &str) -> Inline {
+    Inline::Image {
+        alt: String::new(),
+        target: ImageTarget::Resolved(PathBuf::from(path)),
+    }
+}
+
+/// A placeholder image node for `source` that carries `condition`.
+fn placeholder_image(condition: PlaceholderCondition, source: &str) -> Inline {
+    Inline::Image {
+        alt: String::new(),
+        target: ImageTarget::Placeholder {
+            condition,
+            source: source.to_string(),
+        },
+    }
+}
+
+/// What the collector asked for `document`, as the texts `asset_bytes` is asked.
+fn asked_texts(document: &MarkdownDocument) -> Vec<String> {
+    image_asks(document)
+        .iter()
+        .map(|ask| ask.path().to_string())
+        .collect()
+}
+
+fn collector_asks_every_position_in_order() -> Result<(), String> {
+    let document = MarkdownDocument {
+        blocks: vec![
+            Block::Paragraph(vec![
+                Inline::Text("text".to_string()),
+                resolved_image("paragraph.png"),
+            ]),
+            Block::Heading {
+                level: HeadingLevel::One,
+                content: vec![resolved_image("heading.png")],
+            },
+            Block::Rule,
+            Block::Paragraph(vec![Inline::Emphasis {
+                strength: EmphasisStrength::Strong,
+                content: vec![resolved_image("emphasis.png")],
+            }]),
+            Block::Paragraph(vec![Inline::Link {
+                content: vec![resolved_image("link.png")],
+                destination: "page.md".to_string(),
+                target: LinkTarget::External,
+            }]),
+            Block::Quote(vec![Block::List {
+                kind: ListKind::Unordered,
+                items: vec![vec![Block::Paragraph(vec![resolved_image(
+                    "quoted-list-item.png",
+                )])]],
+            }]),
+        ],
+    };
+    let expected = [
+        "paragraph.png",
+        "heading.png",
+        "emphasis.png",
+        "link.png",
+        "quoted-list-item.png",
+    ];
+    let asked = asked_texts(&document);
+    if asked == expected {
+        Ok(())
+    } else {
+        Err(format!(
+            "the image collector asked {asked:?} for the hand-built document with an image in each position, expected {expected:?}"
+        ))
+    }
+}
+
+fn collector_asks_a_resolved_node_by_its_path_and_a_placeholder_by_its_source() -> Result<(), String>
+{
+    let document = MarkdownDocument {
+        blocks: vec![Block::Paragraph(vec![
+            resolved_image("diagram.png"),
+            resolved_image("diagram.png"),
+            placeholder_image(
+                PlaceholderCondition::OutsideTheFolder,
+                "https://example.com/c.png",
+            ),
+        ])],
+    };
+    let expected = ["diagram.png", "diagram.png", "https://example.com/c.png"];
+    let asked = asked_texts(&document);
+    if asked == expected {
+        Ok(())
+    } else {
+        Err(format!(
+            "the image collector asked {asked:?} for the hand-built document with three images, expected {expected:?}"
+        ))
+    }
+}
+
+fn markdown_predicate_answers_only_for_a_markdown_answer() -> Result<(), String> {
+    let document = MarkdownDocument {
+        blocks: vec![Block::Rule],
+    };
+    let from_markdown =
+        markdown_document(ItemState::Observed(FileView::Markdown(document.clone())));
+    if from_markdown.as_ref() != Some(&document) {
+        return Err("the Markdown predicate gave no document for a Markdown answer".to_string());
+    }
+    let text = FileView::Text {
+        content: String::new(),
+        language: ka_reader_core::Language::Plain,
+        spans: Vec::new(),
+    };
+    for (case, answer) in [
+        ("a text answer", ItemState::Observed(text)),
+        ("a pending answer", ItemState::Pending),
+    ] {
+        if markdown_document(answer).is_some() {
+            return Err(format!("the Markdown predicate gave a document for {case}"));
+        }
+    }
+    Ok(())
+}
+
+/// A hand-built image tally: the node counts and the call counts of each file.
+fn image_tally(nodes: &[(&str, usize)], calls: &[(&str, usize)]) -> ImageTally {
+    let counts = |pairs: &[(&str, usize)]| {
+        pairs
+            .iter()
+            .map(|(path, count)| (path.to_string(), *count))
+            .collect()
+    };
+    ImageTally {
+        nodes: counts(nodes),
+        calls: counts(calls),
+        ..ImageTally::default()
+    }
+}
+
+fn image_judge_accepts_a_tally_where_every_node_got_its_call() -> Result<(), String> {
+    judge_images(&image_tally(
+        &[("guide.md", 2), ("notes.md", 1)],
+        &[("guide.md", 2), ("notes.md", 1)],
+    ))
+    .map_err(|message| {
+        format!("a tally in which every image node got its asset_bytes call was refused: {message}")
+    })
+}
+
+fn image_judge_refuses_a_file_with_an_unasked_node_naming_it() -> Result<(), String> {
+    match judge_images(&image_tally(&[("guide.md", 2)], &[("guide.md", 1)])) {
+        Ok(()) => Err(
+            "the image judge accepted a tally in which an image node of guide.md got no asset_bytes call"
+                .to_string(),
+        ),
+        Err(message) if message.contains("guide.md") => Ok(()),
+        Err(message) => Err(format!(
+            "the image judge refused a tally in which an image node of guide.md got no asset_bytes call without naming guide.md: {message}"
+        )),
+    }
+}
+
+fn image_judge_refuses_a_file_asked_more_times_than_it_has_nodes() -> Result<(), String> {
+    match judge_images(&image_tally(&[("guide.md", 1)], &[("guide.md", 2)])) {
+        Ok(()) => Err(
+            "the image judge accepted a tally in which guide.md got more asset_bytes calls than it has image nodes"
+                .to_string(),
+        ),
+        Err(message) if message.contains("guide.md") => Ok(()),
+        Err(message) => Err(format!(
+            "the image judge refused a tally in which guide.md got more asset_bytes calls than it has image nodes without naming guide.md: {message}"
+        )),
+    }
+}
+
+fn repo_image_check_refuses_a_walk_where_no_resolved_node_was_answered_bytes() -> Result<(), String>
+{
+    let tally = ImageTally {
+        outside_the_folder: 1,
+        ..ImageTally::default()
+    };
+    match judge_repo_images(&tally) {
+        Ok(()) => Err(
+            "the image check of fixture repo accepted an image tally in which no resolved image node was answered bytes"
+                .to_string(),
+        ),
+        Err(message) if message.contains("repo") => Ok(()),
+        Err(message) => Err(format!(
+            "the image check of fixture repo refused an image tally in which no resolved image node was answered bytes without naming repo: {message}"
+        )),
+    }
+}
+
+fn repo_image_check_refuses_a_placeholder_that_is_not_outside_the_folder() -> Result<(), String> {
+    let tally = ImageTally {
+        resolved_answered: 1,
+        ..ImageTally::default()
+    };
+    match judge_repo_images(&tally) {
+        Ok(()) => Err(
+            "the image check of fixture repo accepted an image tally in which no placeholder node was outside the folder"
+                .to_string(),
+        ),
+        Err(message) if message.contains("repo") => Ok(()),
+        Err(message) => Err(format!(
+            "the image check of fixture repo refused an image tally in which no placeholder node was outside the folder without naming repo: {message}"
+        )),
+    }
+}
+
 /// Runs the judge on tallies built by hand, so every no-argument run shows that it accepts the walk
 /// CP-327 wants and refuses the three it forbids.
 fn judge_self_check() -> Result<(), String> {
@@ -561,7 +834,15 @@ fn judge_self_check() -> Result<(), String> {
     judge_refuses_a_listed_file_selected_twice()?;
     judge_refuses_a_selected_path_never_listed()?;
     judge_accepts_every_act_reached()?;
-    judge_refuses_every_act_left_out()
+    judge_refuses_every_act_left_out()?;
+    collector_asks_every_position_in_order()?;
+    collector_asks_a_resolved_node_by_its_path_and_a_placeholder_by_its_source()?;
+    markdown_predicate_answers_only_for_a_markdown_answer()?;
+    image_judge_accepts_a_tally_where_every_node_got_its_call()?;
+    image_judge_refuses_a_file_with_an_unasked_node_naming_it()?;
+    image_judge_refuses_a_file_asked_more_times_than_it_has_nodes()?;
+    repo_image_check_refuses_a_walk_where_no_resolved_node_was_answered_bytes()?;
+    repo_image_check_refuses_a_placeholder_that_is_not_outside_the_folder()
 }
 
 fn fixture_path(name: &str) -> PathBuf {
@@ -581,6 +862,7 @@ fn check_fixture(name: &str, extra: FixtureCheck) -> Result<(), String> {
     judge_coverage(&walk.listed_files, &walk.selected)
         .map_err(|message| format!("fixture {name}: {message}"))?;
     judge_acts(&walk.acts).map_err(|message| format!("fixture {name}: {message}"))?;
+    judge_images(&walk.images).map_err(|message| format!("fixture {name}: {message}"))?;
     extra(&walk)
 }
 
@@ -613,7 +895,7 @@ fn check_repo(walk: &Walk) -> Result<(), String> {
             return Err(format!("fixture repo did not list the file entry {path}"));
         }
     }
-    Ok(())
+    judge_repo_images(&walk.images)
 }
 
 /// One complete pass over `folder`: the `list_tree` and `select_file` walk, the model's own
