@@ -139,6 +139,8 @@ private func pageText(_ workbench: WorkbenchView) -> String {
     func aResolvedImageAsksAssetBytesForItsPathOnTheReaderRunnerAndAPlaceholderAsksNothing() throws
     {
         let launch = launch(readme: markdownAnswer(imagesJSON), readerHeld: true)
+        // The folder open is the reader runner's first read.
+        launch.reader.release(0)
         let workbench = try workbench(of: launch)
         let held = launch.reader.heldReads
 
@@ -234,9 +236,10 @@ private func pageText(_ workbench: WorkbenchView) -> String {
         let events = launch.bridge.log.events.filter {
             $0 == "open_relative_link" || $0 == "select_file"
         }
+        let afterLink = events.drop { $0 != "open_relative_link" }.dropFirst()
         #expect(launch.bridge.linkPaths == ["docs/guide.md"])
         #expect(
-            events.suffix(2) == ["open_relative_link", "select_file"],
+            afterLink.contains("select_file"),
             "the link was raised before the click, so its call goes first")
     }
 

@@ -9,7 +9,7 @@ package enum FileAct: Sendable {
     case select
 }
 
-/// The five exported functions, and nothing else (CP-86, CP-97).
+/// The seven exported functions, and nothing else (CP-86, CP-97).
 ///
 /// A `nil` return is the bridge's failure value: a panic was caught or no buffer could be made.
 /// Every non-`nil` buffer is released once with `free`, and a `nil` is never released.
@@ -32,6 +32,14 @@ package protocol Bridging: Sendable {
 
     /// `ka_reader_read_git`. It takes no argument: the open folder is the one read.
     func readGit() -> BridgeBuffer?
+
+    /// `ka_reader_asset_bytes`. The path is a resolved image's folder-relative path. A refusal is a
+    /// buffer whose `isRefusal` is true; `nil` is the bridge's failure value.
+    func assetBytes(path: String) -> BridgeBuffer?
+
+    /// `ka_reader_open_relative_link`. The path is a relative link's target path, never its
+    /// destination. The call admits the link's selection act and reads the target in one call.
+    func openRelativeLink(path: String) -> BridgeBuffer?
 
     /// `ka_reader_free`.
     func free(_ buffer: BridgeBuffer)

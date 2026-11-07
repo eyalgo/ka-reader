@@ -9,8 +9,14 @@ package struct BridgeBuffer: Equatable, Sendable {
     package let payload: Data
     package let handle: UInt
 
-    package init(payload: Data, handle: UInt) {
+    /// Whether this is an `asset_bytes` refusal: a buffer with no bytes at all, which still carries
+    /// its handle so it is released once. An empty file's bytes are an empty payload that is not a
+    /// refusal. Every other function's buffer is a non-refusal.
+    package let isRefusal: Bool
+
+    package init(payload: Data, handle: UInt, isRefusal: Bool = false) {
         self.payload = payload
         self.handle = handle
+        self.isRefusal = isRefusal
     }
 }

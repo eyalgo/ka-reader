@@ -198,7 +198,7 @@ enum BridgePayload {
     /// members the state names. A member that is missing or extra, and a state, language, reason or
     /// condition outside its closed set, throws. `pending` means nothing was read, so it carries no
     /// verdict.
-    private struct FileAnswer: Decodable {
+    struct FileAnswer: Decodable {
         let verdict: FileVerdict?
 
         /// Any member name, so a member this shell does not know is seen and refused rather than
@@ -221,6 +221,7 @@ enum BridgePayload {
             static let spans = Key(stringValue: "spans")
             static let reason = Key(stringValue: "reason")
             static let condition = Key(stringValue: "condition")
+            static let blocks = Key(stringValue: "blocks")
         }
 
         private enum StateTag: String, Decodable {
@@ -229,11 +230,12 @@ enum BridgePayload {
             case failed
             case gone
             case pending
+            case markdown
         }
 
         /// The `language` member's value: `plain` or one of the six floor languages. Any other value
         /// throws, so `rust` is refused (CP-309).
-        private enum WireLanguage: Decodable {
+        enum WireLanguage: Decodable {
             case plain
             case floor(FloorLanguage)
 
@@ -251,7 +253,7 @@ enum BridgePayload {
         }
 
         /// One span as the wire writes it: exactly `start`, `end` and `class`.
-        private struct WireSpan: Decodable {
+        struct WireSpan: Decodable {
             let span: CodeSpan
 
             private struct SpanKey: CodingKey {
@@ -292,6 +294,17 @@ enum BridgePayload {
         private static func checkedSpans(
             _ spans: [CodeSpan], in content: String, container: KeyedDecodingContainer<Key>
         ) throws -> [CodeSpan] {
+            guard spansConform(spans, to: content) else {
+                throw DecodingError.dataCorruptedError(
+                    forKey: .spans, in: container,
+                    debugDescription: "a span does not conform to the content")
+            }
+            return spans
+        }
+
+        /// Whether every span conforms to `content` (CP-310), the check a Markdown code block's
+        /// spans go through against that block's own code.
+        static func spansConform(_ spans: [CodeSpan], to content: String) -> Bool {
             let bytes = Array(content.utf8)
             let isScalarBoundary = { (offset: Int) -> Bool in
                 offset == bytes.count || (bytes[offset] & 0b1100_0000) != 0b1000_0000
@@ -300,14 +313,10 @@ enum BridgePayload {
             for span in spans {
                 guard span.start >= previousEnd, span.start < span.end, span.end <= bytes.count,
                     isScalarBoundary(span.start), isScalarBoundary(span.end)
-                else {
-                    throw DecodingError.dataCorruptedError(
-                        forKey: .spans, in: container,
-                        debugDescription: "a span does not conform to the content")
-                }
+                else { return false }
                 previousEnd = span.end
             }
-            return spans
+            return true
         }
 
         init(from decoder: Decoder) throws {
@@ -326,6 +335,7 @@ enum BridgePayload {
             case .cannotDisplay: expected = ["state", "reason"]
             case .failed: expected = ["state", "condition"]
             case .gone, .pending: expected = ["state"]
+            case .markdown: expected = ["state", "blocks"]
             }
             guard Set(container.allKeys.map(\.stringValue)) == Set(expected) else {
                 throw DecodingError.dataCorruptedError(
@@ -354,6 +364,11 @@ enum BridgePayload {
                 verdict = .gone
             case .pending:
                 verdict = nil
+            case .markdown:
+                verdict = .markdown(
+                    MarkdownDocument(
+                        blocks: try container.decode([WireBlock].self, forKey: .blocks)
+                            .map(\.block)))
             }
         }
     }
@@ -375,6 +390,23 @@ enum BridgePayload {
         return ReadingPosition(topLine: line, horizontalOffset: offset)
     }
 
+    /// What a `ka_reader_open_relative_link` answer comes to: `pending` is no contained file, so
+    /// nothing changed; a conforming verdict is the opened file's; a NULL buffer and anything that
+    /// does not conform carry no verdict.
+    static func decodeLink(_ buffer: BridgeBuffer?) -> RelativeLinkAnswer {
+        guard let buffer,
+            let answer = try? JSONDecoder().decode(FileAnswer.self, from: buffer.payload)
+        else { return .stopped }
+        return answer.verdict.map(RelativeLinkAnswer.opened) ?? .nothing
+    }
+
+    /// The bytes a `ka_reader_asset_bytes` answer carries: `nil` for a refusal and for a NULL buffer,
+    /// and the payload otherwise, an empty file's empty payload included.
+    static func decodeAsset(_ buffer: BridgeBuffer?) -> Data? {
+        guard let buffer, !buffer.isRefusal else { return nil }
+        return buffer.payload
+    }
+
     /// The verdict a `ka_reader_select_file` answer carries, or `nil` for `pending`, a NULL buffer and
     /// anything that does not conform.
     static func decodeFile(_ buffer: BridgeBuffer?) -> FileVerdict? {
@@ -384,7 +416,7 @@ enum BridgePayload {
 
     /// One object's members, any name, so a member this shell does not know is seen and refused
     /// rather than ignored; each Git object checks its own set with `requireMembers`.
-    private struct WireKey: CodingKey {
+    struct WireKey: CodingKey {
         let stringValue: String
         let intValue: Int? = nil
 
@@ -398,7 +430,7 @@ enum BridgePayload {
     }
 
     /// Throws unless the object holds exactly `expected`, no more and no fewer.
-    private static func requireMembers(
+    static func requireMembers(
         _ expected: Set<String>, in container: KeyedDecodingContainer<WireKey>
     ) throws {
         guard Set(container.allKeys.map(\.stringValue)) == expected else {
@@ -408,7 +440,7 @@ enum BridgePayload {
     }
 
     /// A member whose value is one string of a closed set; any other string throws.
-    private static func closed<Value: RawRepresentable>(
+    static func closed<Value: RawRepresentable>(
         _ type: Value.Type, in container: KeyedDecodingContainer<WireKey>, key: String
     ) throws -> Value where Value.RawValue == String {
         let name = try container.decode(String.self, forKey: WireKey(stringValue: key))

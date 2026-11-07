@@ -199,6 +199,16 @@ package final class LaunchFlow {
                 { Self.send(.position, at: position, forFileAt: path, through: bridge) },
                 deliver: { _ in })
         }
+        // A link's one call admits its selection act and reads, so it goes on the serial tree-act
+        // runner, where a click's select act is, and its read is ordered with that act. The image
+        // bytes are plain reads and go on the concurrent reader. Each closure decodes and frees its
+        // buffer on the background thread, so a buffer never reaches the main actor.
+        workbench.openRelativeLink = { [bridge, treeActs] path, answer in
+            treeActs.run({ Self.linkAnswer(at: path, through: bridge) }, deliver: answer)
+        }
+        workbench.assetBytes = { [bridge, reader] path, answer in
+            reader.run({ Self.assetBytes(at: path, through: bridge) }, deliver: answer)
+        }
         workbench.readGit = { [bridge, reader] answer in
             reader.run({ Self.gitItem(through: bridge) }, deliver: answer)
         }
@@ -212,6 +222,20 @@ package final class LaunchFlow {
     /// The open act of a click, on the concurrent reader, whose verdict goes to the surface's sink.
     private func openFile(at path: String, answer: @escaping SelectFileAnswer) {
         reader.run({ [bridge] in Self.verdict(at: path, through: bridge) }, deliver: answer)
+    }
+
+    private nonisolated static func linkAnswer(at path: String, through bridge: Bridging)
+        -> RelativeLinkAnswer
+    {
+        let buffer = bridge.openRelativeLink(path: path)
+        defer { release(buffer, through: bridge) }
+        return BridgePayload.decodeLink(buffer)
+    }
+
+    private nonisolated static func assetBytes(at path: String, through bridge: Bridging) -> Data? {
+        let buffer = bridge.assetBytes(path: path)
+        defer { release(buffer, through: bridge) }
+        return BridgePayload.decodeAsset(buffer)
     }
 
     private nonisolated static func gitItem(through bridge: Bridging) -> GitItem {
