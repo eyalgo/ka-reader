@@ -354,33 +354,10 @@ package final class ReadingPanelView: NSView {
                 .foregroundColor: CodeColors.primary,
             ])
         guard case .floor(_, let spans) = language else { return text }
-        for (span, range) in zip(spans, utf16Ranges(of: spans, in: content)) {
+        for (span, range) in zip(spans, SpanRanges.utf16(of: spans, in: content)) {
             text.addAttribute(
                 .foregroundColor, value: CodeColors.color(for: span.tokenClass), range: range)
         }
         return text
-    }
-
-    /// The UTF-16 range each span covers. The spans' offsets are UTF-8 bytes (the wire's unit) and
-    /// AppKit counts UTF-16 units, so one forward pass over the content's Unicode scalars adds up
-    /// both widths and maps each offset as the pass reaches it. The spans ascend and fall on scalar
-    /// boundaries (the decoder guarantees it), and a Swift `Character` is a grapheme, not the
-    /// core's boundary.
-    private static func utf16Ranges(of spans: [CodeSpan], in content: String) -> [NSRange] {
-        var scalars = content.unicodeScalars.makeIterator()
-        var bytes = 0
-        var units = 0
-        func unit(atByte target: Int) -> Int {
-            while bytes < target, let scalar = scalars.next() {
-                bytes += UTF8.width(scalar)
-                units += UTF16.width(scalar)
-            }
-            return units
-        }
-        return spans.map { span in
-            let start = unit(atByte: span.start)
-            let end = unit(atByte: span.end)
-            return NSRange(location: start, length: end - start)
-        }
     }
 }

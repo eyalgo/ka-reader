@@ -11,7 +11,8 @@ import Testing
 private func linkValues(in page: MarkdownPageView) throws -> [Any] {
     let storage = try page.storage
     var found: [Any] = []
-    storage.enumerateAttribute(.link, in: NSRange(location: 0, length: storage.length)) { value, _, _ in
+    unsafe storage.enumerateAttribute(.link, in: NSRange(location: 0, length: storage.length)) {
+        value, _, _ in
         if let value { found.append(value) }
     }
     return found
@@ -20,7 +21,7 @@ private func linkValues(in page: MarkdownPageView) throws -> [Any] {
 /// What the page draws for a link's destination, for a kind of target.
 @MainActor
 private func linkDocument(_ target: MarkdownLinkTarget, destination: String) -> MarkdownDocument {
-    document([.paragraph([.link([.text("guide")], destination: destination, target)])])
+    pageDocument([.paragraph([.link([.text("guide")], destination: destination, target)])])
 }
 
 @MainActor
@@ -42,7 +43,8 @@ func anExternalLinkReadsContentThenItsDestinationOnOneLineWithNoLinkAttribute() 
 @Test
 func aRelativeLinkRaisesItsTargetPathNotItsDestination() throws {
     var raised: [String] = []
-    let page = makePage(linkDocument(.relative(path: "docs/guide.md"), destination: "./docs/guide.md"))
+    let page = makePage(
+        linkDocument(.relative(path: "docs/guide.md"), destination: "./docs/guide.md"))
     page.relativeLinkSink = { raised.append($0) }
 
     let values = try linkValues(in: page)

@@ -14,22 +14,27 @@ private let unreadable = "KA-Reader can't read this image."
 @Test
 func headingsParagraphsListsQuotesAndRulesAreDrawnInSourceOrder() throws {
     let page = makePage(
-        document([
+        pageDocument([
             .heading(.two, [.text("Title")]),
-            paragraph("Body words"),
-            .list(.unordered, items: [[paragraph("alpha")], [paragraph("beta")]]),
+            textParagraph("Body words"),
+            .list(.unordered, items: [[textParagraph("alpha")], [textParagraph("beta")]]),
             .list(
                 .ordered(start: 3),
                 items: [
-                    [paragraph("three"), .list(.unordered, items: [[paragraph("nested")]])],
-                    [paragraph("four")],
+                    [
+                        textParagraph("three"),
+                        .list(.unordered, items: [[textParagraph("nested")]]),
+                    ],
+                    [textParagraph("four")],
                 ]),
-            .quote([paragraph("quoted")]),
+            .quote([textParagraph("quoted")]),
             .rule,
-            paragraph("After"),
+            textParagraph("After"),
         ]))
 
-    let order = ["Title", "Body words", "alpha", "beta", "three", "nested", "four", "quoted", "After"]
+    let order = [
+        "Title", "Body words", "alpha", "beta", "three", "nested", "four", "quoted", "After",
+    ]
     let positions = try order.map { try page.range(of: $0).location }
     #expect(positions == positions.sorted())
     #expect(page.textView.string.contains("3. three"))
@@ -38,20 +43,22 @@ func headingsParagraphsListsQuotesAndRulesAreDrawnInSourceOrder() throws {
     let title = try #require(try page.attribute(.font, at: "Title") as? NSFont)
     let body = try #require(try page.attribute(.font, at: "Body words") as? NSFont)
     #expect(title.pointSize > body.pointSize)
-    let nested = try #require(try page.attribute(.paragraphStyle, at: "nested") as? NSParagraphStyle)
+    let nested = try #require(
+        try page.attribute(.paragraphStyle, at: "nested") as? NSParagraphStyle)
     let outer = try #require(try page.attribute(.paragraphStyle, at: "three") as? NSParagraphStyle)
     #expect(nested.headIndent > outer.headIndent)
     let ruleRange = (page.textView.string as NSString).range(of: "\u{A0}")
     #expect(ruleRange.location != NSNotFound)
-    #expect(
-        try page.storage.attribute(.strikethroughStyle, at: ruleRange.location, effectiveRange: nil)
-            != nil)
+    let ruleStorage = try page.storage
+    let strike = unsafe ruleStorage.attribute(
+        .strikethroughStyle, at: ruleRange.location, effectiveRange: nil)
+    #expect(strike != nil)
 }
 
 @MainActor
 @Test
 func anEmptyDocumentDrawsAnEmptyPageWithNoMessage() throws {
-    let page = makePage(document([]))
+    let page = makePage(pageDocument([]))
 
     #expect(page.textView.string.isEmpty)
     #expect(try page.attachments().isEmpty)
@@ -66,7 +73,7 @@ func aPythonBlockCarriesItsSpanColoursAndAPlainBlockOneInk() throws {
         CodeSpan(start: 5, end: 8, tokenClass: .keyword)
     ]
     let page = makePage(
-        document([
+        pageDocument([
             .code(source, .floor(.python, spans)),
             .code("def plain", .plain),
             .code("fn other", .plain),
@@ -77,7 +84,8 @@ func aPythonBlockCarriesItsSpanColoursAndAPlainBlockOneInk() throws {
     #expect(keyword != base)
     let python = try page.range(of: source)
     var colours = Set<String>()
-    try page.storage.enumerateAttribute(.foregroundColor, in: python) { value, range, _ in
+    let pythonStorage = try page.storage
+    unsafe pythonStorage.enumerateAttribute(.foregroundColor, in: python) { value, range, _ in
         if let colour = value as? NSColor, let rgb = resolved(colour) {
             colours.insert("\(range.location):\(rgb)")
         }
@@ -90,7 +98,7 @@ func aPythonBlockCarriesItsSpanColoursAndAPlainBlockOneInk() throws {
     #expect(otherInk == plainInk)
     var plainColours = Set<NSColor>()
     let plainRange = try page.range(of: "def plain")
-    try page.storage.enumerateAttribute(.foregroundColor, in: plainRange) { value, _, _ in
+    unsafe pythonStorage.enumerateAttribute(.foregroundColor, in: plainRange) { value, _, _ in
         if let colour = resolved(value as? NSColor) { plainColours.insert(colour) }
     }
     #expect(plainColours.count == 1)
@@ -106,7 +114,7 @@ func rawHtmlReadsAsItsLiteralSourceText() throws {
         "<style>body { display: none }</style>",
         "<div class=\"box\">\nraw block content\n</div>",
     ]
-    let page = makePage(document(pieces.map { paragraph($0) }))
+    let page = makePage(pageDocument(pieces.map { textParagraph($0) }))
 
     for piece in pieces {
         #expect(page.textView.string.contains(piece))
@@ -114,7 +122,8 @@ func rawHtmlReadsAsItsLiteralSourceText() throws {
     #expect(try page.attachments().isEmpty)
     let storage = try page.storage
     var links = 0
-    storage.enumerateAttribute(.link, in: NSRange(location: 0, length: storage.length)) { value, _, _ in
+    unsafe storage.enumerateAttribute(.link, in: NSRange(location: 0, length: storage.length)) {
+        value, _, _ in
         if value != nil { links += 1 }
     }
     #expect(links == 0)
@@ -125,7 +134,9 @@ func rawHtmlReadsAsItsLiteralSourceText() throws {
 func aResolvedImageIsDrawnFromTheHandedBytes() throws {
     let bytes = try renderedPNG(width: 3, height: 2)
     let page = makePage(
-        document([.paragraph([.text("before "), .image(alt: "logo", .resolved(path: "logo.png"))])]),
+        pageDocument([
+            .paragraph([.text("before "), .image(alt: "logo", .resolved(path: "logo.png"))])
+        ]),
         imageBytes: ["logo.png": bytes])
 
     let attachments = try page.attachments()
@@ -141,9 +152,9 @@ func aResolvedImageIsDrawnFromTheHandedBytes() throws {
 @Test
 func anImageWhoseBytesAreNilDrawsTheUnreadableBox() throws {
     let page = makePage(
-        document([
+        pageDocument([
             .paragraph([.image(alt: "the logo", .resolved(path: "img/logo.png"))]),
-            paragraph("still here"),
+            textParagraph("still here"),
         ]))
 
     #expect(try page.boxes() == [["the logo", "img/logo.png", unreadable]])
@@ -156,9 +167,9 @@ func anImageWhoseBytesAreNilDrawsTheUnreadableBox() throws {
 func eachMalformedBitmapDrawsTheUnreadableBoxAndThePageSurvives(name: String) throws {
     let bytes = try malformedFixture(name)
     let page = makePage(
-        document([
+        pageDocument([
             .paragraph([.image(alt: "broken", .resolved(path: "logo.png"))]),
-            paragraph("after the image"),
+            textParagraph("after the image"),
         ]),
         imageBytes: ["logo.png": bytes])
 
@@ -169,8 +180,10 @@ func eachMalformedBitmapDrawsTheUnreadableBoxAndThePageSurvives(name: String) th
 
 @MainActor
 @Test(arguments: [
-    (ImagePlaceholderCondition.outsideTheFolder,
-     "This image is outside the folder you opened, so KA-Reader doesn't read it."),
+    (
+        ImagePlaceholderCondition.outsideTheFolder,
+        "This image is outside the folder you opened, so KA-Reader doesn't read it."
+    ),
     (ImagePlaceholderCondition.missing, "There's no file where this image points."),
     (ImagePlaceholderCondition.unreadable, "KA-Reader can't read this image."),
     (ImagePlaceholderCondition.formatNotDecoded, "KA-Reader doesn't show images in this format."),
@@ -179,7 +192,7 @@ func aPlaceholderBoxHoldsTheAltTheSourceAndItsConditionsSentence(
     condition: ImagePlaceholderCondition, sentence: String
 ) throws {
     let page = makePage(
-        document([
+        pageDocument([
             .paragraph([.image(alt: "alt words", .placeholder(condition, source: "pics/a b.svg"))])
         ]))
 
@@ -193,7 +206,7 @@ func aPlaceholderBoxHoldsTheAltTheSourceAndItsConditionsSentence(
 @MainActor
 @Test
 func theViewIsNotEditableAndRegistersNoDragType() {
-    let page = makePage(document([paragraph("words")]))
+    let page = makePage(pageDocument([textParagraph("words")]))
 
     #expect(!page.textView.isEditable)
     #expect(page.textView.isSelectable)
@@ -203,9 +216,10 @@ func theViewIsNotEditableAndRegistersNoDragType() {
 @MainActor
 @Test
 func aTypedKeyAPasteAndADropLeaveTheStorageUnchanged() throws {
-    let page = makePage(document([paragraph("words")]))
+    let page = makePage(pageDocument([textParagraph("words")]))
     let before = page.textView.string
-    let pasteboard = NSPasteboard(name: NSPasteboard.Name("ka-reader-page-test-\(UUID().uuidString)"))
+    let pasteboard = NSPasteboard(
+        name: NSPasteboard.Name("ka-reader-page-test-\(UUID().uuidString)"))
     defer { pasteboard.releaseGlobally() }
     pasteboard.clearContents()
     pasteboard.setString("pasted", forType: .string)
@@ -220,7 +234,7 @@ func aTypedKeyAPasteAndADropLeaveTheStorageUnchanged() throws {
 @MainActor
 @Test
 func theContextualMenuHoldsCopyAlone() throws {
-    let page = makePage(document([paragraph("words")]))
+    let page = makePage(pageDocument([textParagraph("words")]))
     let window = NSWindow(
         contentRect: NSRect(x: 0, y: 0, width: 600, height: 400), styleMask: [.titled],
         backing: .buffered, defer: true)

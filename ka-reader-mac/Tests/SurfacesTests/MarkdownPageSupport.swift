@@ -16,21 +16,21 @@ func makePage(_ document: MarkdownDocument, imageBytes: [String: Data] = [:]) ->
     return page
 }
 
-func document(_ blocks: [MarkdownBlock]) -> MarkdownDocument {
+func pageDocument(_ blocks: [MarkdownBlock]) -> MarkdownDocument {
     MarkdownDocument(blocks: blocks)
 }
 
-func paragraph(_ text: String) -> MarkdownBlock {
+func textParagraph(_ text: String) -> MarkdownBlock {
     .paragraph([.text(text)])
 }
 
 /// A PNG of the given pixel size that the test renders itself.
 func renderedPNG(width: Int, height: Int) throws -> Data {
-    let bitmap = try #require(
-        NSBitmapImageRep(
-            bitmapDataPlanes: nil, pixelsWide: width, pixelsHigh: height, bitsPerSample: 8,
-            samplesPerPixel: 4, hasAlpha: true, isPlanar: false, colorSpaceName: .deviceRGB,
-            bytesPerRow: 0, bitsPerPixel: 0))
+    let rep = unsafe NSBitmapImageRep(
+        bitmapDataPlanes: nil, pixelsWide: width, pixelsHigh: height, bitsPerSample: 8,
+        samplesPerPixel: 4, hasAlpha: true, isPlanar: false, colorSpaceName: .deviceRGB,
+        bytesPerRow: 0, bitsPerPixel: 0)
+    let bitmap = try #require(rep)
     return try #require(bitmap.representation(using: .png, properties: [:]))
 }
 
@@ -47,7 +47,10 @@ let malformedFixtureNames = ["malformed.png", "malformed.jpg", "malformed.gif", 
 
 extension MarkdownPageView {
     var storage: NSTextStorage {
-        get throws { try #require(textView.textStorage) }
+        get throws {
+            let storage = unsafe textView.textStorage
+            return try #require(storage)
+        }
     }
 
     /// The paragraphs of the page's text, in order, without their line breaks.
@@ -59,9 +62,13 @@ extension MarkdownPageView {
     func attachments() throws -> [(index: Int, attachment: NSTextAttachment)] {
         var found: [(Int, NSTextAttachment)] = []
         let storage = try storage
-        storage.enumerateAttribute(.attachment, in: NSRange(location: 0, length: storage.length)) {
+        unsafe storage.enumerateAttribute(
+            .attachment, in: NSRange(location: 0, length: storage.length)
+        ) {
             value, range, _ in
-            if let attachment = value as? NSTextAttachment { found.append((range.location, attachment)) }
+            if let attachment = value as? NSTextAttachment {
+                found.append((range.location, attachment))
+            }
         }
         return found
     }
@@ -75,7 +82,8 @@ extension MarkdownPageView {
         var location = 0
         while location < text.length {
             let range = text.paragraphRange(for: NSRange(location: location, length: 0))
-            let style = storage.attribute(.paragraphStyle, at: range.location, effectiveRange: nil)
+            let style =
+                unsafe storage.attribute(.paragraphStyle, at: range.location, effectiveRange: nil)
                 as? NSParagraphStyle
             if style?.textBlocks.isEmpty == false {
                 current.append(
@@ -99,7 +107,9 @@ extension MarkdownPageView {
 
     /// The attribute at the first character of `needle`.
     func attribute(_ key: NSAttributedString.Key, at needle: String) throws -> Any? {
-        try storage.attribute(key, at: try range(of: needle).location, effectiveRange: nil)
+        let storage = try storage
+        let location = try range(of: needle).location
+        return unsafe storage.attribute(key, at: location, effectiveRange: nil)
     }
 
     /// The foreground colour at the first character of `needle`, resolved in the light appearance.
