@@ -1,8 +1,9 @@
 # NFDR — KA-Reader
 
-**Status:** Draft
+**Status:** Settled
 **Owner:** Principal Architect
-**Version:** 82 — Fold cycle-73 § 3.1 and draft § 2.1, on SDD v74: QC-10's edge into the renderer names `is_bitmap`'s call for `asset_bytes`, bound (2) and the review clause name `asset_bytes` and `link_file`, the model's reads are held to SM-1's read seam and point at its cell, and the setting-aside narrows to building `FolderContainment`; QC-69, drafted, binds the read seam's one fake and one contract suite as owed; one choice awaits the owner — RN-92.
+**Version:** 83 — Fold cycle-74 § 2.1, the close, on SDD v75: QC-10 is taken as drafted; QC-69 is taken as drafted but for its third verifier, which narrows from the whole tree's `0o000` grep to the files the seam's building change names — 23 of the 37 lines at `ka-reader@98aaa71`, in 8 files — and its obligation sentence narrows the same way; the 14 lines outside the seam are named as outside it. The companion is removed; Status is Settled — RN-93.
+Version 82 — Fold cycle-73 § 3.1 and draft § 2.1, on SDD v74: QC-10's edge into the renderer names `is_bitmap`'s call for `asset_bytes`, bound (2) and the review clause name `asset_bytes` and `link_file`, the model's reads are held to SM-1's read seam and point at its cell, and the setting-aside narrows to building `FolderContainment`; QC-69, drafted, binds the read seam's one fake and one contract suite as owed; one choice awaits the owner — RN-92.
 Version 81 — Fold cycle-72 §§ 3.1–3.4: ADR-0025 supersedes ADR-0015 with the closed node set as the core builds it, and the six entries that traced to ADR-0015 trace to ADR-0025; QC-11's tail measures `markdown-renderer` on its code at `ka-reader@71f9f69`; § 9's layer-2 row names the containment port's contract suite; QC-10 sets aside the Rust packet's trait-collaborator line for the model's edge into `fs-reader`, within three bounds; QC-68 binds the containment port's one fake and one contract suite, on SDD v73 — RN-91.
 Version 80 — Fold cycle-71 § 2.1: § 9 records the displayed-file scene's two gate steps as a reading at `ka-reader@d6bc3a3`, not as `follow-the-file` delivered, and re-pins the tree scene's; § 8 gains the gate's 1.9.0 reading with the ordering comment it carries — RN-90.
 Version 79 — Fold cycle-70 § 3.1: QC-65's *Tree scene helper suite* locator carries its own commit — `checks/gate.sh:L133` at `ka-reader@d6bc3a3`, with `:L127` at `ka-reader@2529a42` kept as its dated reading; one choice awaits the owner — RN-89.
@@ -493,7 +494,9 @@ one is not an edge of this graph *(drafted at v29 — RN-40; confirmed at v30 �
   the renderer — true of the bounds and the edge at `ka-reader@71f9f69`, though the list of reads
   named three of the eight the model made there; SDD v74 moved the decline and stated the read
   seam, and `ka-reader@98aaa71` added `asset_bytes`, `link_file` and `is_bitmap`'s call; on the owner's seat's answer at
-  `docs/trail/architecture/cycle-73.md` § 3.1 and this run's draft at § 2.1 — RN-92)*
+  `docs/trail/architecture/cycle-73.md` § 3.1 and the v82 draft at § 2.1 — RN-92; that draft
+  taken as written on the owner's seat's answer at `docs/trail/architecture/cycle-74.md` § 2.1 —
+  RN-93)*
   *(traces to: ADR-0019; ADR-0020; the reads on SDD § 2 *One read seam beside the decline*
   (`docs/SDD.md:L404-L449` at v74) and § 3 SM-1 at v74 (SDD RN-154); the edge's second call on SDD
   § 3's units paragraph at v74 (`docs/SDD.md:L522-L530`; SDD RN-152); bound (2)'s two functions on
@@ -1823,27 +1826,40 @@ binds the *process*, and asserts no number of its own.
   lacks adds it to the fake, with that behaviour's case in the suite. The suite is written against
   the trait alone and runs at layer 2 against both, the real run inside a folder the test makes.
   The fake answers what a read of an admitted path returns and never which path is admitted: the
-  containment walk stays outside the seam (QC-10, QC-68). Once the seam is built, a case that needs
-  a failed read hands its unit a failing reader and never forces one with a file mode, which
-  `root` ignores; the real reader's own failure path is proven at layer 2 by a condition every
+  containment walk stays outside the seam (QC-10, QC-68). Once the seam is built, a case whose
+  failed read crosses SM-1 hands its unit a failing reader and never forces the failure with a
+  file mode, which `root` ignores; the real reader's own failure path is proven at layer 2 by a condition every
   runner sees, which the building change names.
   — *verified by:* the contract suite against the real reader and the fake (layer 2), run through
   `cargo test --workspace --locked` in the gate's *Test gate* step; a grep of `crates` for the
   trait's `impl … for` lines printing the real reader's and the fake's and nothing else; and
-  `git grep -n '0o000' -- crates` printing nothing. None holds at `ka-reader@98aaa71`, where SDD
+  `git grep -n '0o000'` over the files the building change names printing nothing, so that no
+  case whose failed read crosses SM-1 forces it with a file mode. At `ka-reader@98aaa71` those
+  files are eight, holding 23 of the 37 `0o000` lines under `crates/`; SDD § 2 *One read seam
+  beside the decline* names them with their counts. The other 14 lines, in 5 files — the Git
+  adapter's 12, the containment walk's guard and the log writer's one write — sit where no SM-1
+  reader can be handed, and this entry promises nothing about them; SDD § 2 states them as a
+  known defect at that pin. None of the three holds at `ka-reader@98aaa71`, where SDD
   § 3 SM-1 states the seam as design and not code: there is no trait, no fake and no suite, the
   model calls `fs-reader`'s reads as free functions (SM-1's cell names them), and
   `git grep -c '0o000' -- crates` counts 37 lines in 13 files (measured at `ka-reader@f340603`,
   whose `crates/` is `98aaa71`'s). The trait's name is the building change's (SDD § 2), so that
-  change fixes the suite's target and the grep's pattern and writes both into this tail, with a
-  row in § 10. Until it lands, `development-design` reading this entry is the gate when a change
+  change fixes the suite's target, the `impl` grep's pattern and the files the `0o000` grep runs
+  over, and writes them into this tail, with a row in § 10. Until it lands, `development-design` reading this entry is the gate when a change
   touches the model's reads, and QC-10's review clause holds the interim: no new direct read from
-  `folder-model` into `fs-reader`, and no reader the model builds for itself *(traces to: SDD § 2
-  *One read seam beside the decline* (`docs/SDD.md:L404-L449` at v74) and § 3 SM-1 at v74, SDD
-  RN-154 — the verified-fake rule's third port; `testing_doctrine.md` v2.9.0 § *A fake is verified
+  `folder-model` into `fs-reader`, and no reader the model builds for itself *(through v82 the
+  third verifier read "`git grep -n '0o000' -- crates` printing nothing" and the obligation "a
+  case that needs a failed read", taken from a sentence of SDD v74 § 2 that the building change
+  could not meet: 14 of the 37 lines sit outside the seam; on the owner's seat's answer at
+  `docs/trail/architecture/cycle-74.md` § 2.1 and SDD v75 — RN-93)* *(traces to: SDD § 2
+  *One read seam beside the decline* (`docs/SDD.md:L406-L479` at v75, `:L404-L449` at v74) and
+  § 3 SM-1 at v75, SDD RN-154 and RN-156 — the verified-fake rule's third port; `testing_doctrine.md` v2.9.0 § *A fake is verified
   against its port's contract* and § *A test reads nothing of the machine it runs on*; QC-50 and
   QC-68, the Git and containment ports' counterparts; drafted at
-  `docs/trail/architecture/cycle-73.md` § 2.1, awaiting the owner's confirmation — RN-92)*
+  `docs/trail/architecture/cycle-73.md` § 2.1 — RN-92; taken with its third verifier narrowed
+  on the owner's seat's answer at `docs/trail/architecture/cycle-74.md` § 2.1 (its reasoning,
+  `docs/trail/architecture/self_answer-77.md`), the SDD sentence it narrows away from raised at
+  `docs/trail/sdd/cycle-69.md` § 2.1 and folded at SDD v75 — RN-93)*
 
 ## 7. Observability & monitoring
 
@@ -8290,3 +8306,55 @@ of the trait-collaborator line, and the read seam until it is built), QC-13 (the
   inputs' status lines read as in the header, so the `Inputs read:` line stands.
   `docs/trail/architecture/cycle-73.md` holds the answered companion whole. One choice stays open
   in the companion, so `Status:` is Draft.
+
+- **RN-93:** *(v83 — the cycle-74 fold, § 2.1, SDD v75, and the close)* The owner's seat's
+  committed answer at `docs/trail/architecture/cycle-74.md` § 2.1 authorizes this fold. Its
+  reasoning is `docs/trail/architecture/self_answer-77.md`. A new upstream sentence authorizes it
+  too: `docs/SDD.md` v75 (Settled) narrows § 2 *One read seam beside the decline* in the same way
+  (SDD RN-156), so the two documents now say one thing.
+
+  **QC-10, taken as drafted.** No word of its obligation, bounds, review clause or trace changes.
+  Its provenance note now records that the v82 draft was confirmed.
+
+  **QC-69, taken as drafted but for its third verifier.** v82's third verifier was
+  "`git grep -n '0o000' -- crates` printing nothing". It came from a v74 SDD sentence that the
+  change building the seam could not satisfy. At `ka-reader@98aaa71`, 14 of the 37 `0o000` lines,
+  in 5 files, sit where no SM-1 reader can be handed: the Git adapter's 12, which call the real
+  port from a unit that imports nothing from `fs-reader` (QC-11); the containment walk's guard;
+  and the log writer's one write. The verifier now reads the answer's way. `git grep -n '0o000'`
+  runs over the files the building change names, and it prints nothing, so no case whose failed
+  read crosses SM-1 forces it with a file mode. At the pin those files are eight, holding 23
+  lines. The tail points at SDD § 2 for the file list and the counts and does not copy them. It
+  says that this entry promises nothing about the 14. The building change names the files,
+  as it already named the suite's target and the `impl` grep's pattern.
+
+  **One sentence beyond the answer's words, and why.** The answer named the third verifier alone.
+  QC-69's obligation said the same thing in prose: "a case that needs a failed read … never forces
+  one with a file mode". Left as written, it would bind the 14 sites that the narrowed verifier
+  frees. It now reads "a case whose failed read crosses SM-1", in SDD v75 § 2's words. Without
+  this, the entry's two tails would disagree with its own obligation. SDD v75 is the authorization.
+
+  **The trace the answer asked for.** The answer said QC-69's trace should name the SDD item that
+  raised the narrowing, at `docs/SDD_open_issues.md` § 2.1. That item has since been answered and
+  folded. The SDD's companion was retired whole to `docs/trail/sdd/cycle-69.md` and removed at
+  v75. So the trace names the retired file and the fold. A pointer at the companion would open
+  nothing.
+
+  **Seen and not raised.** RN-92 saw SM-1's count read fifteen where its locators hold sixteen.
+  SDD v75 corrects it (RN-156). QC-10 and QC-69 restate no count, so nothing here moves. SDD v75
+  also states the 14 sites outside the seam as a known defect at the pin, under the rule that
+  proves the adapter's own failure path. No NFDR entry binds them tree-wide, and this fold adds
+  none. The SDD cuts no second seam for them, names the change that re-states each, and the
+  owner's answer kept them outside QC-69. That is a settled call, not a gap.
+
+  **Read and measured by this run.** At `ka-reader@5d59a5b`: `git diff --stat 98aaa71 5d59a5b --
+  crates checks` prints nothing. `git grep -c '0o000' -- crates` gives 13 files and 37 lines,
+  with the per-file counts SDD § 2 states: 23 in the eight files named, 14 in the other five. SDD
+  v75's header, § 2 *One read seam beside the decline* (`docs/SDD.md:L406-L479`) and RN-156 were
+  read. No product check ran, because nothing this fold changes runs.
+
+  **Limits.** No ADR is written or restatused, and the index is unchanged. No `QC` is added,
+  renumbered or reused. § 10 is unchanged: QC-69 stays in its closing list of review gates until
+  the seam is built. The inputs' status lines read as in the header, so the `Inputs read:` line
+  stands. `docs/trail/architecture/cycle-74.md` holds the answered companion whole. Nothing is
+  left open, so the companion is removed and `Status:` is Settled.
