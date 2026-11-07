@@ -306,6 +306,23 @@ pub unsafe fn select_entry(
 /// The relative path of an image the shell asks for, decoded from a C string. NULL, an empty path and
 /// bytes that are not UTF-8 name no file, so the session is not called and the answer is a refusal.
 ///
+/// # Examples
+///
+/// ```
+/// use std::ffi::CString;
+/// use ka_reader_bridge::boundary::asset_answer;
+/// use ka_reader_bridge::session::Session;
+///
+/// let session = Session::default();
+/// let path = CString::new("logo.png").expect("no interior NUL");
+///
+/// // SAFETY: NULL and a live NUL-terminated string are the two pointers the call accepts.
+/// unsafe {
+///     assert_eq!(asset_answer(&session, std::ptr::null()), None);
+///     assert_eq!(asset_answer(&session, path.as_ptr()), None, "no folder is open");
+/// }
+/// ```
+///
 /// # Safety
 ///
 /// As `decode_list_path`.
@@ -319,6 +336,23 @@ pub unsafe fn asset_answer(session: &Session, path: *const c_char) -> Option<Vec
 
 /// Opens the relative link `path` in `session`. NULL, an empty path and bytes that are not UTF-8 name
 /// no file, so the session is not called and the answer is `{"state":"pending"}`.
+///
+/// # Examples
+///
+/// ```
+/// use std::ffi::CString;
+/// use ka_reader_bridge::boundary::link_entry;
+/// use ka_reader_bridge::session::{FileAnswerDto, Session};
+///
+/// let session = Session::default();
+/// let path = CString::new("notes.md").expect("no interior NUL");
+///
+/// // SAFETY: NULL and a live NUL-terminated string are the two pointers the call accepts.
+/// unsafe {
+///     assert_eq!(link_entry(&session, std::ptr::null()), FileAnswerDto::Pending);
+///     assert_eq!(link_entry(&session, path.as_ptr()), FileAnswerDto::Pending, "no folder is open");
+/// }
+/// ```
 ///
 /// # Safety
 ///

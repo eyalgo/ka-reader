@@ -160,6 +160,23 @@ pub extern "C" fn ka_reader_read_git() -> *mut KAReaderBuffer {
 /// or WebP, and a file that cannot be read. The check is made afresh on every call. NULL on boundary
 /// failure; every non-NULL answer, a refusal included, is freed with `ka_reader_free`.
 ///
+/// # Examples
+///
+/// ```
+/// use std::ffi::CString;
+/// use ka_reader_bridge::exports::{ka_reader_asset_bytes, ka_reader_free};
+///
+/// let path = CString::new("logo.png").expect("no interior NUL");
+///
+/// // SAFETY: `path` is live for the call, and the buffer is read before it is freed once.
+/// unsafe {
+///     let buffer = ka_reader_asset_bytes(path.as_ptr());
+///     assert!(!buffer.is_null());
+///     assert!((*buffer).bytes.is_null(), "no folder is open, so the answer is a refusal");
+///     ka_reader_free(buffer);
+/// }
+/// ```
+///
 /// # Safety
 ///
 /// `path` is NULL, or a NUL-terminated string valid for the call.
@@ -176,6 +193,24 @@ pub unsafe extern "C" fn ka_reader_asset_bytes(path: *const c_char) -> *mut KARe
 /// link to anything but a contained file (a folder, a path out of the folder, an absolute path, a
 /// NULL, empty or non-UTF-8 path, a missing entry, or no folder open) changes nothing and answers
 /// `{"state":"pending"}`. NULL on boundary failure; a non-NULL answer is freed with `ka_reader_free`.
+///
+/// # Examples
+///
+/// ```
+/// use std::ffi::CString;
+/// use ka_reader_bridge::exports::{ka_reader_free, ka_reader_open_relative_link};
+///
+/// let path = CString::new("notes.md").expect("no interior NUL");
+///
+/// // SAFETY: `path` is live for the call, and the buffer is read before it is freed once.
+/// unsafe {
+///     let buffer = ka_reader_open_relative_link(path.as_ptr());
+///     assert!(!buffer.is_null());
+///     let answer = std::slice::from_raw_parts((*buffer).bytes, (*buffer).len);
+///     assert_eq!(answer, br#"{"state":"pending"}"#, "no folder is open");
+///     ka_reader_free(buffer);
+/// }
+/// ```
 ///
 /// # Safety
 ///
