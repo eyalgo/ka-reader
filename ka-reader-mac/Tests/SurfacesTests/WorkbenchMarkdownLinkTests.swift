@@ -17,6 +17,7 @@ private final class Log {
     let assets = AssetRecorder()
 }
 
+@MainActor
 private struct Fixture {
     let workbench: WorkbenchView
     let log: Log
