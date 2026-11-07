@@ -56,11 +56,11 @@ fn stopped_open(origin: BufferOrigin, detail: &str) -> *mut KAReaderBuffer {
     match origin {
         BufferOrigin::OpenFolder => log::warn!("core-bridge: open_folder stopped: {detail}"),
         BufferOrigin::ReadGit => log::warn!("core-bridge: read_git stopped: {detail}"),
-        BufferOrigin::ListTree
-        | BufferOrigin::SelectFile
-        | BufferOrigin::AssetBytes
-        | BufferOrigin::OpenRelativeLink
-        | BufferOrigin::ModelChanged => {}
+        BufferOrigin::AssetBytes => log::warn!("core-bridge: asset_bytes stopped: {detail}"),
+        BufferOrigin::OpenRelativeLink => {
+            log::warn!("core-bridge: open_relative_link stopped: {detail}");
+        }
+        BufferOrigin::ListTree | BufferOrigin::SelectFile | BufferOrigin::ModelChanged => {}
     }
     std::ptr::null_mut()
 }
@@ -566,11 +566,39 @@ mod tests {
 
     #[test]
     fn test_guarded_bytes_returns_null_when_the_work_panics() {
+        let _serial = begin_log_capture();
+
         let buffer = guarded_bytes(BufferOrigin::AssetBytes, || -> Option<Vec<u8>> {
             panic!("a panic the boundary must catch")
         });
 
         assert!(buffer.is_null(), "an unwind is NULL and never a buffer");
+    }
+
+    #[test]
+    fn test_a_panic_under_each_new_origin_writes_one_stopped_line_naming_it() {
+        for (origin, name) in [
+            (BufferOrigin::AssetBytes, "asset_bytes"),
+            (BufferOrigin::OpenRelativeLink, "open_relative_link"),
+        ] {
+            let _serial = begin_log_capture();
+
+            let bytes = guarded_bytes(origin, || -> Option<Vec<u8>> { panic!("caught") });
+            let link = guarded(origin, || -> Vec<String> { panic!("caught") });
+            let records = take_log_records();
+
+            assert!(
+                bytes.is_null() && link.is_null(),
+                "{name}: an unwind is NULL"
+            );
+            assert_eq!(records.len(), 2, "{name}: {records:?}");
+            for record in &records {
+                assert!(
+                    record.starts_with(&format!("core-bridge: {name} stopped")),
+                    "{name}: {records:?}"
+                );
+            }
+        }
     }
 
     #[test]
