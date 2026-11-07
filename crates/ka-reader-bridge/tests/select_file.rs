@@ -287,8 +287,14 @@ fn test_select_file_on_the_hostile_scene_answers_every_block_in_source_order() {
     )
     .expect("the committed corpus reads");
     folder.write_file("hostile.md", &corpus);
-    folder.write_bytes("logo.png", &[0x89, b'P', b'N', b'G', 0x0D, 0x0A, 0x1A, 0x0A]);
-    folder.write_file("diagram.svg", "<svg xmlns=\"http://www.w3.org/2000/svg\"/>\n");
+    folder.write_bytes(
+        "logo.png",
+        &[0x89, b'P', b'N', b'G', 0x0D, 0x0A, 0x1A, 0x0A],
+    );
+    folder.write_file(
+        "diagram.svg",
+        "<svg xmlns=\"http://www.w3.org/2000/svg\"/>\n",
+    );
     folder.make_link("escape.png", target);
     folder.write_file("other.md", "# Other\n");
     let session = opened(folder.path());
@@ -303,7 +309,11 @@ fn test_select_file_on_the_hostile_scene_answers_every_block_in_source_order() {
         .map(|block| block["kind"].as_str().expect("a kind"))
         .collect();
     assert_eq!(kinds.first(), Some(&"heading"));
-    assert!(kinds.iter().all(|kind| ["heading", "paragraph"].contains(kind)));
+    assert!(
+        kinds
+            .iter()
+            .all(|kind| ["heading", "paragraph"].contains(kind))
+    );
 
     let mut inlines = Vec::new();
     collect_inlines(&answer["blocks"], &mut inlines);
@@ -321,14 +331,16 @@ fn test_select_file_on_the_hostile_scene_answers_every_block_in_source_order() {
     ] {
         assert!(texts.contains(piece), "{piece} reads as text");
     }
-    assert!(
-        inlines
-            .iter()
-            .all(|inline| !["image", "link"].contains(&inline["kind"].as_str().unwrap_or(""))
-                || inline.get("target").is_some())
-    );
+    assert!(inlines.iter().all(|inline| {
+        !["image", "link"].contains(&inline["kind"].as_str().unwrap_or(""))
+            || inline.get("target").is_some()
+    }));
 
-    let images: Vec<&Value> = inlines.iter().copied().filter(|i| i["kind"] == "image").collect();
+    let images: Vec<&Value> = inlines
+        .iter()
+        .copied()
+        .filter(|i| i["kind"] == "image")
+        .collect();
     let target_of = |source: &str| -> Value {
         let found = images
             .iter()
@@ -358,7 +370,11 @@ fn test_select_file_on_the_hostile_scene_answers_every_block_in_source_order() {
                 "condition": "format_not_decoded", "source": "diagram.svg" })
     );
 
-    let links: Vec<&Value> = inlines.iter().copied().filter(|i| i["kind"] == "link").collect();
+    let links: Vec<&Value> = inlines
+        .iter()
+        .copied()
+        .filter(|i| i["kind"] == "link")
+        .collect();
     assert_eq!(links.len(), 2);
     assert_eq!(links[0]["target"], "external");
     assert_eq!(links[0]["destination"], "https://example.com/page");
