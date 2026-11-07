@@ -37,6 +37,7 @@ test_the_repo_fixture_reads_the_same_with_the_network_denied
 test_a_page_that_differs_between_the_two_runs_is_named
 test_a_page_in_only_one_render_is_named_with_the_others_in_byte_order
 test_a_denial_that_does_not_hold_is_refused
+test_a_refusal_that_is_not_shown_to_be_the_denials_is_refused
 test_a_folder_with_no_markdown_file_is_refused
 test_a_run_that_did_not_complete_is_refused
 test_a_denied_run_that_did_not_complete_is_refused
@@ -93,6 +94,16 @@ make_undenied_sandbox_exec_stand_in() {
   mkdir -p "$1"
   printf '#!/bin/sh\nshift 2\nexec "$@"\n' > "$1/sandbox-exec"
   chmod +x "$1/sandbox-exec"
+}
+
+# A stand-in `nc` in folder $1. A listener (-l) is the real one. Of the connect-only probes (-z),
+# the first succeeds and every later one is refused, so the probe made under the denial is refused
+# and the ordinary probe after it is refused too. The count is kept in the same folder.
+make_nc_stand_in_that_refuses_after_the_first_probe() {
+  mkdir -p "$1"
+  printf '#!/bin/sh\nREAL='"'"'%s'"'"'\ncounter='"'"'%s/probes'"'"'\ncase "$*" in *-l*) exec "$REAL" "$@" ;; esac\nprobes=1\n[ ! -f "$counter" ] || probes=$(($(cat "$counter") + 1))\necho "$probes" > "$counter"\n[ "$probes" -eq 1 ]\n' \
+    "$(command -v nc)" "$1" > "$1/nc"
+  chmod +x "$1/nc"
 }
 
 # One line per entry under $1 — relative path, kind, and the bytes (a checksum) or a link's target —
@@ -197,6 +208,21 @@ printf 'README.md\\tthe same page\\n'"
 guide.md"
 }
 
+# CP-1133: the refusal under the denial is shown to be the denial's only by a last ordinary connection
+# that succeeds. The stand-in nc refuses every probe after the first, so the last one fails.
+test_a_refusal_that_is_not_shown_to_be_the_denials_is_refused() {
+  local stand_ins="$WORK/refusal-not-the-denials"
+  make_cargo_stand_in "$stand_ins"
+  make_walk_stand_in "$stand_ins" "printf 'README.md\\tpage\\n'"
+  make_nc_stand_in_that_refuses_after_the_first_probe "$stand_ins"
+
+  run_offline_page_with_stand_ins "$stand_ins" "$REPO_FIXTURE"
+
+  expect_nonzero_status || return 1
+  expect_stdout_lacks_same || return 1
+  expect_stderr_contains "did not succeed either, so the refusal is not shown to be the denial's"
+}
+
 # CP-1133: a denial that is not in force. The stand-in sandbox-exec runs its command undenied, so the
 # connection the check expects to be refused succeeds.
 test_a_denial_that_does_not_hold_is_refused() {
@@ -236,7 +262,8 @@ exit 3"
 
   expect_nonzero_status || return 1
   expect_stdout_lacks_same || return 1
-  expect_stderr_contains "did not complete over"
+  expect_stderr_contains "did not complete over" || return 1
+  expect_stderr_contains "offline-page.sh: the render with the network allowed did not complete over"
 }
 
 # The denied render alone fails to complete: the stand-in walk program prints the same page both
