@@ -78,8 +78,9 @@ pub(super) fn image_target(
 }
 
 /// The link a destination came to. A scheme and a fragment alone are external without a call; any
-/// other destination goes to the check by its path, the part before the first `#`, and is relative
-/// when the check reaches an entry and external when it does not.
+/// other destination goes to the check by its path, the part before the first `#`. It is relative
+/// when the check reaches a file, and carries the path the check reached. It is external when the
+/// check reaches a folder, as when it refuses the path: a folder is not something the reader opens.
 pub(super) fn link_target(
     check: &impl ContainmentCheck,
     folder: &Path,
@@ -92,7 +93,10 @@ pub(super) fn link_target(
         .split_once('#')
         .map_or(destination, |(path, _fragment)| path);
     match check.check(folder, path) {
-        Ok(entry) => LinkTarget::Relative(entry.path),
+        Ok(entry) => match entry.kind {
+            EntryKind::File => LinkTarget::Relative(entry.path),
+            EntryKind::Folder => LinkTarget::External,
+        },
         Err(_) => LinkTarget::External,
     }
 }
