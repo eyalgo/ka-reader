@@ -6,12 +6,13 @@
 #
 # WHY THIS EXISTS
 #   The release workflow cannot run while GitHub Actions is off, so the only thing that holds its
-#   shape at every change is a script reading its text. A check that passes everything looks the same
-#   as a check that works, so the cases run the real checks/release-shape.sh — never a copy of its
-#   logic — on copies of the tree's .github/workflows/release.yml in a work folder, each copy with one
-#   requirement broken, and require exit 1 with the requirement's id and name on the output. The tree's
-#   own file is never edited. The control: the copy handed through the same mutation helper with
-#   nothing changed must pass, so a mutation that fails fails for its own reason.
+#   shape at every change is a script reading its text. A check that passes everything looks the
+#   same as a check that works, so the cases run the real checks/release-shape.sh — never a copy of
+#   its logic — on copies of the tree's .github/workflows/release.yml in a work folder, each copy
+#   with one requirement broken, and require exit 1 with the requirement's id and name on the
+#   output. The tree's own file is never edited. The control: the copy handed through the same
+#   mutation helper with nothing changed must pass, so a mutation that fails fails for its own
+#   reason.
 #
 # USAGE
 #   checks/tests/test_release_shape.sh
@@ -22,7 +23,8 @@
 #   own status and the runner counts them.
 #
 # WHERE IT WRITES
-#   Only below one `mktemp -d` directory, removed by a trap on exit. The tree is read, never written.
+#   Only below one `mktemp -d` directory, removed by a trap on exit. The tree is read, never
+#   written.
 
 set -uo pipefail
 
@@ -38,7 +40,8 @@ COPY=""
 NL="
 "
 
-# The run lines of the steps, as the tree's file holds them. A mutation names a step by its run line.
+# The run lines of the steps, as the tree's file holds them. A mutation names a step by its run
+# line.
 RUN_GATE="run: checks/gate.sh"
 RUN_AUDIT="run: cargo audit"
 RUN_VERSION="run: checks/release-version.sh"
@@ -95,8 +98,8 @@ run_check() {
   ERR="$(cat "$WORK/stderr")"
 }
 
-# The check refused the copy and its stderr names the requirement text $1 (an id such as "(CP-1170)",
-# or a name such as "Layout").
+# The check refused the copy and its stderr names the requirement text $1 (an id such as
+# "(CP-1170)", or a name such as "Layout").
 expect_refused_naming() {
   if [ "$STATUS" -ne 1 ]; then
     fail "expected exit 1 naming $1, got $STATUS. Its output follows."
@@ -120,7 +123,8 @@ copy_is_refused_naming() {
 # Rewrites the copy $COPY by an operation on its lines. All three read the copy and write it back.
 #   drop_lines <fixed text>            removes every line holding the text
 #   drop_exact <fixed text>            removes every line that is exactly the text
-#   replace_text <old> <new>           replaces the first occurrence of the text in the first line holding it
+#   replace_text <old> <new>           replaces the first occurrence of the text in the first line
+#   holding it
 #   insert_after <fixed text> <lines>  adds the lines after the first line holding the text
 #   insert_before <fixed text> <lines> adds the lines before the first line holding the text
 drop_lines() {
@@ -128,7 +132,8 @@ drop_lines() {
   mv "$COPY.new" "$COPY"
 }
 
-# Removes every line that is exactly the text, for a short line such as "  run:" that a longer line holds.
+# Removes every line that is exactly the text, for a short line such as "  run:" that a longer line
+# holds.
 drop_exact() {
   grep -v -x -F -- "$1" "$COPY" > "$COPY.new"
   mv "$COPY.new" "$COPY"
@@ -166,7 +171,8 @@ insert_before() {
 # one, so the text before the first step stays where it is.
 #   steps_keep                         writes the copy back as it is: the control
 #   steps_drop <needle>                removes the first step holding the text
-#   steps_move <needle> <after needle> moves the first step holding the first text to just after the first step holding the second
+#   steps_move <needle> <after needle> moves the first step holding the first text to just after the
+#   first step holding the second
 #   steps_insert_after <needle> <text> adds a step's text after the first step holding the needle
 steps_rewrite() {
   OP="$1" A="${2:-}" B="${3:-}" awk '

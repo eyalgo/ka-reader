@@ -5,10 +5,10 @@
 # checks/release-shape.sh <workflow-file> — whether the release workflow still has its shape.
 #
 # WHY THIS EXISTS
-#   The release workflow runs only when a tag is pushed, and while GitHub Actions is off nothing runs
-#   it at all. What keeps its shape true at every change is this script, run as a step of the gate: it
-#   reads the file's text and checks each requirement on its own, so a break is named by the
-#   requirement it breaks. It runs every check before it reports, so one run names every break.
+#   The release workflow runs only when a tag is pushed, and while GitHub Actions is off nothing
+#   runs it at all. What keeps its shape true at every change is this script, run as a step of the
+#   gate: it reads the file's text and checks each requirement on its own, so a break is named by
+#   the requirement it breaks. It runs every check before it reports, so one run names every break.
 #   Stock macOS has no YAML parser and this product installs no tool for one, so the file is read
 #   line by line in the layout below, as checks/tests/test_vm_refusal.sh reads ci.yml.
 #
@@ -21,7 +21,8 @@
 # USAGE
 #   checks/release-shape.sh .github/workflows/release.yml
 #   Exit 0: the file meets every requirement.
-#   Exit 1: one stderr line for each requirement found missing, out of order or broken, each carrying
+#   Exit 1: one stderr line for each requirement found missing, out of order or broken, each
+#   carrying
 #     the requirement's name and CP id. Also exit 1 when the file is unreadable.
 #   Exit 2: an argument count other than one, with a usage line on stderr.
 #
@@ -74,9 +75,9 @@ fi
 # Without comment lines and blank lines.
 body="$(grep -v -E '^[[:space:]]*(#.*)?$' "$file" || true)"
 
-# One line per key of each step: the step's number, the key and its value, tab separated. A key under
-# "with:" or "env:" is written "with.<key>" or "env.<key>". Only the lines under "jobs:" are read, so
-# the trigger's own list item is not taken for a step.
+# One line per key of each step: the step's number, the key and its value, tab separated. A key
+# under "with:" or "env:" is written "with.<key>" or "env.<key>". Only the lines under "jobs:" are
+# read, so the trigger's own list item is not taken for a step.
 steps="$(printf '%s\n' "$body" | awk '
   /^[^ ]/ { in_jobs = ($0 == "jobs:"); parent = ""; next }
   !in_jobs { next }
@@ -234,7 +235,8 @@ check_gate_first() {
   fi
 }
 
-# The audit: the install, then the audit, both after the gate, and a reason above every ignored advisory.
+# The audit: the install, then the audit, both after the gate, and a reason above every ignored
+# advisory.
 check_audit() {
   install="$(the_step_running "$RUN_INSTALL")"
   if [ -z "$install" ]; then
@@ -263,12 +265,14 @@ check_audit() {
       for (i = at - 1; i >= 1 && lines[i] ~ /^[[:space:]]*#/; i--) print lines[i]
     }
   ' "$file")"
-  for id in $(printf '%s\n' "$audit_run" | grep -o -E 'RUSTSEC-[0-9]{4}-[0-9]{4}' || true); do
+  ignored="$(printf '%s\n' "$audit_run" | grep -o -E 'RUSTSEC-[0-9]{4}-[0-9]{4}' || true)"
+  while IFS= read -r id; do
+    [ -n "$id" ] || continue
     if ! printf '%s\n' "$above" | grep -q -E "^[[:space:]]*# $id: [^[:space:]]"; then
       echo "$id is ignored with no reason in a comment line directly above the run: line"
       return
     fi
-  done
+  done <<< "$ignored"
 }
 
 # Requirement $1 needs exactly one step running $2.
@@ -407,12 +411,13 @@ check_no_secret_no_signing_one_permission() {
   allowed_absent="$(the_step_running "$RUN_ABSENT")"
   allowed_release="$(the_step_running "$RUN_RELEASE")"
   holders="$(printf '%s\n' "$steps" | awk -F'\t' '$2 == "env" { print $1 }')"
-  for number in $holders; do
+  while IFS= read -r number; do
+    [ -n "$number" ] || continue
     if [ "$number" != "$allowed_absent" ] && [ "$number" != "$allowed_release" ]; then
       echo "step $number has an env:, which only the existing-Release and Release steps may"
       return
     fi
-  done
+  done <<< "$holders"
 }
 
 check_every_step_fatal() {
