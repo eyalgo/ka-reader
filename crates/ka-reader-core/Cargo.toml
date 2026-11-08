@@ -1,5 +1,6 @@
 [package]
 name = "ka-reader-core"
+version.workspace = true
 edition = "2024"
 
 [lints]
