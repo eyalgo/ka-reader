@@ -340,10 +340,14 @@ func aFloorLanguageBlockKeepsItsSpanColoursOnTheCanvas() throws {
     let page = makePage(
         pageDocument([.code(pythonSource, .floor(.python, pythonSpans))]))
 
-    let base = try #require(try page.ink(at: "os"))
-    for needle in ["import", "name", "\"x\""] {
-        let ink = try #require(try page.ink(at: needle))
-        #expect(ink != base, "\(needle)")
+    // The light values of `docs/DESIGN.md` § Colors: each span keeps its token's ink, and the
+    // text no span covers keeps `{colors.primary}` (CP-1149).
+    let expected: [(String, UInt32)] = [
+        ("import", 0x7A2E8F), ("name", 0x0F5A9A), ("\"x\"", 0x1A6B3A), ("os", 0x1E1F22),
+    ]
+    for (needle, value) in expected {
+        let ink = try page.attribute(.foregroundColor, at: needle) as? NSColor
+        #expect(hexValue(of: ink, under: .aqua) == value, "\(needle)")
     }
     let font = try #require(try page.attribute(.font, at: "import") as? NSFont)
     #expect(font.fontDescriptor.symbolicTraits.contains(.monoSpace))
