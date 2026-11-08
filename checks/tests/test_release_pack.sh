@@ -118,6 +118,16 @@ expect_status() {
   return 1
 }
 
+# The last run's stderr holds the text $1 (the refusal says which rule refused).
+expect_err_has() {
+  case "$ERR" in
+    *"$1"*) return 0 ;;
+  esac
+  fail "the refusal does not say \"$1\". Its output follows."
+  show_output
+  return 1
+}
+
 # --- cases ---
 
 # CP-1176: the gate-built bundle packs into one image that mounts as one signed app.
@@ -146,7 +156,9 @@ test_the_gate_built_bundle_packs() {
     detach_mount
     return 1
   fi
-  if ! codesign -dv "$MOUNT/KA-Reader.app" 2>&1 | grep -q 'Signature=adhoc'; then
+  # Captured first: grep -q would close the pipe on codesign, and pipefail reads that as a failure.
+  details="$(codesign -dv "$MOUNT/KA-Reader.app" 2>&1)"
+  if ! printf '%s\n' "$details" | grep -q 'Signature=adhoc'; then
     fail "the mounted copy is not ad-hoc signed"
     detach_mount
     return 1
@@ -162,6 +174,7 @@ test_an_existing_outdir_is_refused() {
   printf 'keep\n' > "$WORK/existing/dist/keep.txt"
   run_script "$WORK/existing/KA-Reader.app" "$WORK/existing/dist"
   expect_status 1 || return 1
+  expect_err_has "already exists" || return 1
   [ "$(ls -A "$WORK/existing/dist")" = "keep.txt" ] || { fail "the existing output folder was changed"; return 1; }
   [ "$(cat "$WORK/existing/dist/keep.txt")" = "keep" ] || { fail "the existing file was changed"; return 1; }
 }
@@ -170,6 +183,7 @@ test_a_directory_that_is_not_a_bundle_is_refused() {
   mkdir -p "$WORK/not-bundle/plain"
   run_script "$WORK/not-bundle/plain" "$WORK/not-bundle/dist"
   expect_status 1 || return 1
+  expect_err_has "is not a bundle" || return 1
   [ ! -e "$WORK/not-bundle/dist" ] || { fail "a refusal created the output folder"; return 1; }
 }
 
@@ -177,6 +191,7 @@ test_a_bundle_with_no_version_key_is_refused() {
   write_bundle "$WORK/no-key/KA-Reader.app" ""
   run_script "$WORK/no-key/KA-Reader.app" "$WORK/no-key/dist"
   expect_status 1 || return 1
+  expect_err_has "CFBundleShortVersionString" || return 1
   [ ! -e "$WORK/no-key/dist" ] || { fail "a refusal created the output folder"; return 1; }
 }
 
@@ -185,6 +200,7 @@ test_a_version_that_cannot_name_a_file_is_refused() {
   write_bundle "$WORK/odd-version/KA-Reader.app" "../0.0.0"
   run_script "$WORK/odd-version/KA-Reader.app" "$WORK/odd-version/dist"
   expect_status 1 || return 1
+  expect_err_has "cannot name a file" || return 1
   [ ! -e "$WORK/odd-version/dist" ] || { fail "a refusal created the output folder"; return 1; }
 }
 
