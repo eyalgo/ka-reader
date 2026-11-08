@@ -494,6 +494,23 @@ func anInlineCodeRunInAnExternalLinkKeepsTheUnderlineAndHasNoControl() throws {
     #expect(controls == 0)
 }
 
+/// CP-1147: the fill covers the code run's characters and nothing else, so the destination an
+/// external link shows after its content (CP-1143) carries no canvas.
+@MainActor
+@Test
+func anExternalLinksDestinationAfterAnInlineCodeRunCarriesNoCanvas() throws {
+    let page = makePage(
+        pageDocument([
+            .paragraph([
+                .link([.code("site")], destination: "https://example.com", .external)
+            ])
+        ]))
+
+    #expect(try carriesCanvas(page, on: "site"))
+    let destination = try page.range(of: " (https://example.com)")
+    #expect(try page.backgrounds(in: destination).allSatisfy { $0 == nil })
+}
+
 @MainActor
 @Test
 func inlineCodeInsideAnEmphasisGainsTheFillAndKeepsTheCodeFont() throws {
