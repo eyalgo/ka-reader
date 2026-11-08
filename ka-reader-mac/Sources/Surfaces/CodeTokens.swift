@@ -69,7 +69,7 @@ enum CodeSpacing {
 /// The Markdown page's code cell, `docs/DESIGN.md` `{components.prose-code}`: `{spacing.xs}` of room
 /// between the code and the edge of its surface, and `{rounded.sm}` at that surface's corners. Both
 /// the block's surface and the inline fill read them.
-enum CodeCell {
+nonisolated enum CodeCell {
     static let padding: CGFloat = 4
     static let cornerRadius: CGFloat = 3
 }

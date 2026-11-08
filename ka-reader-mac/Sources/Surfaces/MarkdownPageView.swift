@@ -12,8 +12,8 @@ import AppKit
 /// Nothing here edits, accepts a drop or draws a control (CP-1108).
 @MainActor
 package final class MarkdownPageView: NSView, NSTextViewDelegate {
-    /// The text view holding the page. TextKit 1 from construction: the placeholder box is a text
-    /// block, which TextKit 2 does not lay out.
+    /// The text view holding the page. TextKit 1 from construction: the placeholder box and a code
+    /// block are text blocks, which TextKit 2 does not lay out.
     package let textView: NSTextView
 
     /// Raised with the target path of a relative link when the reader activates it.
@@ -349,9 +349,18 @@ private struct PageBuilder {
                 string: String(repeating: "\u{A0}", count: 48), attributes: attributes))
     }
 
+    /// Every paragraph of the code goes in one `CodeBlockSurface`, built once per code node. The
+    /// indent the code stands at is the surface's left margin, and the paragraphs inside it have no
+    /// head indent of their own.
     private mutating func appendCode(_ code: String, language: Language, indent: Int) {
-        var attributes = Self.attributes(font: PageType.code, indent: indent, hanging: false)
+        var attributes = Self.attributes(font: PageType.code, indent: 0, hanging: false)
         attributes[.foregroundColor] = CodeColors.primary
+        if let style = attributes[.paragraphStyle] as? NSMutableParagraphStyle {
+            style.textBlocks = [
+                CodeBlockSurface(
+                    canvas: CodeColors.canvas, leftMargin: CGFloat(indent) * PageSpacing.indentStep)
+            ]
+        }
         let block = NSMutableAttributedString(string: code, attributes: attributes)
         if case .floor(_, let spans) = language {
             for (span, range) in zip(spans, SpanRanges.utf16(of: spans, in: code)) {
