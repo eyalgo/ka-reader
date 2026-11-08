@@ -105,6 +105,26 @@ extension MarkdownPageView {
         return style?.textBlocks ?? []
     }
 
+    /// The background colour at each character of `range`, in order; nil where there is none.
+    func backgrounds(in range: NSRange) throws -> [NSColor?] {
+        let storage = try storage
+        return (range.location..<NSMaxRange(range)).map { index in
+            unsafe storage.attribute(.backgroundColor, at: index, effectiveRange: nil) as? NSColor
+        }
+    }
+
+    /// Whether any character of the page carries a background colour.
+    func carriesAnyBackground() throws -> Bool {
+        let storage = try storage
+        var found = false
+        unsafe storage.enumerateAttribute(
+            .backgroundColor, in: NSRange(location: 0, length: storage.length)
+        ) { value, _, _ in
+            if value != nil { found = true }
+        }
+        return found
+    }
+
     /// The range of `needle` in the page's text.
     func range(of needle: String) throws -> NSRange {
         let found = (textView.string as NSString).range(of: needle)

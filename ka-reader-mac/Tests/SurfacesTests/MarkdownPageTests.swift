@@ -396,3 +396,130 @@ func aPlaceholderBoxIsStillTheOnlyBoxOnAPageWithACodeBlock() throws {
         ]))
     #expect(try both.boxes() == [["the logo", "img/logo.png", unreadable]])
 }
+
+// MARK: - The inline code run's canvas fill (CP-1147, CP-1148, CP-1149, CP-1150)
+
+/// Whether every character of `needle` carries the canvas as its background colour, in the light
+/// appearance.
+@MainActor
+private func carriesCanvas(_ page: MarkdownPageView, on needle: String) throws -> Bool {
+    let colours = try page.backgrounds(in: try page.range(of: needle))
+    return !colours.isEmpty
+        && colours.allSatisfy { hexValue(of: $0, under: .aqua) == canvasLight }
+}
+
+@MainActor
+@Test
+func inlineCodeCarriesTheCanvasOnItsOwnCharactersAlone() throws {
+    let page = makePage(
+        pageDocument([
+            .paragraph([.text("Run "), .code("make"), .text(" now.")]),
+            textParagraph("Second paragraph"),
+        ]))
+
+    #expect(page.paragraphs.first == "Run make now.")
+    #expect(try carriesCanvas(page, on: "make"))
+    let make = try page.range(of: "make")
+    let around = [
+        NSRange(location: make.location - 1, length: 1),
+        NSRange(location: NSMaxRange(make), length: 1),
+    ]
+    for range in around {
+        #expect(try page.backgrounds(in: range).allSatisfy { $0 == nil })
+    }
+    let second = try page.range(of: "Second paragraph")
+    #expect(try page.backgrounds(in: second).allSatisfy { $0 == nil })
+    #expect(try page.textBlocks(at: "Run").isEmpty)
+    #expect(try page.ink(at: "make") == page.ink(at: "Run"))
+    let font = try #require(try page.attribute(.font, at: "make") as? NSFont)
+    #expect(font.fontDescriptor.symbolicTraits.contains(.monoSpace))
+}
+
+@MainActor
+@Test
+func inlineCodeInAHeadingCarriesTheCanvas() throws {
+    let page = makePage(pageDocument([.heading(.one, [.text("Install "), .code("ka-reader")])]))
+
+    #expect(try carriesCanvas(page, on: "ka-reader"))
+}
+
+@MainActor
+@Test
+func inlineCodeInAListItemAndAQuoteCarriesTheCanvas() throws {
+    let page = makePage(
+        pageDocument([
+            .list(.unordered, items: [[.paragraph([.text("use "), .code("listed")])]]),
+            .quote([.paragraph([.text("say "), .code("quoted")])]),
+        ]))
+
+    #expect(try carriesCanvas(page, on: "listed"))
+    #expect(try carriesCanvas(page, on: "quoted"))
+}
+
+@MainActor
+@Test
+func inlineCodeInsideARelativeLinkKeepsTheUnderlineAndTheControl() throws {
+    let page = makePage(
+        pageDocument([
+            .paragraph([
+                .link(
+                    [.code("open_relative_link")], destination: "docs/api.md",
+                    .relative(path: "docs/api.md"))
+            ])
+        ]))
+
+    #expect(try carriesCanvas(page, on: "open_relative_link"))
+    #expect(try page.attribute(.underlineStyle, at: "open_relative_link") != nil)
+    #expect(try page.attribute(.link, at: "open_relative_link") != nil)
+}
+
+@MainActor
+@Test
+func anInlineCodeRunInAnExternalLinkKeepsTheUnderlineAndHasNoControl() throws {
+    let page = makePage(
+        pageDocument([
+            .paragraph([
+                .link([.code("site")], destination: "https://example.com", .external)
+            ])
+        ]))
+
+    #expect(try carriesCanvas(page, on: "site"))
+    #expect(try page.attribute(.underlineStyle, at: "site") != nil)
+    let storage = try page.storage
+    var controls = 0
+    unsafe storage.enumerateAttribute(.link, in: NSRange(location: 0, length: storage.length)) {
+        value, _, _ in
+        if value != nil { controls += 1 }
+    }
+    #expect(controls == 0)
+}
+
+@MainActor
+@Test
+func inlineCodeInsideAnEmphasisGainsTheFillAndKeepsTheCodeFont() throws {
+    let page = makePage(
+        pageDocument([.paragraph([.emphasis(.single, [.text("see "), .code("x")])])]))
+
+    #expect(try carriesCanvas(page, on: "x"))
+    let font = try #require(try page.attribute(.font, at: "x") as? NSFont)
+    #expect(font.fontDescriptor.symbolicTraits.contains(.monoSpace))
+}
+
+@MainActor
+@Test
+func anEmptyInlineCodeNodeAddsNoCanvasAnywhere() throws {
+    let page = makePage(pageDocument([.paragraph([.text("a"), .code(""), .text("b")])]))
+
+    #expect(page.textView.string == "ab")
+    #expect(try !page.carriesAnyBackground())
+}
+
+@MainActor
+@Test
+func theInlineCanvasResolvesToItsDesignValueInBothAppearances() throws {
+    let page = makePage(pageDocument([.paragraph([.text("Run "), .code("make")])]))
+
+    let canvas = try #require(try page.attribute(.backgroundColor, at: "make") as? NSColor)
+    #expect(hexValue(of: canvas, under: .aqua) == canvasLight)
+    #expect(hexValue(of: canvas, under: .darkAqua) == canvasDark)
+}
