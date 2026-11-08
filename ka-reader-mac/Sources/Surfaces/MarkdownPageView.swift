@@ -27,7 +27,7 @@ package final class MarkdownPageView: NSView, NSTextViewDelegate {
 
     /// An empty page, not editable, accepting no drop, with nothing drawn until `show` is called.
     package init() {
-        let layoutManager = NSLayoutManager()
+        let layoutManager = MarkdownPageLayoutManager()
         let storage = NSTextStorage()
         storage.addLayoutManager(layoutManager)
         let container = NSTextContainer(
@@ -262,6 +262,8 @@ private struct PageBuilder {
         case .code(let code):
             var attributes = base
             attributes[.font] = PageType.code
+            attributes[.backgroundColor] = CodeColors.canvas
+            attributes[MarkdownPageLayoutManager.codeRun] = true
             text.append(NSAttributedString(string: code, attributes: attributes))
         case .image(let alt, let target):
             appendImage(alt: alt, target: target, base: base)
