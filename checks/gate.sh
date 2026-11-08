@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Version: 1.11.0 — the release workflow's shape check and the four release scripts' suites join the
+#   list, after the strings suites
 # Version: 1.10.0 — the check that a page reads the same with the network denied, and its suite, join
 #   the list, after the no-network suite
 # Version: 1.9.0 — the displayed-file scene, and the read-only walk of the folder it ends in, join the list
@@ -125,6 +127,13 @@ run_step 'Offline page suite' 'checks/tests/test_offline_page.sh'
 run_step 'Strings check' 'checks/strings.sh'
 run_step 'Strings check suite' 'checks/tests/test_strings.sh'
 run_step 'Strings check step suite' 'checks/tests/test_strings_step.sh'
+# The release block: the shape check of .github/workflows/release.yml and the suites of the four
+# release scripts it names. The block reads the bundle "Build KA-Reader.app" wrote, so it comes
+# after that step. It launches nothing and leaves the bundle as it is, so it comes before "Launch
+# the built bundle". The shape check comes before its suite, so a break in the tree's workflow is
+# named by the check's own step, as with "Strings check".
+run_step 'Release workflow shape' 'checks/release-shape.sh .github/workflows/release.yml'
+run_step 'Release workflow shape suite' 'checks/tests/test_release_shape.sh'
 run_step 'Release version suite' 'checks/tests/test_release_version.sh'
 run_step 'Release image suite' 'checks/tests/test_release_pack.sh'
 run_step 'Release checksum suite' 'checks/tests/test_release_sums.sh'
