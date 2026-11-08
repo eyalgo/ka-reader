@@ -165,7 +165,7 @@ test_no_gh_on_the_path_is_refused() {
   OUT="$(cat "$WORK/stdout")"
   ERR="$(cat "$WORK/stderr")"
   expect_status 1 || return 1
-  expect_err_has "gh" || return 1
+  expect_err_has "gh was not found on PATH" || return 1
 }
 
 # CP-1180: a draft shows only on the list endpoint, and every page of it must be read.
@@ -187,6 +187,7 @@ test_an_empty_tag_is_refused() {
   new_gh empty-tag
   run_script "$REPOSITORY" ""
   expect_status 1 || return 1
+  expect_err_has "no tag was given" || return 1
 }
 
 test_a_wrong_argument_count_exits_2() {
