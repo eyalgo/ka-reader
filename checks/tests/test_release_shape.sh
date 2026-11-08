@@ -62,6 +62,8 @@ test_a_step_outside_the_closed_set_is_refused
 test_a_secret_a_signing_call_or_a_second_permission_is_refused
 test_a_step_that_may_fail_is_refused
 test_a_block_scalar_run_is_refused_under_layout
+test_a_file_that_is_not_in_the_layout_is_refused_under_layout
+test_the_release_steps_hold_their_env_group_and_place
 test_two_breaks_in_one_copy_name_both
 test_an_unreadable_or_missing_file_is_refused
 test_a_wrong_argument_count_exits_2
@@ -221,11 +223,21 @@ test_a_second_trigger_is_refused() {
   new_copy pull-request
   insert_after "on:" "  pull_request:"
   copy_is_refused_naming "(CP-1170)" || return 1
+  new_copy schedule-elsewhere
+  insert_after "runs-on: macos-26" "    schedule:"
+  copy_is_refused_naming "(CP-1170)" || return 1
 }
 
 test_a_floating_runner_is_refused() {
   new_copy latest
   replace_text "macos-26" "macos-latest"
+  copy_is_refused_naming "(CP-1171)" || return 1
+  new_copy two-runners
+  insert_after "runs-on: macos-26" "    runs-on: macos-26"
+  copy_is_refused_naming "(CP-1171)" || return 1
+  new_copy two-jobs
+  insert_after "jobs:" "  other:
+    needs: release"
   copy_is_refused_naming "(CP-1171)" || return 1
 }
 
@@ -239,11 +251,26 @@ test_a_checkout_that_is_shallow_or_redirected_or_keeps_credentials_is_refused() 
   new_copy credentials
   drop_lines "persist-credentials: false"
   copy_is_refused_naming "(CP-1172)" || return 1
+  new_copy old-checkout
+  replace_text "actions/checkout@v5" "actions/checkout@v4"
+  copy_is_refused_naming "(CP-1172)" || return 1
+  expect_refused_naming "(CP-1181)" || return 1
 }
 
 test_a_gate_that_is_not_first_is_refused() {
   new_copy gate-late
   steps_move "$RUN_GATE" "$RUN_AUDIT"
+  copy_is_refused_naming "(CP-1173)" || return 1
+  expect_refused_naming "(CP-1174)" || return 1
+  new_copy gate-renamed
+  replace_text "name: Test gate" "name: Gate"
+  copy_is_refused_naming "(CP-1173)" || return 1
+  new_copy gate-twice
+  steps_insert_after "$RUN_GATE" "      - name: Gate again
+        run: checks/gate.sh again"
+  copy_is_refused_naming "(CP-1173)" || return 1
+  new_copy step-without-run-before-gate
+  steps_insert_after "uses: actions/checkout" "      - uses: actions/upload-artifact@v6"
   copy_is_refused_naming "(CP-1173)" || return 1
   new_copy step-before-gate
   steps_insert_after "uses: actions/checkout" "      - name: Early
@@ -266,6 +293,10 @@ test_the_audit_is_required_and_an_ignore_needs_its_reason() {
   new_copy install-dropped
   steps_drop "cargo install cargo-audit"
   copy_is_refused_naming "(CP-1174)" || return 1
+  new_copy install-after-audit
+  steps_move "cargo install cargo-audit" "$RUN_AUDIT"
+  copy_is_refused_naming "(CP-1174)" || return 1
+  expect_refused_naming "Order" || return 1
 }
 
 test_each_release_step_is_required() {
@@ -295,6 +326,9 @@ test_a_step_outside_the_closed_set_is_refused() {
   new_copy second-uses
   steps_insert_after "$RUN_GATE" "      - uses: actions/upload-artifact@v6"
   copy_is_refused_naming "(CP-1181)" || return 1
+  new_copy changed-run
+  replace_text "run: checks/release-sums.sh dist" "run: checks/release-sums.sh dist extra"
+  copy_is_refused_naming "(CP-1181)" || return 1
 }
 
 test_a_secret_a_signing_call_or_a_second_permission_is_refused() {
@@ -313,6 +347,13 @@ test_a_secret_a_signing_call_or_a_second_permission_is_refused() {
   new_copy permission
   insert_after "contents: write" "  packages: write"
   copy_is_refused_naming "(CP-1182)" || return 1
+  new_copy second-permissions-key
+  insert_after "runs-on: macos-26" "    permissions:
+      contents: write"
+  copy_is_refused_naming "(CP-1182)" || return 1
+  new_copy other-expression
+  replace_text "name: Version" 'name: Version ${{ github.sha }}'
+  copy_is_refused_naming "(CP-1182)" || return 1
   new_copy env-on-pack
   insert_after "$RUN_PACK" "        env:
           LABEL: x"
@@ -326,6 +367,9 @@ test_a_step_that_may_fail_is_refused() {
   new_copy conditional
   insert_after "$RUN_PACK" "        if: always()"
   copy_is_refused_naming "(CP-1183)" || return 1
+  new_copy own-shell
+  insert_after "$RUN_PACK" "        shell: bash"
+  copy_is_refused_naming "(CP-1183)" || return 1
   new_copy no-defaults
   drop_exact "defaults:"
   drop_exact "  run:"
@@ -338,6 +382,37 @@ test_a_block_scalar_run_is_refused_under_layout() {
   replace_text "run: checks/release-sums.sh dist" "run: |
           checks/release-sums.sh dist"
   copy_is_refused_naming "Layout" || return 1
+}
+
+# Layout (CP-1184): a file the check cannot read in the layout is refused under that name.
+test_a_file_that_is_not_in_the_layout_is_refused_under_layout() {
+  new_copy tab
+  replace_text "  contents: write" "	contents: write"
+  copy_is_refused_naming "Layout" || return 1
+  expect_refused_naming "holds a tab" || return 1
+  new_copy no-jobs
+  replace_text "jobs:" "work:"
+  copy_is_refused_naming "Layout" || return 1
+  expect_refused_naming "no jobs: key" || return 1
+  new_copy no-steps
+  sed 's/^      - /    - /' "$COPY" > "$COPY.new"
+  mv "$COPY.new" "$COPY"
+  copy_is_refused_naming "Layout" || return 1
+  expect_refused_naming "no step item" || return 1
+}
+
+# The token, the group and the Release's place are held exactly (CP-1179, CP-1180).
+test_the_release_steps_hold_their_env_group_and_place() {
+  new_copy wider-env
+  insert_after "GH_TOKEN:" "          EXTRA: value"
+  copy_is_refused_naming "(CP-1180)" || return 1
+  new_copy cancelling-group
+  replace_text "cancel-in-progress: false" "cancel-in-progress: true"
+  copy_is_refused_naming "(CP-1180)" || return 1
+  new_copy step-after-release
+  steps_insert_after "$RUN_RELEASE" "      - name: After
+        run: echo after"
+  copy_is_refused_naming "(CP-1179)" || return 1
 }
 
 test_two_breaks_in_one_copy_name_both() {
@@ -366,13 +441,19 @@ test_a_wrong_argument_count_exits_2() {
   [ "$STATUS" -eq 2 ] || { fail "two arguments: expected exit 2, got $STATUS"; return 1; }
 }
 
-# CP-1186: not a new case. checks/tests/test_vm_refusal.sh is unmodified in this change, and its two
-# architecture cases hold the suites and the workflow once they are in the tree. This case runs them.
+# CP-1186: no suite file exists without its own gate step, and the workflow names the pinned runner.
+# checks/tests/test_vm_refusal.sh is unmodified in this change and holds both for every suite and
+# workflow; the gate runs it as its own step. It is not run again here, because it takes a minute.
+# This case asserts the same promise for the five suites of this change and for release.yml.
 test_the_gate_holds_the_new_suite_as_a_fatal_step() {
-  result="$("$ROOT/checks/tests/test_vm_refusal.sh" 2>&1)" || { fail "test_vm_refusal.sh failed: $result"; return 1; }
-  for case_name in test_every_toplevel_suite_is_an_entire_fatal_step test_every_runner_names_macos_26; do
-    printf '%s\n' "$result" | grep -q -x "ok   $case_name" || { fail "test_vm_refusal.sh did not report $case_name ok: $result"; return 1; }
+  commands="$(sed -n "s/^run_step '[^']*' '\(.*\)'\$/\1/p" "$ROOT/checks/gate.sh")"
+  for suite in version pack sums absent shape; do
+    printf '%s\n' "$commands" | grep -q -x -F "checks/tests/test_release_$suite.sh" \
+      || { fail "checks/tests/test_release_$suite.sh is not the entire command of a step in checks/gate.sh"; return 1; }
   done
+  printf '%s\n' "$commands" | grep -q -x -F "checks/release-shape.sh .github/workflows/release.yml" \
+    || { fail "checks/gate.sh has no step whose whole command is the shape check on release.yml"; return 1; }
+  grep -q -x '    runs-on: macos-26' "$TREE_FILE" || { fail "release.yml does not name the macos-26 runner"; return 1; }
 }
 
 # --- the runner ---
