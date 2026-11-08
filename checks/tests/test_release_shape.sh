@@ -63,8 +63,10 @@ test_each_release_step_is_required
 test_a_misordered_step_is_refused
 test_a_step_outside_the_closed_set_is_refused
 test_a_secret_a_signing_call_or_a_second_permission_is_refused
+test_an_env_above_the_steps_is_refused
 test_a_step_that_may_fail_is_refused
 test_a_block_scalar_run_is_refused_under_layout
+test_a_run_line_continued_on_the_next_line_is_refused_under_layout
 test_a_file_that_is_not_in_the_layout_is_refused_under_layout
 test_the_release_steps_hold_their_env_group_and_place
 test_two_breaks_in_one_copy_name_both
@@ -366,6 +368,20 @@ test_a_secret_a_signing_call_or_a_second_permission_is_refused() {
   copy_is_refused_naming "(CP-1182)" || return 1
 }
 
+# CP-1182: env: appears on the existing-Release step and the Release step only. An env: block for
+# the whole workflow, or for the job, hands the token to every step, the gate's included.
+test_an_env_above_the_steps_is_refused() {
+  new_copy workflow-env
+  insert_after "  contents: write" "
+env:
+  GH_TOKEN: \${{ github.token }}"
+  copy_is_refused_naming "(CP-1182)" || return 1
+  new_copy job-env
+  insert_after "runs-on: macos-26" "    env:
+      GH_TOKEN: \${{ github.token }}"
+  copy_is_refused_naming "(CP-1182)" || return 1
+}
+
 test_a_step_that_may_fail_is_refused() {
   new_copy continue
   insert_after "$RUN_GATE" "        continue-on-error: true"
@@ -387,6 +403,18 @@ test_a_block_scalar_run_is_refused_under_layout() {
   new_copy block
   replace_text "run: checks/release-sums.sh dist" "run: |
           checks/release-sums.sh dist"
+  copy_is_refused_naming "Layout" || return 1
+}
+
+# Layout (CP-1184): every run: value is one line. In YAML a more-indented line after a plain value
+# continues it, so the gate step below runs "checks/gate.sh && git push origin HEAD", which no
+# line of the file holds whole.
+test_a_run_line_continued_on_the_next_line_is_refused_under_layout() {
+  new_copy continued-gate
+  insert_after "$RUN_GATE" "          && git push origin HEAD"
+  copy_is_refused_naming "Layout" || return 1
+  new_copy continued-release
+  insert_after "$RUN_RELEASE" "          dist/extra-asset"
   copy_is_refused_naming "Layout" || return 1
 }
 

@@ -53,6 +53,7 @@ test_a_bundle_with_no_key_is_refused_naming_no_version
 test_a_line_names_every_failed_condition
 test_a_matching_tag_passes
 test_a_multi_digit_tag_passes
+test_a_version_line_outside_the_table_is_not_read
 test_a_manifest_without_the_table_is_refused
 test_a_manifest_without_a_version_line_is_refused
 test_a_manifest_with_two_version_lines_is_refused
@@ -138,6 +139,24 @@ expect_err_lacks() {
   return 0
 }
 
+# How many times the text $2 appears in the text $1.
+count_of() {
+  printf '%s' "$1" | awk -v needle="$2" '
+    { while ((i = index($0, needle)) > 0) { n++; $0 = substr($0, i + length(needle)) } }
+    END { print n + 0 }
+  '
+}
+
+# The last run's one line, $1 ("stdout" or "stderr"), names the version $2 at least $3 times: the
+# tag holds it once, and the Cargo version and the bundle's version once each.
+expect_line_names_version() {
+  if [ "$1" = "stdout" ]; then line="$OUT"; else line="$ERR"; fi
+  [ "$(count_of "$line" "$2")" -ge "$3" ] && return 0
+  fail "the line does not name $2 $3 times (the tag, the Cargo version and the bundle's). Its output follows."
+  show_output
+  return 1
+}
+
 # --- cases ---
 
 # CP-1168: the root states the version and each member inherits it.
@@ -176,9 +195,11 @@ test_a_tag_that_is_not_the_version_is_refused() {
   run_script v0.1.0 "$scene/Cargo.toml" "$scene/KA-Reader.app"
   expect_refusal || return 1
   expect_err_has "v0.1.0" || return 1
-  expect_err_has "0.0.0" || return 1
+  # Both versions the tag was compared against, the Cargo one and the bundle's, are named.
+  expect_line_names_version stderr "0.0.0" 2 || return 1
   expect_err_has "(a)" || return 1
   expect_err_lacks "(b)" || return 1
+  expect_err_lacks "(c)" || return 1
 }
 
 test_a_bundle_that_misses_the_version_is_refused() {
@@ -207,6 +228,8 @@ test_a_pre_release_tag_is_refused() {
   expect_refusal || return 1
   expect_err_has "v0.1.0-beta.1" || return 1
   expect_err_has "(c)" || return 1
+  expect_err_lacks "(a)" || return 1
+  expect_err_lacks "(b)" || return 1
 }
 
 test_a_tag_of_the_wrong_form_is_refused() {
@@ -246,17 +269,30 @@ test_a_matching_tag_passes() {
   [ -z "$ERR" ] || { fail "a pass wrote to stderr. Its output follows."; show_output; return 1; }
   [ "$(printf '%s\n' "$OUT" | wc -l | tr -d ' ')" -eq 1 ] || { fail "a pass is one stdout line. Its output follows."; show_output; return 1; }
   case "$OUT" in
-    *v0.0.0*0.0.0*) return 0 ;;
+    *v0.0.0*) ;;
+    *) fail "the pass line does not name the tag. Its output follows."; show_output; return 1 ;;
   esac
-  fail "the pass line names neither the tag nor the versions. Its output follows."
-  show_output
-  return 1
+  # The tag, the Cargo version and the bundle's version: 0.0.0 three times.
+  expect_line_names_version stdout "0.0.0" 3 || return 1
 }
 
 test_a_multi_digit_tag_passes() {
   new_scene multi-digit 0.10.12 0.10.12
   run_script v0.10.12 "$scene/Cargo.toml" "$scene/KA-Reader.app"
   [ "$STATUS" -eq 0 ] || { fail "expected exit 0, got $STATUS. Its output follows."; show_output; return 1; }
+  expect_line_names_version stdout "0.10.12" 3 || return 1
+}
+
+# The version is the first version line under [workspace.package], before the next table header. A
+# version line in any other table is not the product's version.
+test_a_version_line_outside_the_table_is_not_read() {
+  new_scene other-tables 0.0.0 0.0.0
+  printf '[package]\nversion = "9.9.9"\n\n[workspace.package]\nversion = "0.0.0"\n\n[workspace.metadata]\nversion = "8.8.8"\n' > "$scene/Cargo.toml"
+  run_script v0.0.0 "$scene/Cargo.toml" "$scene/KA-Reader.app"
+  [ "$STATUS" -eq 0 ] || { fail "expected exit 0 on the [workspace.package] version, got $STATUS. Its output follows."; show_output; return 1; }
+  case "$OUT$ERR" in
+    *9.9.9* | *8.8.8*) fail "a version line from another table was read. Its output follows."; show_output; return 1 ;;
+  esac
 }
 
 test_a_manifest_without_the_table_is_refused() {

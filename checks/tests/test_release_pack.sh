@@ -151,6 +151,14 @@ test_the_gate_built_bundle_packs() {
     detach_mount
     return 1
   fi
+  # No other file, hidden ones included: a background picture (.background), a volume icon
+  # (.VolumeIcon.icns) and a Finder window layout (.DS_Store) are all dot-files ls does not show.
+  held="$(ls -A "$MOUNT")"
+  if [ "$held" != "KA-Reader.app" ]; then
+    fail "the mounted volume holds \"$held\", expected KA-Reader.app and no hidden file"
+    detach_mount
+    return 1
+  fi
   if ! codesign --verify --strict "$MOUNT/KA-Reader.app" > "$WORK/verify.log" 2>&1; then
     fail "codesign --verify --strict refused the mounted copy: $(cat "$WORK/verify.log")"
     detach_mount

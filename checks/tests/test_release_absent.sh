@@ -180,6 +180,10 @@ test_the_listing_asks_for_every_page_of_the_list_endpoint() {
     fail "gh was given the by-tag endpoint, which never returns a draft: $(cat "$BIN/argv")"
     return 1
   fi
+  # Drafts included: the filter takes every Release's tag_name and drops none, so a filter on
+  # .draft could not read a draft as absent. The stand-in prints names, so only the argv shows it.
+  filter="$(awk 'previous == "--jq" { print; exit } { previous = $0 }' "$BIN/argv")"
+  [ "$filter" = ".[].tag_name" ] || { fail "gh was not asked for every Release's tag_name with --jq '.[].tag_name': $(cat "$BIN/argv")"; return 1; }
 }
 
 # An empty tag would match an empty line of the listing, so it is refused.
