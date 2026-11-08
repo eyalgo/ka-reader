@@ -125,6 +125,7 @@ run_step 'Offline page suite' 'checks/tests/test_offline_page.sh'
 run_step 'Strings check' 'checks/strings.sh'
 run_step 'Strings check suite' 'checks/tests/test_strings.sh'
 run_step 'Strings check step suite' 'checks/tests/test_strings_step.sh'
+run_step 'Release version suite' 'checks/tests/test_release_version.sh'
 run_step 'Own state suite' 'checks/tests/test_own_state.sh'
 # "VM refusal suite", "Launch step suite", "Own state step suite" and "Tree scene helper suite"
 # launch nothing, so they run before the real launch below. The helper's suite holds
