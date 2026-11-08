@@ -43,6 +43,7 @@ test_an_empty_directory_is_refused
 test_two_images_are_refused
 test_an_extra_file_is_refused
 test_an_existing_sums_file_is_refused
+test_a_folder_named_like_the_image_is_refused
 test_a_refusal_writes_nothing
 test_a_wrong_argument_count_exits_2
 "
@@ -88,11 +89,22 @@ snapshot() {
   done)
 }
 
-# Runs the script on $1, which must refuse with status 1, and leave the folder as it was.
+# The last run's stderr holds the text $1 (each refusal says which rule refused).
+expect_err_has() {
+  case "$ERR" in
+    *"$1"*) return 0 ;;
+  esac
+  fail "the refusal does not say \"$1\". Its output follows."
+  show_output
+  return 1
+}
+
+# Runs the script on $1, which must refuse with status 1 saying $2, and leave the folder as it was.
 expect_refusal_that_writes_nothing() {
   before="$(snapshot "$1")"
   run_script "$1"
   expect_status 1 || return 1
+  expect_err_has "$2" || return 1
   [ "$(snapshot "$1")" = "$before" ] || { fail "a refusal changed the folder $1"; return 1; }
 }
 
@@ -130,31 +142,37 @@ test_an_altered_image_fails_the_verify() {
 test_a_missing_directory_is_refused() {
   run_script "$WORK/not-there"
   expect_status 1 || return 1
+  expect_err_has "is not a folder" || return 1
   [ ! -e "$WORK/not-there" ] || { fail "a refusal created the folder"; return 1; }
 }
 
 test_an_empty_directory_is_refused() {
   mkdir -p "$WORK/empty"
-  expect_refusal_that_writes_nothing "$WORK/empty"
+  expect_refusal_that_writes_nothing "$WORK/empty" "is empty"
 }
 
 test_two_images_are_refused() {
   new_dir two-images
   printf 'second\n' > "$dir/KA-Reader-0.0.1.dmg"
-  expect_refusal_that_writes_nothing "$dir"
+  expect_refusal_that_writes_nothing "$dir" "more than one entry"
 }
 
 test_an_extra_file_is_refused() {
   new_dir extra
   printf 'stray\n' > "$dir/notes.txt"
-  expect_refusal_that_writes_nothing "$dir"
+  expect_refusal_that_writes_nothing "$dir" "more than one entry"
 }
 
 test_an_existing_sums_file_is_refused() {
   new_dir has-sums
   printf 'keep this\n' > "$dir/SHA256SUMS"
-  expect_refusal_that_writes_nothing "$dir" || return 1
+  expect_refusal_that_writes_nothing "$dir" "already holds" || return 1
   [ "$(cat "$dir/SHA256SUMS")" = "keep this" ] || { fail "the existing SHA256SUMS was changed"; return 1; }
+}
+
+test_a_folder_named_like_the_image_is_refused() {
+  mkdir -p "$WORK/folder-image/KA-Reader-0.0.0.dmg"
+  expect_refusal_that_writes_nothing "$WORK/folder-image" "is not a file"
 }
 
 # The folder holds what it held before, and a refusal made no SHA256SUMS.
@@ -165,8 +183,12 @@ test_a_refusal_writes_nothing() {
   printf 'a\n' > "$WORK/nothing/extra/KA-Reader-0.0.0.dmg"
   printf 'c\n' > "$WORK/nothing/extra/other.txt"
   printf 'a\n' > "$WORK/nothing/wrong-name/image.dmg"
+  printf 'is empty' > "$WORK/nothing/empty.says"
+  printf 'more than one entry' > "$WORK/nothing/two.says"
+  printf 'more than one entry' > "$WORK/nothing/extra.says"
+  printf 'not a KA-Reader-*.dmg' > "$WORK/nothing/wrong-name.says"
   for name in empty two extra wrong-name; do
-    expect_refusal_that_writes_nothing "$WORK/nothing/$name" || return 1
+    expect_refusal_that_writes_nothing "$WORK/nothing/$name" "$(cat "$WORK/nothing/$name.says")" || return 1
     [ ! -e "$WORK/nothing/$name/SHA256SUMS" ] || { fail "a refusal wrote SHA256SUMS in $name"; return 1; }
   done
 }
