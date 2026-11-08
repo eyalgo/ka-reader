@@ -2,10 +2,10 @@
 # its checksum file, the checksum verify, and last a draft GitHub Release holding both files.
 #
 # One job, one macOS image, every step fatal: a step that exits non-zero is the run's verdict, and
-# nothing after it runs. Every step that decides something is a script under checks/, and each script
-# has a suite that runs as a step of checks/gate.sh, so the tag run runs the same scripts the gate
-# proves at every change. checks/release-shape.sh reads this file's text against the rules below at
-# every change, because the tag run cannot run while Actions is off.
+# nothing after it runs. Every step that decides something is a script under checks/, and each
+# script has a suite that runs as a step of checks/gate.sh, so the tag run runs the same scripts the
+# gate proves at every change. checks/release-shape.sh reads this file's text against the rules
+# below at every change, because the tag run cannot run while Actions is off.
 #
 # Nothing here supplies a way to sign and no repository value is read. The bundle is ad-hoc signed
 # by ka-reader-mac/assemble.sh alone, inside the gate, and the image holds it unchanged. The one
