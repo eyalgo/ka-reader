@@ -54,6 +54,7 @@ Each entry records a change to what a user of a fresh clone installs, runs, type
 - **ka-reader** — Re-entering a folder through a spelling that differs only in case stays inside the opened folder, and that re-entry is limited to case-only spellings. (`368c8a4ec`, `df53a4f46`)
 - **ka-reader** — Two processes writing the shared log keep it within its bound. (`af416967f`)
 - **ka-reader** — When you click two files in quick succession, KA-Reader ends on the second, whichever read finishes first. The panel shows it and follows it on disk, and your place in it is kept. (`068785415`, `0203fbd5e`, `d2874d693`, `5e5f39c2e`, `3bbc07d30`)
+- **ka-reader** — On a rendered Markdown page, a link to a folder inside the opened folder now shows where it points and does nothing, as a link that leads anywhere but a file does. Before, it was a control that opened nothing. Code on the page, in a block or inline in a line of text, now sits on a background of its own that sets it off from the prose, with padding, rounded corners and no border. (`374faf7afe`, `9c53f14406`, `bb6534ce84`, `27e2521254`, `b6a3216fc0`)
 
 ### Security
 

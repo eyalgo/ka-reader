@@ -128,10 +128,25 @@ pub enum PlaceholderCondition {
     FormatNotDecoded,
 }
 
-/// What a link came to: a target inside the folder, or inert text to be read.
+/// What a link came to: a file inside the folder, or inert text to be read. External is everything
+/// else: a scheme, a fragment alone, a path the containment check refuses, and a contained folder.
+///
+/// # Examples
+///
+/// ```
+/// use std::path::PathBuf;
+///
+/// use ka_reader_core::LinkTarget;
+///
+/// let file = LinkTarget::Relative(PathBuf::from("docs/guide.md"));
+/// let folder = LinkTarget::External;
+///
+/// assert!(matches!(file, LinkTarget::Relative(path) if path == PathBuf::from("docs/guide.md")));
+/// assert_eq!(folder, LinkTarget::External);
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum LinkTarget {
-    /// The target's path below the opened folder's root.
+    /// A contained file's path below the opened folder's root.
     Relative(PathBuf),
     External,
 }

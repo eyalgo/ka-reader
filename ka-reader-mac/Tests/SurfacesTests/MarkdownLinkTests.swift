@@ -85,14 +85,14 @@ func aRelativeAndAnExternalLinkWithTheSameContentAndDestinationLookTheSame() thr
 
 @MainActor
 @Test
-func aRelativeLinkToAFolderIsStillAControl() throws {
+func aRelativeLinkIsAControlThatRaisesItsTargetPath() throws {
     var raised: [String] = []
-    let page = makePage(linkDocument(.relative(path: "src"), destination: "src"))
+    let page = makePage(linkDocument(.relative(path: "src/main.md"), destination: "src/main.md"))
     page.relativeLinkSink = { raised.append($0) }
 
     let token = try #require(try linkValues(in: page).first)
     let delegate = try #require(page.textView.delegate)
     _ = delegate.textView?(page.textView, clickedOnLink: token, at: 0)
 
-    #expect(raised == ["src"])
+    #expect(raised == ["src/main.md"])
 }
