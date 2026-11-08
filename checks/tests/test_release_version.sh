@@ -24,7 +24,8 @@
 #   own status and the runner counts them.
 #
 # WHERE IT WRITES
-#   Only below one `mktemp -d` directory, removed by a trap on exit. The tree is read, never written.
+#   Only below one `mktemp -d` directory, removed by a trap on exit. The tree is read, never
+#   written.
 
 set -uo pipefail
 
@@ -79,7 +80,8 @@ write_bundle() {
   "$PLIST_BUDDY" -c "Add :$KEY string $2" "$1/Contents/Info.plist" > /dev/null
 }
 
-# A fresh scratch folder named $1, holding manifest/Cargo.toml at version $2 and bundle/ at version $3.
+# A fresh scratch folder named $1, holding manifest/Cargo.toml at version $2 and bundle/ at version
+# $3.
 new_scene() {
   scene="$WORK/$1"
   rm -rf "$scene"
@@ -100,7 +102,8 @@ show_output() {
   printf '%s\n%s\n' "$OUT" "$ERR" | sed '/^$/d; s/^/  /'
 }
 
-# The last run exited 1 and printed one stderr line prefixed release-version.sh: and nothing on stdout.
+# The last run exited 1 and printed one stderr line prefixed release-version.sh: and nothing on
+# stdout.
 expect_refusal() {
   [ "$STATUS" -eq 1 ] || { fail "expected exit 1, got $STATUS. Its output follows."; show_output; return 1; }
   [ -z "$OUT" ] || { fail "a refusal printed on stdout. Its output follows."; show_output; return 1; }

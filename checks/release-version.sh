@@ -44,24 +44,24 @@ manifest="$2"
 bundle="$3"
 
 # Says why on stderr and ends with status 1.
-refuse() {
+die() {
   echo "$NAME: $*" >&2
   exit 1
 }
 
 # --- the Cargo version ---
 
-[ -r "$manifest" ] || refuse "cannot read the manifest at $manifest"
+[ -r "$manifest" ] || die "cannot read the manifest at $manifest"
 
 # The version lines under the line [workspace.package], up to the next table header.
 version_lines="$(awk '
   /^\[/ { in_table = ($0 == "[workspace.package]"); next }
   in_table && /^version = "/ { print }
 ' "$manifest")"
-[ -n "$version_lines" ] || refuse "the manifest at $manifest holds no version line under [workspace.package]"
+[ -n "$version_lines" ] || die "the manifest at $manifest holds no version line under [workspace.package]"
 case "$version_lines" in
   *"
-"*) refuse "the manifest at $manifest holds more than one version line under [workspace.package]" ;;
+"*) die "the manifest at $manifest holds more than one version line under [workspace.package]" ;;
 esac
 cargo_version="${version_lines#version = \"}"
 cargo_version="${cargo_version%%\"*}"
@@ -69,7 +69,7 @@ cargo_version="${cargo_version%%\"*}"
 # --- the bundle's version ---
 
 plist="$bundle/Contents/Info.plist"
-[ -f "$plist" ] || refuse "the bundle at $bundle has no Contents/Info.plist"
+[ -f "$plist" ] || die "the bundle at $bundle has no Contents/Info.plist"
 # || true: PlistBuddy exits 1 on a missing key, which is data here, and pipefail would end the
 # script before the guard below reports it.
 bundle_version="$("$PLIST_BUDDY" -c "Print :$VERSION_KEY" "$plist" 2> /dev/null || true)"
@@ -92,6 +92,6 @@ if ! [[ "$tag" =~ ^v0\.[0-9]+\.[0-9]+$ ]]; then
 fi
 
 if [ -n "$failed" ]; then
-  refuse "refused tag $tag: Cargo version $cargo_version, bundle version $bundle_shown$failed"
+  die "refused tag $tag: Cargo version $cargo_version, bundle version $bundle_shown$failed"
 fi
 echo "$NAME: tag $tag is Cargo version $cargo_version and bundle version $bundle_shown"
