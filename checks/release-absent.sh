@@ -9,8 +9,8 @@
 #   already carries the tag, published or still a draft, is left as it was, so this step stops the
 #   run before it makes a second.
 #   A draft shows only on the list endpoint, repos/<owner>/<repository>/releases. The endpoint that
-#   asks for one tag, releases/tags/<tag>, returns published Releases alone, so it would read a draft
-#   as absent. The script lists every page and compares whole lines.
+#   asks for one tag, releases/tags/<tag>, returns published Releases alone, so it would read a
+#   draft as absent. The script lists every page and compares whole lines.
 #   It fails closed. A listing that fails, or a gh that is not on PATH, is never read as "none":
 #   both end 1.
 #
@@ -38,23 +38,23 @@ repository="$1"
 tag="$2"
 
 # Says why on stderr and ends with status 1.
-refuse() {
+die() {
   echo "$NAME: $*" >&2
   exit 1
 }
 
 # An empty tag would match an empty line of the listing.
-[ -n "$tag" ] || refuse "no tag was given"
+[ -n "$tag" ] || die "no tag was given"
 # A program the run cannot do without, guarded before it is used (shell packet, toolchain tier 2).
-command -v gh > /dev/null 2>&1 || refuse "gh was not found on PATH, so the Releases of $repository cannot be listed"
+command -v gh > /dev/null 2>&1 || die "gh was not found on PATH, so the Releases of $repository cannot be listed"
 
 # The listing is captured into a variable and its status checked on its own line. A failed command
 # substitution inside a test argument does not fail the test, so the inline form would fail open.
 status=0
 tags="$(gh api --paginate "repos/$repository/releases" --jq '.[].tag_name')" || status=$?
-[ "$status" -eq 0 ] || refuse "the listing of the Releases of $repository failed with status $status, so $tag cannot be called absent"
+[ "$status" -eq 0 ] || die "the listing of the Releases of $repository failed with status $status, so $tag cannot be called absent"
 
 if printf '%s\n' "$tags" | grep -x -F -- "$tag" > /dev/null; then
-  refuse "a Release for $tag already exists in $repository"
+  die "a Release for $tag already exists in $repository"
 fi
 echo "$NAME: no Release for $tag in $repository"

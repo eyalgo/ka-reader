@@ -10,8 +10,8 @@
 #   Release of the repository, drafts included, and refuses when one carries the tag. The cases run
 #   the real script — never a copy of its logic — with a stand-in gh first on PATH that prints the
 #   tag names a case sets, records the arguments it was given, and exits as the case sets. The
-#   failures that matter most are the quiet ones: a listing that fails, a gh that is not there, and a
-#   tag that is only a prefix of another must each read as what they are, and never as "absent".
+#   failures that matter most are the quiet ones: a listing that fails, a gh that is not there, and
+#   a tag that is only a prefix of another must each read as what they are, and never as "absent".
 #
 # USAGE
 #   checks/tests/test_release_absent.sh
