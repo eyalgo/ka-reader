@@ -1,0 +1,93 @@
+# A pushed tag builds the release: the gate, the advisory audit, the version check, the disk image,
+# its checksum file, the checksum verify, and last a draft GitHub Release holding both files.
+#
+# One job, one macOS image, every step fatal: a step that exits non-zero is the run's verdict, and
+# nothing after it runs. Every step that decides something is a script under checks/, and each
+# script has a suite that runs as a step of checks/gate.sh, so the tag run runs the same scripts the
+# gate proves at every change. checks/release-shape.sh reads this file's text against the rules
+# below at every change, because the tag run cannot run while Actions is off.
+#
+# Nothing here supplies a way to sign and no repository value is read. The bundle is ad-hoc signed
+# by ka-reader-mac/assemble.sh alone, inside the gate, and the image holds it unchanged. The one
+# permission is the write the Release needs. The token reaches the two steps that call gh and no
+# other. The tag and the repository reach the scripts through the runner's own variables, never an
+# expression inside a run line, because an expression there is pasted into the shell text.
+#
+# The Release is a draft and has no body: its notes are written by hand, by whoever publishes it.
+
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+# A second run for the same tag queues behind the first, so a re-pushed tag finds the first run's
+# draft and stops at "Existing Release" rather than racing it.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+# Every run line gets bash with -eo pipefail, so a failure inside a pipe ends the step.
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  release:
+    runs-on: macos-26
+    steps:
+      # The default checkout of a tag push is the commit the tag names, so no ref is given. Full
+      # history, because the gate scans every commit. No Git credential is left behind for a later
+      # step to push with.
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # The gate first, named as ci.yml names it so the log command that reads "Test gate" reads a
+      # release run the same way.
+      - name: Test gate
+        run: checks/gate.sh
+
+      # The audit runs after the gate and before anything is packed. It is the release gate the
+      # gate cannot run: it reads the advisory database on the network. cargo-audit 0.22.2 is the
+      # version measured for this change. It installs into the runner's cargo home, not the
+      # workspace, so it adds no Cargo.lock entry.
+      - name: Install cargo-audit
+        run: cargo install cargo-audit --version 0.22.2 --locked
+
+      - name: Cargo audit
+        # No advisory is ignored. To ignore one, add --ignore RUSTSEC-<year>-<number> to the line
+        # below and, directly above it, a comment line "# RUSTSEC-<year>-<number>: <the reason>".
+        run: cargo audit
+
+      - name: Version
+        run: checks/release-version.sh "$GITHUB_REF_NAME" Cargo.toml target/release/bundle/macos/KA-Reader.app
+
+      - name: Disk image
+        run: checks/release-pack.sh target/release/bundle/macos/KA-Reader.app dist
+
+      - name: Checksums
+        run: checks/release-sums.sh dist
+
+      - name: Verify checksums
+        run: cd dist && shasum -a 256 -c SHA256SUMS
+
+      # A Release for this tag, draft or published, stops the run: this workflow only creates, and
+      # never edits or replaces one.
+      - name: Existing Release
+        run: checks/release-absent.sh "$GITHUB_REPOSITORY" "$GITHUB_REF_NAME"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      # Last. A draft, with the tag's name as its title and no body. --verify-tag aborts if the tag
+      # is not on the remote, so the run never creates one. The two assets are the folder's whole
+      # content, by construction.
+      - name: Release
+        run: gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --draft --title "$GITHUB_REF_NAME" --notes "" --verify-tag dist/KA-Reader-*.dmg dist/SHA256SUMS
+        env:
+          GH_TOKEN: ${{ github.token }}

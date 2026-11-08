@@ -8,6 +8,13 @@
 members = ["crates/*"]
 resolver = "3"
 
+# The product's one version. Both crates inherit it, and the bundle's ka-reader-mac/Info.plist
+# carries the same string as CFBundleShortVersionString. checks/release-version.sh refuses a tag
+# that is not "v" followed by this string. checks/release-version.sh reads the version line below
+# by its exact form.
+[workspace.package]
+version = "0.0.0"
+
 [workspace.lints.rust]
 # unsafe is refused by default: none of the other quality gates can see its misuse — the
 # formatter formats it, the linter accepts it, and the type checker accepts it by definition.

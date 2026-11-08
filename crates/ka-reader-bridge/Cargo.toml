@@ -1,6 +1,6 @@
 [package]
 name = "ka-reader-bridge"
-version = "0.0.0"
+version.workspace = true
 edition = "2024"
 
 # The static library the native shell links, and an rlib so `cargo test` can build the crate's own tests.
@@ -25,7 +25,7 @@ ka-reader-bridge = { path = ".", features = ["testing"] }
 
 [dependencies]
 log = "0.4.34"
-ka-reader-core = { version = "0.0.0", path = "../ka-reader-core" }
+ka-reader-core = { path = "../ka-reader-core" }
 serde = { version = "1.0.229", features = ["derive"] }
 serde_json = "1.0.151"
 libc = "0.2.189"
