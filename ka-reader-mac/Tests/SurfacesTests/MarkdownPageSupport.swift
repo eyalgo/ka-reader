@@ -73,7 +73,8 @@ extension MarkdownPageView {
         return found
     }
 
-    /// The paragraphs that sit in a text block (the placeholder box), grouped one box per run.
+    /// The paragraphs that sit in a bordered text block (the placeholder box), grouped one box per
+    /// run. A code block sits in a text block too, but one with no border, so it is not counted.
     func boxes() throws -> [[String]] {
         let storage = try storage
         let text = storage.string as NSString
@@ -85,7 +86,7 @@ extension MarkdownPageView {
             let style =
                 unsafe storage.attribute(.paragraphStyle, at: range.location, effectiveRange: nil)
                 as? NSParagraphStyle
-            if style?.textBlocks.isEmpty == false {
+            if style?.textBlocks.contains(where: { $0.hasBorder }) == true {
                 current.append(
                     text.substring(with: range).trimmingCharacters(in: .newlines))
             } else if !current.isEmpty {
@@ -96,6 +97,12 @@ extension MarkdownPageView {
         }
         if !current.isEmpty { boxes.append(current) }
         return boxes
+    }
+
+    /// The text blocks the paragraph holding the first character of `needle` sits in.
+    func textBlocks(at needle: String) throws -> [NSTextBlock] {
+        let style = try attribute(.paragraphStyle, at: needle) as? NSParagraphStyle
+        return style?.textBlocks ?? []
     }
 
     /// The range of `needle` in the page's text.
@@ -122,9 +129,31 @@ extension MarkdownPageView {
 /// A dynamic colour resolved to its light value, so two can be compared.
 @MainActor
 func resolved(_ color: NSColor?) -> NSColor? {
+    resolved(color, under: .aqua)
+}
+
+/// A dynamic colour resolved under the appearance `name` (`.aqua` is light, `.darkAqua` dark).
+@MainActor
+func resolved(_ color: NSColor?, under name: NSAppearance.Name) -> NSColor? {
     var result: NSColor?
-    NSAppearance(named: .aqua)?.performAsCurrentDrawingAppearance {
+    NSAppearance(named: name)?.performAsCurrentDrawingAppearance {
         result = color?.usingColorSpace(.sRGB)
     }
     return result
+}
+
+/// A colour's sRGB value as `0xRRGGBB`, resolved under the appearance `name`, so it can be set
+/// against the hex values of `docs/DESIGN.md`.
+@MainActor
+func hexValue(of color: NSColor?, under name: NSAppearance.Name) -> UInt32? {
+    guard let rgb = resolved(color, under: name) else { return nil }
+    func byte(_ component: CGFloat) -> UInt32 { UInt32((component * 255).rounded()) }
+    return byte(rgb.redComponent) << 16 | byte(rgb.greenComponent) << 8 | byte(rgb.blueComponent)
+}
+
+extension NSTextBlock {
+    /// Whether the block draws a border on any edge.
+    var hasBorder: Bool {
+        [NSRectEdge.minX, .minY, .maxX, .maxY].contains { width(for: .border, edge: $0) > 0 }
+    }
 }

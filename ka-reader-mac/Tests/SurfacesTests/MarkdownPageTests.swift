@@ -286,3 +286,113 @@ func noControlAndNoSentenceMentionsARawView() {
         #expect(!text.localizedCaseInsensitiveContains("switch"))
     }
 }
+
+// MARK: - The code block's canvas surface (CP-1146, CP-1149, CP-1150)
+
+private let canvasLight: UInt32 = 0xF2F2F0
+private let canvasDark: UInt32 = 0x232427
+private let codePadding: CGFloat = 4
+private let allEdges: [NSRectEdge] = [.minX, .minY, .maxX, .maxY]
+
+/// A Python block of two lines: `import` is a keyword, `name` a name and `"x"` a string.
+private let pythonSource = "import os\nname = \"x\"\n"
+private let pythonSpans = [
+    CodeSpan(start: 0, end: 6, tokenClass: .keyword),
+    CodeSpan(start: 10, end: 14, tokenClass: .name),
+    CodeSpan(start: 17, end: 20, tokenClass: .string),
+]
+
+/// The one canvas block a code block's paragraphs sit in: the canvas background, the padding on
+/// every edge and no border.
+@MainActor
+private func expectCanvasBlock(_ blocks: [NSTextBlock]) throws {
+    #expect(blocks.count == 1)
+    let block = try #require(blocks.first)
+    #expect(hexValue(of: block.backgroundColor, under: .aqua) == canvasLight)
+    for edge in allEdges {
+        #expect(block.width(for: .padding, edge: edge) == codePadding)
+        #expect(block.width(for: .border, edge: edge) == 0)
+    }
+}
+
+@MainActor
+@Test
+func aFencedBlockSitsInOneCanvasTextBlockOnEveryParagraph() throws {
+    let page = makePage(
+        pageDocument([
+            textParagraph("Before"),
+            .code(pythonSource, .floor(.python, pythonSpans)),
+            textParagraph("After"),
+        ]))
+
+    let first = try page.textBlocks(at: "import os")
+    let second = try page.textBlocks(at: "name = ")
+    try expectCanvasBlock(first)
+    try expectCanvasBlock(second)
+    #expect(first.first === second.first)
+    #expect(try page.textBlocks(at: "Before").isEmpty)
+    #expect(try page.textBlocks(at: "After").isEmpty)
+}
+
+@MainActor
+@Test
+func aFloorLanguageBlockKeepsItsSpanColoursOnTheCanvas() throws {
+    let page = makePage(
+        pageDocument([.code(pythonSource, .floor(.python, pythonSpans))]))
+
+    let base = try #require(try page.ink(at: "os"))
+    for needle in ["import", "name", "\"x\""] {
+        let ink = try #require(try page.ink(at: needle))
+        #expect(ink != base, "\(needle)")
+    }
+    let font = try #require(try page.attribute(.font, at: "import") as? NSFont)
+    #expect(font.fontDescriptor.symbolicTraits.contains(.monoSpace))
+    try expectCanvasBlock(try page.textBlocks(at: "import"))
+}
+
+@MainActor
+@Test
+func anIndentedBlockInAListItemCarriesTheCanvasBlock() throws {
+    let page = makePage(
+        pageDocument([
+            .list(.unordered, items: [[textParagraph("item"), .code("run it\nnow", .plain)]])
+        ]))
+
+    try expectCanvasBlock(try page.textBlocks(at: "run it"))
+    try expectCanvasBlock(try page.textBlocks(at: "now"))
+    #expect(try page.textBlocks(at: "item").isEmpty)
+}
+
+@MainActor
+@Test
+func aCodeBlockInAQuoteCarriesTheCanvasBlock() throws {
+    let page = makePage(
+        pageDocument([.quote([textParagraph("said"), .code("quoted code", .plain)])]))
+
+    try expectCanvasBlock(try page.textBlocks(at: "quoted code"))
+    #expect(try page.textBlocks(at: "said").isEmpty)
+}
+
+@MainActor
+@Test
+func aBlocksCanvasResolvesToItsDesignValueInBothAppearances() throws {
+    let page = makePage(pageDocument([.code("fn canvas", .plain)]))
+
+    let block = try #require(try page.textBlocks(at: "fn canvas").first)
+    #expect(hexValue(of: block.backgroundColor, under: .aqua) == canvasLight)
+    #expect(hexValue(of: block.backgroundColor, under: .darkAqua) == canvasDark)
+}
+
+@MainActor
+@Test
+func aPlaceholderBoxIsStillTheOnlyBoxOnAPageWithACodeBlock() throws {
+    let codeOnly = makePage(pageDocument([.code(pythonSource, .plain)]))
+    #expect(try codeOnly.boxes().isEmpty)
+
+    let both = makePage(
+        pageDocument([
+            .paragraph([.image(alt: "the logo", .resolved(path: "img/logo.png"))]),
+            .code(pythonSource, .plain),
+        ]))
+    #expect(try both.boxes() == [["the logo", "img/logo.png", unreadable]])
+}
