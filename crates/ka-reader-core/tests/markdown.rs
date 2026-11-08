@@ -544,6 +544,43 @@ fn test_link_file_reads_a_name_holding_a_percent_as_that_name() {
     );
 }
 
+/// CP-1141 and CP-1145: a link whose path the real check reaches at a folder, directly or through a
+/// symbolic link, is external and carries its destination exactly as written; one it reaches at a
+/// file through a symbolic link stays relative and carries the path the check reached.
+#[test]
+fn test_a_link_the_check_reaches_at_a_folder_is_external_with_its_destination() {
+    let folder = TempDir::new();
+    folder.write_file("docs/guide.md", "# Guide\n");
+    folder.write_file("src/main.md", "# Main\n");
+    folder.make_link("lnk", "src");
+    folder.write_file("real/guide.md", "# Real\n");
+    folder.make_link("alias.md", "real/guide.md");
+    folder.write_file(
+        "links.md",
+        "[d](docs) [d](docs/) [d](docs#part) [d](docs/#install) [alias](lnk) [guide](alias.md)\n",
+    );
+    let opened = open_folder(folder.path()).expect("the folder opens");
+
+    let document = document_of(select_file(&opened, "links.md"));
+
+    let targets: Vec<(String, LinkTarget)> = walked(&document).links;
+    let external = |destination: &str| (destination.to_string(), LinkTarget::External);
+    assert_eq!(
+        targets,
+        vec![
+            external("docs"),
+            external("docs/"),
+            external("docs#part"),
+            external("docs/#install"),
+            external("lnk"),
+            (
+                "alias.md".to_string(),
+                LinkTarget::Relative(PathBuf::from("real/guide.md"))
+            ),
+        ]
+    );
+}
+
 #[test]
 fn test_a_relative_link_nodes_target_fed_back_as_given_is_a_contained_file() {
     let (_scene, opened) = byte_scene();

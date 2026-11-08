@@ -679,21 +679,28 @@ fn test_an_image_format_is_judged_on_the_entry_the_check_reached() {
     );
 }
 
-/// CP-1072: a link the check locates at any entry inside the folder is relative, and carries the
-/// path the check reached; whether that entry is a file is decided when the link is activated.
+/// CP-1141 and CP-1142: a link the check reaches at a folder is external and carries its
+/// destination as written, with a fragment after the folder's path included; a link it reaches at a
+/// file is relative and carries the path the check reached.
 #[test]
-fn test_a_relative_link_carries_the_entry_the_check_reached_whatever_its_kind() {
+fn test_a_link_to_a_contained_folder_is_external_and_to_a_contained_file_relative() {
     let check = SeededContainment::new()
         .seeded("docs", folder_entry("docs"))
         .seeded("alias.md", file("real/guide.md"));
 
     assert_eq!(
-        inlines_of("[d](docs) [a](alias.md)\n", "", &check),
+        inlines_of("[d](docs) [e](docs#part) [a](alias.md)\n", "", &check),
         [
             Inline::Link {
                 content: vec![text("d")],
                 destination: "docs".to_string(),
-                target: LinkTarget::Relative(PathBuf::from("docs")),
+                target: LinkTarget::External,
+            },
+            text(" "),
+            Inline::Link {
+                content: vec![text("e")],
+                destination: "docs#part".to_string(),
+                target: LinkTarget::External,
             },
             text(" "),
             Inline::Link {
