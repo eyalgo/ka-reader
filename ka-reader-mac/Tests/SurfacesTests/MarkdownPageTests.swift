@@ -259,7 +259,9 @@ func aPlaceholderBoxInAListItemWearsTheSameToken() throws {
         pageDocument([
             .list(
                 .unordered,
-                items: [[.paragraph([.image(alt: "deep", .placeholder(.missing, source: "d.png"))])]])
+                items: [
+                    [.paragraph([.image(alt: "deep", .placeholder(.missing, source: "d.png"))])]
+                ])
         ]))
 
     try expectPlaceholderBox(page, alt: "deep", source: "d.png", sentence: sentence)

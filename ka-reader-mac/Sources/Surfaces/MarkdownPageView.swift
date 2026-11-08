@@ -138,7 +138,6 @@ private enum PageSpacing {
     static let indentStep: CGFloat = 20
     static let paragraphGap: CGFloat = 12
     static let proseMeasure: CGFloat = 704
-    static let boxPadding: CGFloat = 8
 }
 
 private enum PageType {
@@ -321,11 +320,7 @@ private struct PageBuilder {
         alt: String, source: String, sentence: String, base: [NSAttributedString.Key: Any]
     ) {
         endLineIfNeeded()
-        let block = NSTextBlock()
-        block.setBorderColor(CodeColors.line)
-        block.setWidth(1, type: .absoluteValueType, for: .border)
-        block.setWidth(PageSpacing.boxPadding, type: .absoluteValueType, for: .padding)
-        block.backgroundColor = CodeColors.surface
+        let block = PlaceholderBoxBlock(canvas: CodeColors.canvas, line: CodeColors.line)
         let lines: [(String, NSFont, NSColor)] = [
             (alt, PageType.body, CodeColors.primary),
             (source, PageType.path, CodeColors.inkMuted),
