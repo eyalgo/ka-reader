@@ -15,15 +15,16 @@
 # THE LAYOUT THE FILE IS READ IN
 #   Two-space YAML. Comment lines and blank lines are free. Top-level keys sit at column 0. The one
 #   job's step items open with six spaces and "- ", and a step's keys sit at eight spaces, their
-#   children at ten. Every run: value is one line, never a block scalar. No tab. A file the script
+#   children at ten. Every run: value is one line, never a block scalar. No tab. Under jobs:, every
+#   line is a key at one of those places: a more-indented line after a plain value would continue
+#   that value in YAML, so a run line could hold more than the script reads. A file the script
 #   cannot read in this layout is refused under the name Layout.
 #
 # USAGE
 #   checks/release-shape.sh .github/workflows/release.yml
 #   Exit 0: the file meets every requirement.
 #   Exit 1: one stderr line for each requirement found missing, out of order or broken, each
-#   carrying
-#     the requirement's name and CP id. Also exit 1 when the file is unreadable.
+#     carrying the requirement's name and CP id. Also exit 1 when the file is unreadable.
 #   Exit 2: an argument count other than one, with a usage line on stderr.
 #
 # WHAT IT READS AND WRITES
@@ -163,6 +164,17 @@ check_layout() {
   fi
   if [ "$(step_total)" -eq 0 ]; then
     echo "no step item was read under jobs:"
+    return
+  fi
+  # Under jobs:, a line that is not a key at one of the layout's places would continue the value
+  # above it in YAML, and the step table read above holds only that value's first line.
+  stray="$(printf '%s\n' "$body" | awk '
+    /^[^ ]/ { in_jobs = ($0 == "jobs:"); next }
+    !in_jobs { next }
+    !/^(  |    |      - |        |          )[A-Za-z0-9_-]+:( .*)?$/ { print; exit }
+  ')"
+  if [ -n "$stray" ]; then
+    echo "the line \"$stray\" under jobs: is not a key in the layout, so it would continue the value above it"
   fi
 }
 
@@ -406,6 +418,13 @@ check_no_secret_no_signing_one_permission() {
   expression="$(printf '%s\n' "$body" | grep -F '${{' | sed 's/^[[:space:]]*//' | grep -v -x -F -e 'GH_TOKEN: ${{ github.token }}' -e 'group: release-${{ github.ref }}' | head -n 1 || true)"
   if [ -n "$expression" ]; then
     echo "the expression in \"$expression\" is neither github.token in an env nor github.ref in the group"
+    return
+  fi
+  # An env: for the whole workflow, or for the job, reaches every step. A step's own env: sits at
+  # eight spaces, or opens its item.
+  wide_env="$(printf '%s\n' "$body" | grep -E '^[[:space:]]*(- )?env[[:space:]]*:' | grep -v -E '^(        |      - )env:' | head -n 1 || true)"
+  if [ -n "$wide_env" ]; then
+    echo "\"$wide_env\" is an env: that is not one step's own, so it reaches every step"
     return
   fi
   allowed_absent="$(the_step_running "$RUN_ABSENT")"

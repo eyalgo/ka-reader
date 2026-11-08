@@ -12,14 +12,13 @@
 #   link, no other file. The volume is named KA-Reader, the string the change text fixes. The
 #   version in the file name is the bundle's CFBundleShortVersionString.
 #   <outdir> must not exist, and the script creates it, so the folder holds one file and
-#   checks/release-sums.sh can die anything else.
+#   checks/release-sums.sh can refuse anything else.
 #
 # USAGE
 #   checks/release-pack.sh target/release/bundle/macos/KA-Reader.app dist
 #   Exit 0: packed.
 #   Exit 1: refused, with nothing left behind: <bundle> has no Contents/Info.plist, the bundle has
-#   no
-#     usable version key, <outdir> already exists, or hdiutil failed (the partial <outdir> is
+#     no usable version key, <outdir> already exists, or hdiutil failed (the partial <outdir> is
 #     removed). A hang-up, interrupt or terminate signal also ends 1, after the staging is removed.
 #   Exit 2: an argument count other than two, with a usage line on stderr.
 #
