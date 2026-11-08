@@ -6,9 +6,9 @@
 # WHY THIS EXISTS
 #   The Release offers two files, the disk image and SHA256SUMS. The script writes the second from
 #   the first, in the form shasum -a 256 prints: 64 lowercase hex digits, two spaces, the bare file
-#   name. The bare name is what makes `shasum -a 256 -c SHA256SUMS` work from inside the folder, which
-#   is the command the workflow's verify step runs and the one a person runs after downloading.
-#   <dir> must hold exactly one entry, a file matching KA-Reader-*.dmg. Together with
+#   name. The bare name is what makes `shasum -a 256 -c SHA256SUMS` work from inside the folder,
+#   which is the command the workflow's verify step runs and the one a person runs after
+#   downloading. <dir> must hold exactly one entry, a file matching KA-Reader-*.dmg. Together with
 #   checks/release-pack.sh, which writes into an empty folder, that makes the Release's two assets
 #   true by construction: nothing else can be in the folder when the Release is made.
 #
@@ -36,26 +36,27 @@ fi
 dir="$1"
 
 # Says why on stderr and ends with status 1.
-refuse() {
+die() {
   echo "$NAME: $*" >&2
   exit 1
 }
 
-[ -d "$dir" ] || refuse "$dir is not a folder"
-[ ! -e "$dir/$SUMS" ] || refuse "$dir already holds $SUMS"
+[ -d "$dir" ] || die "$dir is not a folder"
+[ ! -e "$dir/$SUMS" ] || die "$dir already holds $SUMS"
 
 entries="$(ls -A "$dir")"
-[ -n "$entries" ] || refuse "$dir is empty: it must hold the disk image"
+[ -n "$entries" ] || die "$dir is empty: it must hold the disk image"
 case "$entries" in
   *"
-"*) refuse "$dir holds more than one entry: it must hold the disk image alone" ;;
+"*) die "$dir holds more than one entry: it must hold the disk image alone" ;;
 esac
 case "$entries" in
   KA-Reader-*.dmg) ;;
-  *) refuse "$dir holds $entries, not a KA-Reader-*.dmg image" ;;
+  *) die "$dir holds $entries, not a KA-Reader-*.dmg image" ;;
 esac
-[ -f "$dir/$entries" ] || refuse "$dir/$entries is not a file"
+[ -f "$dir/$entries" ] || die "$dir/$entries is not a file"
 
-# From inside the folder, in a subshell, so the line carries the bare file name that shasum -c reads.
+# From inside the folder, in a subshell, so the line carries the bare file name that shasum -c
+# reads.
 (cd "$dir" && shasum -a 256 "$entries" > "$SUMS")
 echo "$NAME: wrote $dir/$SUMS"

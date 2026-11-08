@@ -8,9 +8,9 @@
 #   SHA256SUMS is what a person checks a download against, and the workflow runs shasum -c on it
 #   before it offers the Release. These cases run the real script — never a copy of its logic — on
 #   scratch folders holding a file named like the image. The checksum reads bytes, not an image, so
-#   the stand-in file is plain text. The cases assert the file's exact form, that the very command the
-#   workflow's verify step runs passes on it and fails once the image changes, and that every refusal
-#   leaves the folder as it found it.
+#   the stand-in file is plain text. The cases assert the file's exact form, that the very command
+#   the workflow's verify step runs passes on it and fails once the image changes, and that every
+#   refusal leaves the folder as it found it.
 #
 # USAGE
 #   checks/tests/test_release_sums.sh
