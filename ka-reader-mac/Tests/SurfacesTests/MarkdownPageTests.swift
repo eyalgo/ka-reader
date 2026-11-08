@@ -160,6 +160,7 @@ func anImageWhoseBytesAreNilDrawsTheUnreadableBox() throws {
     #expect(try page.boxes() == [["the logo", "img/logo.png", unreadable]])
     #expect(try page.attachments().isEmpty)
     #expect(page.textView.string.contains("still here"))
+    try expectPlaceholderBox(page, alt: "the logo", source: "img/logo.png", sentence: unreadable)
 }
 
 @MainActor
@@ -176,10 +177,10 @@ func eachMalformedBitmapDrawsTheUnreadableBoxAndThePageSurvives(name: String) th
     #expect(try page.boxes() == [["broken", "logo.png", unreadable]])
     #expect(try page.attachments().isEmpty)
     #expect(page.textView.string.contains("after the image"))
+    try expectPlaceholderBox(page, alt: "broken", source: "logo.png", sentence: unreadable)
 }
 
-@MainActor
-@Test(arguments: [
+private let placeholderConditionSentences: [(ImagePlaceholderCondition, String)] = [
     (
         ImagePlaceholderCondition.outsideTheFolder,
         "This image is outside the folder you opened, so KA-Reader doesn't read it."
@@ -187,7 +188,10 @@ func eachMalformedBitmapDrawsTheUnreadableBoxAndThePageSurvives(name: String) th
     (ImagePlaceholderCondition.missing, "There's no file where this image points."),
     (ImagePlaceholderCondition.unreadable, "KA-Reader can't read this image."),
     (ImagePlaceholderCondition.formatNotDecoded, "KA-Reader doesn't show images in this format."),
-])
+]
+
+@MainActor
+@Test(arguments: placeholderConditionSentences)
 func aPlaceholderBoxHoldsTheAltTheSourceAndItsConditionsSentence(
     condition: ImagePlaceholderCondition, sentence: String
 ) throws {
@@ -200,6 +204,70 @@ func aPlaceholderBoxHoldsTheAltTheSourceAndItsConditionsSentence(
     #expect(try page.attachments().isEmpty)
     if condition != .outsideTheFolder {
         #expect(!page.textView.string.contains("outside the folder"))
+    }
+}
+
+// MARK: - The placeholder box's surface (CP-1156 – CP-1160, CP-1162)
+
+private let lineLight: UInt32 = 0xD8D8D4
+private let lineDark: UInt32 = 0x3B3C41
+private let pageGroundLight: UInt32 = 0xFBFBFA
+private let pageGroundDark: UInt32 = 0x1B1C1E
+private let boxPadding: CGFloat = 12
+private let boxHairline: CGFloat = 1
+
+/// The one block a placeholder box's three paragraphs sit in: the canvas background, a one-point
+/// `{colors.line}` border and `{spacing.md}` of padding on every edge, in both appearances.
+@MainActor
+private func expectPlaceholderBox(
+    _ page: MarkdownPageView, alt: String, source: String, sentence: String
+) throws {
+    let held = try [alt, source, sentence].map { try page.textBlocks(at: $0) }
+    #expect(held.allSatisfy { $0.count == 1 })
+    let block = try #require(held.first?.first)
+    #expect(held.allSatisfy { $0.first === block })
+    #expect(hexValue(of: block.backgroundColor, under: .aqua) == canvasLight)
+    #expect(hexValue(of: block.backgroundColor, under: .darkAqua) == canvasDark)
+    for edge in allEdges {
+        #expect(block.width(for: .border, edge: edge) == boxHairline)
+        #expect(hexValue(of: block.borderColor(for: edge), under: .aqua) == lineLight)
+        #expect(hexValue(of: block.borderColor(for: edge), under: .darkAqua) == lineDark)
+        #expect(block.width(for: .padding, edge: edge) == boxPadding)
+    }
+}
+
+@MainActor
+@Test(arguments: placeholderConditionSentences)
+func aPlaceholderBoxWearsTheCanvasTheHairlineAndThePaddingInEveryCondition(
+    condition: ImagePlaceholderCondition, sentence: String
+) throws {
+    let page = makePage(
+        pageDocument([
+            .paragraph([.image(alt: "alt words", .placeholder(condition, source: "pics/a b.svg"))])
+        ]))
+
+    try expectPlaceholderBox(page, alt: "alt words", source: "pics/a b.svg", sentence: sentence)
+    #expect(hexValue(of: page.textView.backgroundColor, under: .aqua) == pageGroundLight)
+    #expect(hexValue(of: page.textView.backgroundColor, under: .darkAqua) == pageGroundDark)
+}
+
+@MainActor
+@Test
+func aPlaceholderBoxInAListItemWearsTheSameToken() throws {
+    let sentence = "There's no file where this image points."
+    let page = makePage(
+        pageDocument([
+            .list(
+                .unordered,
+                items: [
+                    [.paragraph([.image(alt: "deep", .placeholder(.missing, source: "d.png"))])]
+                ])
+        ]))
+
+    try expectPlaceholderBox(page, alt: "deep", source: "d.png", sentence: sentence)
+    let block = try #require(try page.textBlocks(at: "deep").first)
+    for edge in allEdges {
+        #expect(block.width(for: .margin, edge: edge) == 0)
     }
 }
 
