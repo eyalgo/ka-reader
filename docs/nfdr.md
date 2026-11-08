@@ -2,7 +2,8 @@
 
 **Status:** Settled
 **Owner:** Principal Architect
-**Version:** 85 — Fold cycle-76 §§ 3.1–3.3, the close: § 9's suites bullet is re-measured at `ka-reader@3fa227e` — seventeen suites, `test_tree_scene.sh` and `test_offline_page.sh` added, every locator re-pinned and the fifteen kept as a dated reading; QC-2's and QC-35's locators for the walk's dropped Git answer are re-pinned with their commit; QC-70 states the check scripts' exit statuses as the product's own and sets the shell packet's two-status line aside for `checks/*.sh`. The companion is removed; Status is Settled — RN-95.
+**Version:** 86 — Fold cycle-77 § 3.1, the close: QC-70 records a known gap at `ka-reader@8823057` — `checks/offline-page.sh` ends its comparison pipeline `|| true`, so under `pipefail` a failed comparison, `diff`'s exit 2 among them, prints `same` and ends 0 — and its `verified by:` names the suite case the fix owes, held by `development-design` until it lands. The companion is removed; Status is Settled — RN-96.
+Version 85 — Fold cycle-76 §§ 3.1–3.3, the close: § 9's suites bullet is re-measured at `ka-reader@3fa227e` — seventeen suites, `test_tree_scene.sh` and `test_offline_page.sh` added, every locator re-pinned and the fifteen kept as a dated reading; QC-2's and QC-35's locators for the walk's dropped Git answer are re-pinned with their commit; QC-70 states the check scripts' exit statuses as the product's own and sets the shell packet's two-status line aside for `checks/*.sh`. The companion is removed; Status is Settled — RN-95.
 Version 84 — Fold cycle-75 §§ 3.1–3.3, the close: ADR-0026 supersedes ADR-0025 — a *relative* link is a contained file's path, sent as one `open_relative_link` call, and a folder target is *external* — and ADR-0027 supersedes ADR-0014, whose *rests on* paragraph names TextKit 1's `NSLayoutManager`; the thirteen entries that traced to either record trace to its successor, and no obligation changes. The companion is removed; Status is Settled — RN-94.
 Version 83 — Fold cycle-74 § 2.1, the close, on SDD v75: QC-10 is taken as drafted; QC-69 is taken as drafted but for its third verifier, which narrows from the whole tree's `0o000` grep to the files the seam's building change names — 23 of the 37 lines at `ka-reader@98aaa71`, in 8 files — and its obligation sentence narrows the same way; the 14 lines outside the seam are named as outside it. The companion is removed; Status is Settled — RN-93.
 Version 82 — Fold cycle-73 § 3.1 and draft § 2.1, on SDD v74: QC-10's edge into the renderer names `is_bitmap`'s call for `asset_bytes`, bound (2) and the review clause name `asset_bytes` and `link_file`, the model's reads are held to SM-1's read seam and point at its cell, and the setting-aside narrows to building `FolderContainment`; QC-69, drafted, binds the read seam's one fake and one contract suite as owed; one choice awaits the owner — RN-92.
@@ -2525,6 +2526,17 @@ answer at `docs/trail/architecture/cycle-51.md` § 3.2 — RN-69)*.
   `grep -ohE 'exit [0-9]+' checks/*.sh`, finds only 0, 1, 2, 130 and 143 there. That is a dated
   reading and not a check, because no literal scan reads a status a script computes
   (`exit "$status"`).
+  One defect stands at `ka-reader@8823057`, a known gap until a change lands; the script is
+  unchanged there since `ka-reader@3fa227e`. `checks/offline-page.sh` ends its comparison
+  pipeline, `diff … | sed … | cut -f 1 | LC_ALL=C sort -u`, with `|| true` (`:L219-L220`), and
+  under `pipefail` (`:L39`) that turns every non-zero status of the pipeline into 0, not only the
+  `diff` exit 1 its comment gives the `|| true` for (`:L216-L218`). `diff`'s exit 2 is the
+  measured case; a failing `sed`, `cut` or `sort` is swallowed the same way. The differing list
+  then comes back empty, and `:L222-L224` print `same` and end 0 on a comparison that did not run.
+  That breaks "only a pass is 0", and the page promise the script proves — every surface renders
+  whole with the network unavailable (`docs/UXD.md` UX-I15) — can read held when it was not
+  checked. A failed comparison is a precondition that failed, so the fix ends 1, never 0; how the
+  script tells `diff`'s 1 from its 2 is the delivery tier's.
   — *verified by:* where a script refuses a wrong invocation today, its suite asserts the 2
   (layer 6), each suite a step of `checks/gate.sh` (§ 9): `checks/tests/test_read_only.sh` —
   `test_no_argument_is_a_usage_error` (`:L546`) and `test_extra_argument_is_a_usage_error`
@@ -2535,10 +2547,16 @@ answer at `docs/trail/architecture/cycle-51.md` § 3.2 — RN-69)*.
   script, or a new way an existing one ends, is held against this entry by `development-design`
   reading it, and the check that change owes is a case in the script's suite asserting each status
   it returns *(added at v85, on the owner's seat's answer at
-  `docs/trail/architecture/cycle-76.md` § 3.3 — RN-95)* *(traces to: SDD § 3 `read-only-harness`
+  `docs/trail/architecture/cycle-76.md` § 3.3 — RN-95)*. The swallowed comparison owes its own
+  case: one in `checks/tests/test_offline_page.sh` that makes the comparison fail and requires a
+  non-zero end with no `same` on stdout (layer 6). No such case is in the suite at
+  `ka-reader@8823057`, so until the change that adds it lands, `development-design` reading this
+  entry is its gate *(added at v86, on the owner's seat's answer at
+  `docs/trail/architecture/cycle-77.md` § 3.1 — RN-96)* *(traces to: SDD § 3 `read-only-harness`
   row, "usage and exit 2 on any other count" for `offline-page.sh`; `languages/README.md`
   § Precedence for the setting-aside; ADR-0012 § Decision — "a gate that cannot go red has not
-  run" — for the clause that only a pass is 0 — RN-95)*
+  run" — for the clause that only a pass is 0 — RN-95; `docs/UXD.md` UX-I15 for the promise the
+  swallowed comparison can read as held — RN-96)*
 
 ## 9. Test strategy
 
@@ -3193,10 +3211,10 @@ is stated once, in § 8 *(added at v56, on the owner's answer at `docs/trail/arc
 | QC-65 | the launching and home-reading steps refuse outside a virtual machine | the refusal case in each guarded script's suite, and the two guarded suites' cases in `checks/tests/test_vm_refusal.sh`, the tree-scene helper's case in `checks/tests/test_tree_scene.sh` and in `checks/tests/test_vm_refusal.sh`; the gate tool's `Environment:` line | the change | `development-implementation` |
 | QC-67 | a check script's own environment reads are bounds or seams, and none reaches a gate run | a case in a gate suite setting each listed variable to a sabotaging value; a scan of `checks/*.sh` for a script's own environment reads — neither in the tree at `ka-reader@2529a42` | the change; the tree | `development-design` reading the entry until both land |
 | QC-68 | the containment port's one implementation, one fake and one contract suite | `cargo test --locked -p ka-reader-core --test containment`, against `FolderContainment` and `SeededContainment` (layer 2); `grep -rnE '^[[:space:]]*impl ContainmentCheck for' crates` printing the two alone; the two manifest greps QC-68 names | the change; the tree | `development-implementation` (the suite, through the gate's *Test gate*); `development-design` when a change touches the port (the greps) |
-| QC-70 | a check script exits 0 on a pass alone, 1 on a refusal, 2 on a wrong invocation, 128 + n or 1 on a signal, or a run child's status | `checks/tests/test_read_only.sh` — `test_no_argument_is_a_usage_error`, `test_extra_argument_is_a_usage_error`; `checks/tests/test_offline_page.sh` — `test_no_argument_and_two_arguments_print_usage_and_exit_two` | the change | `development-implementation` (the suites, through `checks/gate.sh`); `development-design` reading the entry (a new script, or a new way one ends) |
+| QC-70 | a check script exits 0 on a pass alone, 1 on a refusal, 2 on a wrong invocation, 128 + n or 1 on a signal, or a run child's status | `checks/tests/test_read_only.sh` — `test_no_argument_is_a_usage_error`, `test_extra_argument_is_a_usage_error`; `checks/tests/test_offline_page.sh` — `test_no_argument_and_two_arguments_print_usage_and_exit_two`; a case in `checks/tests/test_offline_page.sh` that fails the comparison and requires a non-zero end with no `same` — not in the suite at `ka-reader@8823057` | the change | `development-implementation` (the suites, through `checks/gate.sh`); `development-design` reading the entry (a new script, or a new way one ends; the failed comparison until its case lands) |
 
 Entries with no row are review gates, each arguing its downgrade in its own tail: QC-10 (the setting-aside
-of the trait-collaborator line, and the read seam until it is built), QC-13 (the delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a listed crate and name), QC-18, QC-21, QC-31, QC-33, QC-43, QC-45, QC-50, QC-54, QC-57, QC-69 (until the read seam is built), QC-70 (a new script's statuses, or a new way one ends), and QC-59's behaviour member.
+of the trait-collaborator line, and the read seam until it is built), QC-13 (the delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a listed crate and name), QC-18, QC-21, QC-31, QC-33, QC-43, QC-45, QC-50, QC-54, QC-57, QC-69 (until the read seam is built), QC-70 (a new script's statuses, or a new way one ends, and the offline-page check's failed comparison until its case lands), and QC-59's behaviour member.
 
 ---
 
@@ -8526,3 +8544,42 @@ of the trait-collaborator line, and the read seam until it is built), QC-13 (the
   None is renumbered or reused. The inputs' status lines read as in the header, so the
   `Inputs read:` line stands. `docs/trail/architecture/cycle-76.md` holds the answered companion
   whole. Nothing is left open, so the companion is removed and `Status:` is Settled.
+- **RN-96:** *(v86 — the cycle-77 fold, § 3.1, and the close)* The owner's seat's committed answer
+  at `docs/trail/architecture/cycle-77.md` § 3.1 authorizes this fold. Its reasoning is
+  `docs/trail/architecture/self_answer-80.md` § 3.1. No `product-architecture` run wrote that
+  companion: the Principal PM opened it on 2026-11-08 and raised one item against QC-70, read at
+  `ka-reader@8823057`.
+
+  **§ 3.1 → QC-70, a known-gap sentence and an owed case.** The answer is taken as written.
+  QC-70 gains one known-gap sentence after its dated reading, in the form QC-67 uses for its
+  three: `checks/offline-page.sh:L219-L220` ends the comparison pipeline `|| true`, which under
+  `pipefail` (`:L39`) turns every non-zero status of that pipeline into 0, so `:L222-L224` print
+  `same` and end 0 on a comparison that did not run. `diff`'s exit 2 is the measured case, and a
+  failing `sed`, `cut` or `sort` is swallowed the same way. The item named `diff` alone; the answer
+  widened it to the pipeline, and the sentence carries the wider form. The fix ends 1, never 0;
+  how the script tells `diff`'s 1 from its 2 is left to the delivery tier. `verified by:` gains the
+  case the fix owes in `checks/tests/test_offline_page.sh`, which is not in the suite at
+  `8823057`, so `development-design` reading QC-70 is its gate until that change lands. § 10's
+  QC-70 row names the owed case, and the closing list of review gates names the failed comparison
+  under QC-70.
+
+  **Beyond the answer's words.** Two things, each named here. (1) The answer names the page
+  promise as UX-I15 without a locator; the sentence and the trace tail cite it as `docs/UXD.md`
+  UX-I15 and quote the half the script proves, "every surface renders whole with the network
+  unavailable". (2) The sentence cites the script at its commit and names neither the unit nor the
+  code-integrity report the item's evidence came from, and the item's *Tracked by* line stays out
+  of the record, because the definition set never names the journey. The answer says the same.
+
+  **Read by this run.** At `ka-reader@c46d866`, whose `checks/` tree is `8823057`'s
+  (`git diff --stat 8823057 HEAD -- checks/` prints nothing), and `8823057`'s is `3fa227e`'s for
+  `checks/offline-page.sh` and `checks/tests/test_offline_page.sh` (`git diff --stat` on both
+  prints nothing): `checks/offline-page.sh:L37-L39`, `:L52-L76` and `:L216-L226`; the suite's
+  fourteen case names at `checks/tests/test_offline_page.sh:L36-L49`; QC-67 and QC-70 as v85 holds
+  them; `docs/UXD.md` UX-I15. No product test ran: nothing under `crates/`, `checks/` or
+  `ka-reader-mac/` is changed by this fold.
+
+  **Limits.** No ADR is written or restatused, so the index is unchanged. No `QC` is added,
+  renumbered or reused; QC-70 is the one entry edited. The inputs' status lines read as in the
+  header, so the `Inputs read:` line stands. `docs/trail/architecture/cycle-77.md` holds the
+  answered companion whole. Nothing is left open, so the companion is removed and `Status:` stays
+  Settled.
