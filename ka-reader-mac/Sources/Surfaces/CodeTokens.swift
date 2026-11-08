@@ -1,12 +1,14 @@
 import AppKit
 
 /// The reading panel's colours: for the code view, the five code tokens, the `surface` ground, the
-/// base ink `primary` and the line numbers' `gutter` colour, and for the path line, `inkMuted` and
-/// the `line` hairline, each with the light and dark values of `docs/DESIGN.md` § Colors "The two
-/// themes". A colour resolves when it is drawn, so an appearance change recolours the text without
-/// the file being selected again (CP-314, CP-359), the way `RootItemsView`'s bar colour does.
+/// base ink `primary` and the line numbers' `gutter` colour, for the path line, `inkMuted` and
+/// the `line` hairline, and for a code cell on the Markdown page, the `canvas` surface, each with
+/// the light and dark values of `docs/DESIGN.md` § Colors "The two themes". A colour resolves when
+/// it is drawn, so an appearance change recolours the text without the file being selected again
+/// (CP-314, CP-359), the way `RootItemsView`'s bar colour does.
 enum CodeColors {
     static let surface = dynamic(light: 0xFBFBFA, dark: 0x1B1C1E)
+    static let canvas = dynamic(light: 0xF2F2F0, dark: 0x232427)
     static let primary = dynamic(light: 0x1E1F22, dark: 0xE7E7E4)
     static let gutter = dynamic(light: 0x6F7177, dark: 0x8E8F94)
     static let inkMuted = dynamic(light: 0x5B5D63, dark: 0xABACB0)
@@ -62,4 +64,12 @@ enum CodeSpacing {
     static let inset: CGFloat = 16
     static let gutterBase: CGFloat = 24
     static let gutterPadding: CGFloat = 8
+}
+
+/// The Markdown page's code cell, `docs/DESIGN.md` `{components.prose-code}`: `{spacing.xs}` of room
+/// between the code and the edge of its surface, and `{rounded.sm}` at that surface's corners. Both
+/// the block's surface and the inline fill read them.
+enum CodeCell {
+    static let padding: CGFloat = 4
+    static let cornerRadius: CGFloat = 3
 }
