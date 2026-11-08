@@ -56,13 +56,13 @@ jobs:
       # The audit runs after the gate and before anything is packed. It is the release gate the
       # gate cannot run: it reads the advisory database on the network. cargo-audit 0.22.2 is the
       # version measured for this change. It installs into the runner's cargo home, not the
-      # workspace, so it adds no Cargo.lock entry. No advisory is ignored. To ignore one, add
-      # --ignore RUSTSEC-<year>-<number> to the audit line and, in this comment block directly
-      # above that line, a comment line "# RUSTSEC-<year>-<number>: <the reason>".
+      # workspace, so it adds no Cargo.lock entry.
       - name: Install cargo-audit
         run: cargo install cargo-audit --version 0.22.2 --locked
 
       - name: Cargo audit
+        # No advisory is ignored. To ignore one, add --ignore RUSTSEC-<year>-<number> to the line
+        # below and, directly above it, a comment line "# RUSTSEC-<year>-<number>: <the reason>".
         run: cargo audit
 
       - name: Version
