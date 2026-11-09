@@ -2016,10 +2016,14 @@ test_licence_refusal_leaves_no_temporary() {
   mkdir -p "$WORK/stubs-no-temporary" "$WORK/tmpdir-no-temporary"
   make_stub "$WORK/stubs-no-temporary" open "echo \"\$@\" >> \"$WORK/open-no-temporary.log\""
 
-  TMPDIR="$WORK/tmpdir-no-temporary" PATH="$WORK/stubs-no-temporary:$PATH" "$BUNDLE_SH" "$copy" > /dev/null 2>&1
+  TMPDIR="$WORK/tmpdir-no-temporary" PATH="$WORK/stubs-no-temporary:$PATH" "$BUNDLE_SH" "$copy" > /dev/null 2> "$WORK/no-temporary.err"
   STATUS=$?
 
+  # Any refusal cleans up through the exit trap, so the run must be this rule's refusal for the
+  # empty directory to say anything about it.
   [ "$STATUS" -eq 1 ] || fail "expected exit 1, got $STATUS" || return 1
+  grep -q -x -F -- "$LICENCE_CLOSING_LINE" "$WORK/no-temporary.err" \
+    || fail "the run was not refused by the licence-and-notices rule. stderr: $(cat "$WORK/no-temporary.err")" || return 1
   left="$(ls -A "$WORK/tmpdir-no-temporary")"
   [ -z "$left" ] || fail "the refused run left in its temporary directory: $left"
 }
