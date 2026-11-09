@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Version: 1.1.0 — the missing names' byte order is held under a locale that orders them otherwise,
+#   and a name at the start of the file or directly between table bars is held as present
 # Version: 1.0.0 — first version: drives the real checks/notices.sh over fixture notices files with a
 #   stand-in `cargo`, and over the real tree
 #
@@ -36,6 +38,7 @@ CASES="
 test_covering_file_passes
 test_two_missing_names_are_both_named_in_byte_order
 test_a_name_inside_a_longer_name_or_in_another_case_is_missing
+test_missing_names_are_in_byte_order_under_another_locale
 test_a_name_between_non_name_characters_or_at_the_end_of_the_file_is_present
 test_absent_notices_file_is_a_refusal
 test_unreadable_notices_file_is_a_refusal
@@ -174,16 +177,34 @@ $(miss_line serde)
 $(miss_line thiserror)"
 }
 
-# CP-1198: a name between non-name characters, or at the very end of the file, is present.
+# CP-1200: the missing names come in byte order whatever the locale the run inherits. Under a
+# US-English collation `alpha` sorts before `Zeta`, and in bytes after it, so this pair tells a byte
+# sort from a locale one where `alpha` and `zeta` cannot.
+test_missing_names_are_in_byte_order_under_another_locale() {
+  case_dirs byte-order
+  make_cargo "$STUBS" beta alpha Zeta
+  printf '| `beta` | `MIT` |\n' > "$CWD/THIRD_PARTY_NOTICES.md"
+
+  ( cd "$CWD" && LC_ALL=en_US.UTF-8 PATH="$STUBS:$PATH" "$NOTICES_SH" ) > "$WORK/stdout" 2> "$WORK/stderr"
+  STATUS=$?
+
+  expect_status 1 || return 1
+  expect_stdout_empty || return 1
+  expect_lines "$WORK/stderr" "$(miss_line Zeta)
+$(miss_line alpha)"
+}
+
+# CP-1198: a name between non-name characters, directly between table bars, at the very start of the
+# file, or at the very end of it, is present.
 test_a_name_between_non_name_characters_or_at_the_end_of_the_file_is_present() {
   case_dirs boundaries
-  make_cargo "$STUBS" alpha beta gamma
-  printf '`alpha`\n| beta |\ngamma' > "$CWD/THIRD_PARTY_NOTICES.md"
+  make_cargo "$STUBS" alpha beta delta epsilon gamma
+  printf 'delta\n`alpha`\n| beta |\n|epsilon|\ngamma' > "$CWD/THIRD_PARTY_NOTICES.md"
 
   run_notices "$CWD" "$STUBS"
 
   expect_status 0 || return 1
-  expect_lines "$WORK/stdout" "notices.sh: 3 names in cargo tree, each in THIRD_PARTY_NOTICES.md" || return 1
+  expect_lines "$WORK/stdout" "notices.sh: 5 names in cargo tree, each in THIRD_PARTY_NOTICES.md" || return 1
   expect_stderr_empty
 }
 
