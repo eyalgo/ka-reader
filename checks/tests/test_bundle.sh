@@ -80,6 +80,8 @@ WORK=""
 
 CASES="
 test_real_bundle_passes
+test_built_bundle_carries_the_licence_and_notices
+test_built_bundle_seal_covers_the_copies
 test_probe_waits_past_an_early_unsandboxed_report
 test_first_ask_holding_all_three_passes
 test_pass_line_states_the_window_in_force
@@ -386,6 +388,38 @@ test_real_bundle_passes() {
   expect_output_lacks "glyph missing from" || return 1
   expect_output_lacks "glyph outside" || return 1
   expect_no_bundle_process "$APP"
+}
+
+# CP-1208, CP-1209: the built bundle carries the tree's licence and notices byte for byte, under the
+# names the bundle gives them, and the icon set's licence is still where it was. The tree's files are
+# the sources, so a copy that was edited or left stale fails.
+test_built_bundle_carries_the_licence_and_notices() {
+  resources="$APP/Contents/Resources"
+  [ -f "$resources/KA-Reader-LICENSE" ] && cmp -s "$ROOT/LICENSE" "$resources/KA-Reader-LICENSE" \
+    || fail "Contents/Resources/KA-Reader-LICENSE is absent or is not the tree's LICENSE" || return 1
+  [ -f "$resources/THIRD_PARTY_NOTICES.md" ] && cmp -s "$ROOT/THIRD_PARTY_NOTICES.md" "$resources/THIRD_PARTY_NOTICES.md" \
+    || fail "Contents/Resources/THIRD_PARTY_NOTICES.md is absent or is not the tree's THIRD_PARTY_NOTICES.md" || return 1
+  cmp -s "$ROOT/third_party/lucide/LICENSE" "$resources/LICENSE" \
+    || fail "Contents/Resources/LICENSE is not the icon set's licence, third_party/lucide/LICENSE"
+}
+
+# CP-1210: the signature covers the copies — both are in the bundle the seal was verified over, the
+# seal holds and is ad hoc, and Info.plist is the product's own at the floor it declares. The
+# version string is not pinned: the release workflow stamps it.
+test_built_bundle_seal_covers_the_copies() {
+  [ -f "$APP/Contents/Resources/KA-Reader-LICENSE" ] && [ -f "$APP/Contents/Resources/THIRD_PARTY_NOTICES.md" ] \
+    || fail "both copies must be in the bundle whose seal is verified" || return 1
+  codesign --verify --strict "$APP" > /dev/null 2>&1 \
+    || fail "codesign --verify --strict refused the built bundle" || return 1
+  signature="$(codesign -dv "$APP" 2>&1 || true)"
+  case "$signature" in
+    *"Signature=adhoc"*) ;;
+    *) fail "the built bundle is not signed ad hoc. codesign said: $signature" || return 1 ;;
+  esac
+  cmp -s "$ROOT/ka-reader-mac/Info.plist" "$APP/Contents/Info.plist" \
+    || fail "Contents/Info.plist is not ka-reader-mac/Info.plist" || return 1
+  floor="$(/usr/libexec/PlistBuddy -c 'Print :LSMinimumSystemVersion' "$APP/Contents/Info.plist" 2> /dev/null || true)"
+  [ "$floor" = "26.0" ] || fail "LSMinimumSystemVersion reads '$floor', expected 26.0"
 }
 
 # CP-73: the loop asks past an early report that falls short and passes on the first ask holding all
