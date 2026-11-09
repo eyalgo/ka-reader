@@ -164,6 +164,8 @@ test_negative_control_refuses_a_bundle_lacking_the_notices_copy
 test_licence_rule_judges_before_the_probe_is_compiled
 test_unreadable_tree_notices_is_refused
 test_unreadable_tree_licence_is_refused
+test_both_unreadable_tree_files_name_the_licence_only
+test_unreadable_tree_file_is_refused_before_any_copy_is_compared
 test_symlinked_copy_reads_as_missing
 test_licence_refusal_leaves_no_temporary
 test_header_names_the_licence_and_notices_rule
@@ -1948,8 +1950,9 @@ test_negative_control_refuses_a_bundle_lacking_the_notices_copy() {
   expect_no_bundle_process "$copy"
 }
 
-# CP-1219: the rule judges before the probe is compiled, so a refused bundle costs no compile and no
-# launch.
+# CP-1215: the rule judges before the probe is compiled, so a refused bundle costs no compile and no
+# launch. The refusal must be this rule's own, exit 1, or a refusal by an earlier rule would pass the
+# case without the rule having judged anything.
 test_licence_rule_judges_before_the_probe_is_compiled() {
   copy="$(copy_without before-probe "$LICENCE_COPY")" || fail "could not build the copy" || return 1
   mkdir -p "$WORK/stubs-before-probe"
@@ -1957,19 +1960,26 @@ test_licence_rule_judges_before_the_probe_is_compiled() {
 
   run_split_unlaunched before-probe "$copy"
 
-  expect_nonzero_status || return 1
+  expect_stderr_exactly before-probe \
+    "missing from the bundle: $LICENCE_COPY (the tree's LICENSE)" "$LICENCE_CLOSING_LINE" || return 1
   [ ! -e "$WORK/rustc-before-probe.log" ] \
     || fail "rustc was called before the rule judged: $(cat "$WORK/rustc-before-probe.log")" || return 1
-  expect_not_launched before-probe
+  expect_no_bundle_process "$copy"
 }
 
-# A directory holding a `cp` that forwards every call to the real one except a read of a path ending
-# in $2, which it fails with cp's own shape of message and status.
+# A directory $1 holding a `cp` that forwards every call to the real one except a read of a path
+# ending in one of the names after $1, which it fails with cp's own shape of message and status.
 failing_cp_stub() {
-  mkdir -p "$1"
-  make_stub "$1" cp "for argument in \"\$@\"; do
+  stub_dir="$1"
+  shift
+  unreadable=""
+  for name in "$@"; do
+    unreadable="${unreadable:+$unreadable | }*/$name"
+  done
+  mkdir -p "$stub_dir"
+  make_stub "$stub_dir" cp "for argument in \"\$@\"; do
   case \"\$argument\" in
-    */$2) echo \"cp: \$argument: Permission denied\" >&2; exit 1 ;;
+    $unreadable) echo \"cp: \$argument: Permission denied\" >&2; exit 1 ;;
   esac
 done
 exec /bin/cp \"\$@\""
@@ -1995,6 +2005,31 @@ test_unreadable_tree_licence_is_refused() {
   expect_stderr_exactly unreadable-licence \
     "bundle.sh: cannot read the tree's LICENSE, so the bundle's copy was not compared; the bundle was not launched" || return 1
   expect_no_bundle_process "$APP"
+}
+
+# CP-1216: the tree files are read in the list's order, LICENSE first, and the first read that fails
+# ends the run. With both unreadable, only LICENSE is named.
+test_both_unreadable_tree_files_name_the_licence_only() {
+  failing_cp_stub "$WORK/stubs-unreadable-both" LICENSE THIRD_PARTY_NOTICES.md
+
+  run_split_unlaunched unreadable-both "$APP"
+
+  expect_stderr_exactly unreadable-both \
+    "bundle.sh: cannot read the tree's LICENSE, so the bundle's copy was not compared; the bundle was not launched" || return 1
+  expect_no_bundle_process "$APP"
+}
+
+# CP-1216: both tree files are read before any copy is compared, so a tree file that cannot be read
+# ends the run with no CP-1214 line, even on a bundle whose licence copy is missing.
+test_unreadable_tree_file_is_refused_before_any_copy_is_compared() {
+  copy="$(copy_without unreadable-before-compare "$LICENCE_COPY")" || fail "could not build the copy" || return 1
+  failing_cp_stub "$WORK/stubs-unreadable-before-compare" THIRD_PARTY_NOTICES.md
+
+  run_split_unlaunched unreadable-before-compare "$copy"
+
+  expect_stderr_exactly unreadable-before-compare \
+    "bundle.sh: cannot read the tree's THIRD_PARTY_NOTICES.md, so the bundle's copy was not compared; the bundle was not launched" || return 1
+  expect_no_bundle_process "$copy"
 }
 
 # CP-1214: a copy that is not a regular file is missing, a symlink to the tree's own file included.
