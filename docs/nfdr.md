@@ -2,7 +2,8 @@
 
 **Status:** Settled
 **Owner:** Principal Architect
-**Version:** 90 — Fold cycle-81 § 3.1, the close: QC-41's tail names the check that now holds the bundle's copies — `checks/bundle.sh` and its suite, run by the gate's *Bundle probe* and *Bundle probe suite* steps at every change and, through the release workflow's *Test gate*, on the bundle its *Disk image* step packs — and the *Release image suite* step for the copy dragged off the image, with release inspection of the downloaded bundle kept; the copyright lines are the one rule still owed, held by `development-design` and release inspection until `checks/notices.sh` is extended; the statement's `assemble.sh` locators are re-pinned at `ka-reader@b503b6d`, with `06e4a34`'s kept as the dated reading; QC-41's § 10 row and § 10's review-gate list follow. The companion is removed; Status is Settled — RN-100.
+**Version:** 91 — Fold cycle-82 §§ 3.1–3.2, the close: QC-41's tail names `checks/notices.sh` 1.1.0 and its suite as holding the crates' copyright lines beside the names, re-pinned at `ka-reader@75fe66c`, and keeps release inspection for what the check does not read — the libraries' and the icon set's copyright lines, `NOTICE` files, the no-licence-file and no-copyright-line sentences, and each licence as declared — with `development-design` no longer that rule's gate; QC-71 moves to the two repositories: the check covers exactly the commits the public repository receives and never `ka-reader-dev`'s refs, its secrets half is QC-28's *Secret scan* as built with nothing widened, and it gains the public repository's one branch, its `main` refusing a force push and a deletion, and each release keeping the previous one's history whole; both § 10 rows and § 10's review-gate list follow. The companion is removed; Status is Settled — RN-101.
+Version 90 — Fold cycle-81 § 3.1, the close: QC-41's tail names the check that now holds the bundle's copies — `checks/bundle.sh` and its suite, run by the gate's *Bundle probe* and *Bundle probe suite* steps at every change and, through the release workflow's *Test gate*, on the bundle its *Disk image* step packs — and the *Release image suite* step for the copy dragged off the image, with release inspection of the downloaded bundle kept; the copyright lines are the one rule still owed, held by `development-design` and release inspection until `checks/notices.sh` is extended; the statement's `assemble.sh` locators are re-pinned at `ka-reader@b503b6d`, with `06e4a34`'s kept as the dated reading; QC-41's § 10 row and § 10's review-gate list follow. The companion is removed; Status is Settled — RN-100.
 Version 89 — Fold cycle-80 §§ 3.1–3.5, the close: QC-41 states that every release carries `LICENSE` and `THIRD_PARTY_NOTICES.md` at the root of the tagged source and inside `KA-Reader.app` in the disk image, byte-identical to the tree's, and that each notice entry carries its component's copyright lines and any `NOTICE` file as well as its licence; its tail names the gate's *Notices check* and *Notices check suite* steps at every change and the release workflow's *Test gate* at a tag, and names the two rules owed to `checks/bundle.sh` and to an extended `checks/notices.sh`, held by `development-design` until they land; § 9's suites bullet is re-measured at twenty-three suites with the twenty-two kept as a dated reading; QC-70's dated reading is re-measured at `ka-reader@06e4a34` with `checks/notices.sh`'s statuses. The companion is removed; Status is Settled — RN-99.
 Version 88 — Fold cycle-79 § 3.1 and settle § 2.1 from upstream, the close: QC-42 binds what `SECURITY.md` promises and not its wording, which is QC-44's — `docs/CONTENT.md`'s support-posture row, whole — on the owner's answer; QC-44's list gains the beta's Git-view statement, the seventh standing sentence, on the Git view, the head of the tree and the README's known gaps of a release that reads Git state once, at open, and absent from the README of a release that follows it, with the README's uncovered-case line held at release inspection; QC-71, new, binds the public history: every ref the public remote will hold is scanned and read for anything private before the repository is made public, and it is published with that history. § 2.1 is settled from SRS v15, CONTENT v15, FDR v15 and SDD § 6 S-7, not by an answer. The companion is removed; Status is Settled — RN-98.
 Version 87 — Fold cycle-78 §§ 3.1–3.3, the close: QC-64 names `.github/workflows/ci.yml` as the workflow every rule of which `checks/gate.sh` holds, and states `.github/workflows/release.yml` at `ka-reader@2d7c4f9` — its step set held at the change by the gate's *Release workflow shape* step, its *Cargo audit* QC-27's release gate and its *Verify checksums* QC-29's, both run at a tag push and at no change; QC-27's tail names that step; § 9's suites bullet is re-measured at twenty-two suites with the seventeen kept as a dated reading; QC-70's dated reading is re-measured at `2d7c4f9` with the five release scripts, `checks/release-pack.sh`'s signal trap and `checks/tree-walk.sh`'s pass-through. The companion is removed; Status is Settled — RN-97.
@@ -1614,12 +1615,15 @@ import nothing forbidden and still read a path it was never granted.
   licence for a crate that offers a choice *(through v88 "Every release carries `LICENSE` (MIT) and
   a `THIRD_PARTY_NOTICES.md` listing every crate and package the bundle ships with its licence" —
   RN-99)*.
-  — *verified by:* `checks/notices.sh` and its suite `checks/tests/test_notices.sh` (the tree) —
-  the names in `cargo tree` each appear in the notices file, non-zero on a miss; the Swift package
-  declares no dependency to notice (SDD § 4 C-R6, § 6 S-7) — run by the gate's *Notices check* and
-  *Notices check suite* steps (`checks/gate.sh:L129-L130` at `ka-reader@06e4a34`) at every change,
-  and at a tag by the release workflow's *Test gate* step *(through v88 the tail ended "(the
-  release)" — RN-99)*. The bundle's copies are held by `checks/bundle.sh` and its suite
+  — *verified by:* `checks/notices.sh` 1.1.0 and its suite `checks/tests/test_notices.sh` (the
+  tree) — two rules: every name `cargo tree` reports appears in the notices file, and every
+  copyright line the licence files of each package in that name set state stands in that
+  component's entry, non-zero on a miss of either, so a crate update that changes its line fails
+  the same check; the Swift package declares no dependency to notice (SDD § 4 C-R6, § 6 S-7) — run
+  by the gate's *Notices check* and *Notices check suite* steps (`checks/gate.sh:L129-L130` at
+  `ka-reader@75fe66c`, the same lines at `ka-reader@06e4a34`) at every change, and at a tag by the
+  release workflow's *Test gate* step *(through v88 the tail ended "(the release)" — RN-99; through
+  v90 the check held the names alone — RN-101)*. The bundle's copies are held by `checks/bundle.sh` and its suite
   `checks/tests/test_bundle.sh` (the tree) — non-zero when the built bundle lacks either file, holds
   one as a symlink, or holds one that differs from the tree's (`checks/bundle.sh:L358-L359` at
   `ka-reader@b503b6d`) — run by the gate's *Bundle probe* and *Bundle probe suite* steps
@@ -1629,18 +1633,24 @@ import nothing forbidden and still read a path it was never granted.
   dragged off the image is held by the gate's *Release image suite* step (`checks/gate.sh:L148`;
   `checks/tests/test_release_pack.sh:L205-L208`), and release inspection still reads the downloaded
   bundle *(through v89 "Two rules are owed to a check and held by none at `ka-reader@06e4a34`", the
-  bundle's copies among them, owed to `checks/bundle.sh` — RN-100)*. One rule is owed to a check
-  and held by none at `ka-reader@b503b6d`: the copyright lines, owed to `checks/notices.sh`,
-  extended to read each resolved package's licence file and fail on a copyright line the notices
-  lack, so a crate update that changes its line fails the same check. Until it lands,
-  `development-design` reading this entry is that rule's gate, by the header's per-rule rule, and
-  release inspection reads the copyright lines before the first tag
+  bundle's copies among them, owed to `checks/bundle.sh` — RN-100)*. Release inspection holds
+  what `checks/notices.sh` does not read, as the script's own header states it (*WHAT IT HOLDS,
+  AND WHAT IT DOES NOT*, `checks/notices.sh:L17-L20` at `ka-reader@75fe66c`): the libraries' and
+  the icon set's copyright lines (a licence file below a package's root is not read), any `NOTICE`
+  file whole, the sentences naming a component that has no licence file or no copyright line, and
+  each licence as the component declares it. That residue is a review gate because no check in
+  the tree reads it; a check that comes to read part of it moves that part to the check's tail
+  *(through v90 "One rule is owed to a check and held by none at `ka-reader@b503b6d`: the
+  copyright lines, owed to `checks/notices.sh` … Until it lands, `development-design` reading this
+  entry is that rule's gate" — RN-101)*
   *(traces to: SRS C-4, C-5, AC-14; FDR R-141; the script is this document's realization — RN-3;
   the two places, the bundle's copies and the copyright lines on the owner's seat's answers at
   `docs/trail/architecture/cycle-80.md` §§ 3.4–3.5, resting on the owner's
   `docs/trail/prd/cycle-1.md` § 2.5; the tail's steps on `docs/trail/architecture/cycle-80.md`
   § 3.1 — RN-99; the bundle's copies held by a check, and the locators re-pinned, on
-  `docs/trail/architecture/cycle-81.md` § 3.1 — RN-100)*
+  `docs/trail/architecture/cycle-81.md` § 3.1 — RN-100; the copyright lines held by
+  `checks/notices.sh` 1.1.0, and what it does not read kept at release inspection, on
+  `docs/trail/architecture/cycle-82.md` § 3.1 — RN-101)*
 - **QC-42:** Before the first public release, private vulnerability reporting is enabled on
   `github.com/eyalgo/ka-reader` and `SECURITY.md` exists, promising nothing beyond
   *"Security reports have a private channel and are read, with no acknowledgement or response
@@ -1688,27 +1698,45 @@ import nothing forbidden and still read a path it was never granted.
   document's realization — RN-3; the beta's statement and its surfaces from SRS v14 – v15 and
   CONTENT v15, and the support posture's one wording confirmed on the owner's answer at
   `docs/trail/architecture/cycle-79.md` § 3.1 — RN-98)*
-- **QC-71:** The repository `docs/SRS.md` C-12 names is made public with its own commit history,
-  never as a fresh copy, and only once that history has been checked for anything private. The
-  check covers every ref the public remote will hold — the set `git ls-remote --heads --tags
-  origin` lists, or what remains of it once the refs not to be published are deleted, the release
-  page naming which — and not only the commits `main`'s HEAD reaches. It has two halves: no secret
-  in that set, and nothing private — a name, a path, a message — in it. A finding is taken out of
-  the history before publication, the check is repeated on the rewritten history, and the
-  repository is made public with the history the repeated check passed on. The public
-  repository's `HEAD` at publication is the commit the read reached, so a commit landing after the
-  read reopens this entry.
-  — *verified by:* `gitleaks git` exits 0 over the whole ref set (the release). That is wider than
-  QC-28's *Secret scan*, which scans the history HEAD reaches at every change; whether that step
-  widens to the set or the release runs the wider scan beside it is the delivery tier's, and this
-  entry holds only once the whole set has exited 0. `git rev-list --max-parents=0 HEAD` on a fresh
-  clone of the public repository prints the same root commit as the checkout the read passed on
-  (the release). The private half is a review gate: a person's read of `git log -p` over the same
-  set, its result written on the release page as text naming the commit the read reached, before
-  the repository is made public. No command finds a private name, path or message, so no machine
-  check can hold that half *(traces to: SRS C-12, AC-14; FDR R-198; SDD § 6 S-7, its history check
-  and its three bounds; PRD § Assumptions "Public identity", through those; added from upstream at
-  SRS v14 — RN-98)*
+- **QC-71:** The public repository `docs/SRS.md` C-12 names receives the main line's own commit
+  history from the private `ka-reader-dev` — never a fresh copy and never a cut tree — and receives
+  a commit only once it has been checked for anything private. The check covers exactly the
+  commits the public repository is to receive: at the first publication the whole of
+  `ka-reader-dev`'s `main`, and at each later release `<public main>..<dev main>`. It never covers
+  `ka-reader-dev`'s refs, which stay private. It has two halves: no secret in that set, and
+  nothing private — a name, a path, a message — in it. The public repository holds no branch but
+  `main`, and `main` moves there by a fast-forward push and by nothing else. A finding in a commit
+  not yet public is taken out in `ka-reader-dev`, the check is repeated, and nothing is sent until
+  the repeated check passes. The public history is never rewritten: a finding in a commit already
+  public is revoked and removed by a later commit, and whether "never" yields to a leaked secret is
+  the owner's call, raised only if it occurs. The public `main`'s `HEAD` is the commit the read
+  reached, so a commit landing on `ka-reader-dev`'s `main` after the read is not sent until it has
+  been read itself *(through v90 "The repository `docs/SRS.md` C-12 names is made public with its
+  own commit history … The check covers every ref the public remote will hold — the set `git
+  ls-remote --heads --tags origin` lists" — RN-101)*.
+  — *verified by:* the secrets half is QC-28's *Secret scan* step as built, `checks/secret-scan.sh
+  gitleaks git` over every commit `HEAD` reaches (`checks/gate.sh:L71` at `ka-reader@75fe66c`),
+  run at the commit to be sent (the change) and re-proved by `release.yml`'s *Test gate* at the
+  tag in the public repository (the release). The set and that step's reach are one history, so
+  nothing widens and QC-28 does not move *(through v90 whether that step widened to the set or a
+  wider scan ran beside it was the delivery tier's — RN-101)*. Before the repository is made
+  public, `git ls-remote --heads --tags` on it lists `refs/heads/main` and nothing else (the
+  release). `git rev-list --max-parents=0 HEAD` on a fresh clone of the public repository prints
+  the root commit of the checkout the repeated read passed on (the release). After the visibility
+  flip and before the first tag, `gh api repos/<owner>/<repository>/branches/main/protection --jq
+  '.allow_force_pushes.enabled, .allow_deletions.enabled'`, on the address C-12 names, prints
+  `false` twice, or the ruleset form of the same two rules does; the condition is the refusal, not
+  the rule's name, and it cannot be read earlier because a private repository answers the call
+  with HTTP 403 (the release). From the second release on, `git merge-base --is-ancestor
+  <previous release's tag> HEAD` exits 0 on a fresh clone of the public repository; at the first
+  release there is no previous tag, and the root-commit comparison is the whole of it (the
+  release). The private half is a review gate: a person's read of `git log -p` over the commits to
+  be sent, its result written on the release page as text naming the commit the read reached,
+  before anything is sent. No command finds a private name, path or message, so no machine check
+  can hold that half. Each command is the SDD's; this entry adds none *(traces to: SRS C-12, AC-14;
+  FDR R-198 – R-203; SDD § 6 S-7, its history check; PRD § Assumptions "Public identity", through
+  those; added from upstream at SRS v14 — RN-98; the two repositories, on the owner's seat's answer
+  at `docs/trail/architecture/cycle-82.md` § 3.2 — RN-101)*
 
 ## 5. Performance & capacity
 
@@ -3350,10 +3378,10 @@ is stated once, in § 8 *(added at v56, on the owner's answer at `docs/trail/arc
 | QC-38 | own-state fields | `checks/own-state.sh` (suite `test_own_state.sh`) | the tree | CI build |
 | QC-39, QC-52 | log shape and location | `cargo test --locked -p ka-reader-bridge` (layer 1); `checks/own-state.sh` (suite `test_own_state.sh`) | the change; the tree | `development-implementation`; CI build |
 | QC-40 | writer regressions; own-state retention; separate container-log size and relaunch proof | `cargo test --locked -p ka-reader-bridge`; `cargo test --locked -p ka-reader-core` (layer 1). Layer-5 proof owed by `follow-the-folder` (SDD § 6 S-8), not the tree or open-file slice; until its assertions run, review at `development-design`, for the reason in QC-40. No existing own-state check, tree-scene pass or writer-test result discharges that proof. | the change; the built bundle for layer 5 | `development-implementation` for writer and retention tests; `development-design` for the outstanding layer-5 obligation |
-| QC-41 | third-party notices: `LICENSE` and the notices in the tagged source and inside the bundle, byte-identical; each component's licence and copyright lines | `checks/notices.sh` (suite `test_notices.sh`); `checks/bundle.sh` (suite `test_bundle.sh`) and `checks/tests/test_release_pack.sh` for the bundle's copies; `checks/notices.sh` extended to the copyright lines — not held at `ka-reader@b503b6d` | the tree | CI build; release; `development-design` reading the entry (the copyright lines, until its check holds them) |
+| QC-41 | third-party notices: `LICENSE` and the notices in the tagged source and inside the bundle, byte-identical; each component's licence and copyright lines | `checks/notices.sh` (suite `test_notices.sh`) for the names and the crates' copyright lines; `checks/bundle.sh` (suite `test_bundle.sh`) and `checks/tests/test_release_pack.sh` for the bundle's copies | the tree | CI build; release; release inspection for what the check does not read, as QC-41 names it |
 | QC-42 | private reporting; SECURITY.md | `gh api repos/eyalgo/ka-reader/private-vulnerability-reporting` | the release | release |
 | QC-44 | standing sentences verbatim, the beta's Git-view statement included | `checks/readme.sh`; `grep -rF` of the beta's wording over `ka-reader-mac/Sources/Surfaces` — neither in the tree at `ka-reader@b46d896` | the release; the tree | release; `development-design` reading the entry until each lands |
-| QC-71 | the public history: no secret over every ref the public remote will hold; the published root commit is the checked one | `gitleaks git` over the `git ls-remote --heads --tags origin` set; `git rev-list --max-parents=0 HEAD` on a fresh clone of the public repository | the release | release |
+| QC-71 | the public history: the commits the public repository receives carry no secret; it holds `main` alone; its root commit is the checked one; its `main` refuses a force push and a deletion; each release keeps the previous one's history whole | `checks/secret-scan.sh gitleaks git` (suite `test_secret_scan.sh`), the gate's *Secret scan* step, at the commit to be sent and through `release.yml`'s *Test gate* at the tag; `git ls-remote --heads --tags` on the public repository; `git rev-list --max-parents=0 HEAD` on a fresh clone of it; `gh api repos/<owner>/<repository>/branches/main/protection`, or the ruleset form; `git merge-base --is-ancestor <previous release's tag> HEAD`, from the second release | the change; the release | `development-implementation` (the secrets half at the commit to be sent); release |
 | QC-46 | latency figures, beginning with complete refresh | `checks/latency.sh` — three figures per metric on the named scale fixtures; owed by `follow-the-folder` (SDD § 6 S-8), with interim review for the missing script as QC-46 states | the tree | every CI build from the first complete-refresh build; `development-design` until measured |
 | QC-47 | per-item degradation and recovery; the failed re-read of an expanded folder | `cargo test --locked -p ka-reader-core --test watch`, the failed re-read's two cases included; `swift test --package-path ka-reader-mac` (layer 4); the tree cases run under QC-66 without full churn | the change | `development-implementation` |
 | QC-48 | full churn; displayed-file and Git changes; marker and row order in the model | `cargo test --locked -p ka-reader-core --test watch` with `checks/churn.sh <fixture> 30`; `checks/read-only.sh` against churn's final state; QC-48's marker/order grep prints nothing, from `follow-the-folder` (SDD § 6 S-8); the displayed-file half first runs in `follow-the-file`'s scene (SDD § 6 S-6); interim review and reason in QC-48 | the change; the fixture | `development-implementation` for complete refresh; `development-design` until the full proof runs |
@@ -3374,7 +3402,7 @@ is stated once, in § 8 *(added at v56, on the owner's answer at `docs/trail/arc
 | QC-70 | a check script exits 0 on a pass alone, 1 on a refusal, 2 on a wrong invocation, 128 + n or 1 on a signal, or a run child's status | `checks/tests/test_read_only.sh` — `test_no_argument_is_a_usage_error`, `test_extra_argument_is_a_usage_error`; `checks/tests/test_offline_page.sh` — `test_no_argument_and_two_arguments_print_usage_and_exit_two`; `checks/tests/test_notices.sh` — `test_wrong_argument_count_is_a_usage_error`; a case in `checks/tests/test_offline_page.sh` that fails the comparison and requires a non-zero end with no `same` — not in the suite at `ka-reader@8823057` | the change | `development-implementation` (the suites, through `checks/gate.sh`); `development-design` reading the entry (a new script, or a new way one ends; the failed comparison until its case lands) |
 
 Entries with no row are review gates, each arguing its downgrade in its own tail: QC-10 (the setting-aside
-of the trait-collaborator line, and the read seam until it is built), QC-13 (the delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a listed crate and name), QC-18, QC-21, QC-31, QC-33, QC-43, QC-45, QC-50, QC-54, QC-57, QC-69 (until the read seam is built), QC-44 (the README's uncovered-case line), QC-71 (the private half), QC-41 (the copyright lines, until its check holds them), QC-70 (a new script's statuses, or a new way one ends, and the offline-page check's failed comparison until its case lands), and QC-59's behaviour member.
+of the trait-collaborator line, and the read seam until it is built), QC-13 (the delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a listed crate and name), QC-18, QC-21, QC-31, QC-33, QC-43, QC-45, QC-50, QC-54, QC-57, QC-69 (until the read seam is built), QC-44 (the README's uncovered-case line), QC-71 (the private half), QC-41 (the libraries' and the icon set's copyright lines, `NOTICE` files, the no-licence-file and no-copyright-line sentences, and each licence as declared), QC-70 (a new script's statuses, or a new way one ends, and the offline-page check's failed comparison until its case lands), and QC-59's behaviour member.
 
 ---
 
@@ -8957,3 +8985,63 @@ of the trait-collaborator line, and the read seam until it is built), QC-13 (the
   the review-gate list. The inputs' status lines read as in the header, so the `Inputs read:` line
   stands. `docs/trail/architecture/cycle-81.md` holds the answered companion whole. Nothing is left
   open, so the companion is removed and `Status:` stays Settled.
+
+- **RN-101:** *(v91 — the cycle-82 fold, §§ 3.1–3.2, and the close)* The owner's seat's committed
+  answers at `docs/trail/architecture/cycle-82.md` §§ 3.1–3.2 authorize every change here; their
+  reasoning is `docs/trail/architecture/self_answer-85.md`. No `product-architecture` run wrote that
+  companion: the PM opened it on 2026-11-09 and raised two items, read at `ka-reader@75fe66c`, where
+  `checks/notices.sh` 1.1.0 reads each resolved package's licence files, and against PRD v19, which
+  publishes the main line's history from a private `ka-reader-dev` into a public repository.
+
+  **§ 3.1 → QC-41's tail, its § 10 row, and § 10's review-gate list.** Taken as written. The tail
+  names `checks/notices.sh` 1.1.0 and its suite as holding two rules — the names and the crates'
+  copyright lines — through the gate's *Notices check* and *Notices check suite* steps at every
+  change and the release workflow's *Test gate* at a tag, re-pinned at `ka-reader@75fe66c`, with
+  `06e4a34`'s pin kept as the dated reading. The "held by none" sentence becomes a dated reading.
+  `development-design` stops being the copyright lines' gate. Release inspection keeps the four
+  things the script's header says it does not read, the fourth of them — each licence as declared
+  — added by the answer so that the revised list does not imply the licences are machine-held. The
+  owner's seat measured the check on a clean clone at `ka-reader@2ee1ef7`: it exits 0, its suite
+  exits 0 with 42 cases `ok`, and with one copyright line deleted from `THIRD_PARTY_NOTICES.md` it
+  exits 1 naming the line. § 9's suite count stays twenty-three.
+
+  **§ 3.2 → QC-71 and its § 10 row.** Taken as written. QC-71 moves to the two repositories PRD
+  v19, SRS v16 C-12 and AC-14, FDR v16 R-198 – R-203 and SDD v85 § 6 S-7 state; at v90 its check
+  set, `git ls-remote --heads --tags origin`, had become the private repository's refs. The entry
+  carries all of S-7's checkable form, not only the first release, because it traces to AC-14,
+  whose v16 clauses name the received commits checked, no branch but the main line, and the
+  previous public history kept whole: the set the public repository receives; the secrets half as
+  QC-28's *Secret scan* as built, which closes the v88 fork with nothing widened; the one branch,
+  read on the public repository itself; the private half as a review gate; a finding taken out in
+  `ka-reader-dev` before anything is sent, and never by rewriting the public history; `main`'s
+  refusal of a force push and a deletion, set after the visibility flip; and the ancestor check
+  from the second release on. The root-commit comparison is unchanged. Every command is the SDD's.
+
+  **Beyond the answers' words.** Three things, each named here. (1) QC-41's tail adds that a check
+  coming to read part of the residue moves that part to the check's tail, so the review list
+  shrinks by the same rule the per-rule header states rather than by a fresh fold. (2) QC-71's
+  `gh api` command writes the hosting address as `<owner>/<repository>`, "the address C-12 names",
+  as SDD S-7 writes it, under `<CORE>/doctrine/governance/records_name_no_machine.md`; QC-42's
+  literal address, written before that rule, is untouched by this fold. (3) QC-71's § 10 row gates
+  the secrets half at `development-implementation` as QC-28's row does, because it is the same
+  step at the commit to be sent; the items' *Tracked by* lines stay out of the record, because the
+  definition set never names the journey.
+
+  **Read by this run.** At `ka-reader@0ed66b9`, whose tree outside `docs/` is `75fe66c`'s
+  (`git diff --stat 75fe66c HEAD -- . ':!docs'` prints nothing): `checks/notices.sh:L2-L3`
+  (`# Version: 1.1.0`) and `:L17-L20`; `checks/gate.sh:L71`, `:L129-L130`;
+  `.github/workflows/release.yml:L53`; `git ls-files checks/tests` lists 23 `test_*.sh` suites.
+  The upstream lines read are `docs/SRS.md:L530-L546` (C-12), `:L621-L638` (AC-14);
+  `docs/PRD.md:L418-L430`; `docs/fdr.md:L276-L281`; `docs/SDD.md:L2738-L2790` (§ 6 S-7). The
+  product's `origin` is `<owner>/<repository>-dev`. No product test ran: nothing under `crates/`,
+  `checks/` or `ka-reader-mac/` is changed by this fold.
+
+  **Limits.** No ADR is written or restatused, so the index is unchanged. The two repositories are
+  a product decision the PRD made, as the public history was at v88, and a check landing for an
+  obligation already bound is not a decision; neither clears the three gates. ADR-0024 still holds:
+  it decides the channel the release takes from the address C-12 names, which is still the public
+  repository, and its "private on the day of this record" is a dated statement. No `QC` is added,
+  renumbered or reused; QC-41 and QC-71 are the entries edited, and § 10 re-states both rows and
+  QC-41's place in the review-gate list. The inputs' status lines read as in the header, so the
+  `Inputs read:` line stands. `docs/trail/architecture/cycle-82.md` holds the answered companion
+  whole. Nothing is left open, so the companion is removed and `Status:` stays Settled.
