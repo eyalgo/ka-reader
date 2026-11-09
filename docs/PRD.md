@@ -2,7 +2,7 @@
 
 **Status:** Settled
 **Owner:** CPO
-**Version:** 18 — the beta comes first and waits for nothing beyond the tree and the open file following the disk and Markdown reading rendered: choosing a theme and keeping that choice come after it, with the Git view following the disk, and both are in place before 1.0.0. The beta is there to be used and shown, as the public evidence of what kensaiapp builds; the repository goes public with its own commit history, once that history is checked for anything private (§ Scope (In), **The first public release — a beta**; § Assumptions, **Public identity**). Prior revision: 17 — the first public release is a beta below 1.0.0, in which the Git view and the changed-file markers say plainly that they show the Git state read when the folder was opened.
+**Version:** 19 — KA-Reader is built in a private repository and published from it to a public one: the public repository carries the main line's own commit history, checked for anything private before it arrives and never rewritten after, while branches and work in progress stay private (§ Assumptions, **Public identity**). Prior revision: 18 — the beta comes first and waits for nothing beyond the tree and the open file following the disk and Markdown reading rendered; choosing a theme and keeping that choice come after it, and both that and the Git view following the disk are in place before 1.0.0.
 
 > The PRD is the product source of truth: the product-facing **what and why**, read cold
 > by the CTO, the CDO, Principal PM, and Principal Architect. It is updated in place with
@@ -417,10 +417,17 @@ browsing, reading, status, and live refresh.
   KA-Reader is a side project *(added — not in the input; owner-confirmed: trail/prd/cycle-7.md.
   The personal handle: changed — supersedes the `kensaiapp` organisation, with no personal handle
   as the public face, owner-confirmed in trail/prd/cycle-7.md; owner-confirmed:
-  trail/prd/cycle-14.md § 3.1)*. The repository goes public with its own commit history, not as
-  a fresh copy: the history is part of the work being shown. Nothing private may stand in that
-  history, so the repository goes public only once its history has been checked for anything
-  private *(owner-confirmed: trail/prd/cycle-16.md § 3.1)*.
+  trail/prd/cycle-14.md § 3.1)*. KA-Reader is built in a separate, private repository,
+  `ka-reader-dev`, which keeps every branch and record: work in progress, change branches, and
+  anything not yet checked stay there. The public repository carries the work's own commit
+  history — every commit on the main line, as it was made — not a fresh copy and not a cut tree:
+  the history is part of the work being shown. Nothing private may stand in that history, so the
+  main line's history reaches the public repository only once exactly what it is to receive has
+  been checked for anything private. Each later release adds to the public history and never
+  rewrites it *(the history as the work shown, and checked before it is public: owner-confirmed:
+  trail/prd/cycle-16.md § 3.1. Two repositories, the public one receiving the main line's history
+  only, never rewritten: changed — supersedes the one repository going public, owner-confirmed in
+  trail/prd/cycle-16.md § 3.1; owner-confirmed: trail/prd/cycle-17.md § 3.1)*.
 - **Support posture — nothing is promised.** Issues and questions are welcome and read when
   there is time, with no response time, no commitment to fix, and no commitment that a fix ever
   arrives. Security reports have a private channel and are read, with no acknowledgement or
