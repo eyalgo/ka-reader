@@ -34,10 +34,14 @@ None.
 - **Drafted into the FDR:** nothing yet, because the run that raised this writes no document. The
   proposal: R-143 requires `SECURITY.md` to state the posture in the wording `docs/CONTENT.md`
   § Terminology, *Standing sentences*, support-posture row fixes. R-138 requires the same of the
-  README. Each quotes that row, *"Issues and questions are welcome and are read when there is time.
-  There is no response time, no commitment to fix, and no promise that a fix arrives. Security reports
-  have a private channel and are read on the same terms."*, or the half of it that applies to its
-  surface, and cites the CONTENT row. PD-22's "in the PRD's own words" becomes "in the one wording
+  README. Each quotes that row whole, *"Issues and questions are welcome and are read when there is
+  time. There is no response time, no commitment to fix, and no promise that a fix arrives. Security
+  reports have a private channel and are read on the same terms."*, and cites the CONTENT row. Both
+  surfaces carry all three sentences: the row allows "no paraphrase, no shortened version", and the
+  owner's answer binds `SECURITY.md` and the README alike to that one wording, verbatim. So the README
+  carries the security sentence too, and `SECURITY.md` the issues sentences. *(Revised 2026-11-09 by
+  the `companion-self-answer` run on `docs/SRS_open_issues.md`, which took out "or the half of it that
+  applies to its surface"; its reasoning is `docs/trail/srs/self_answer-5.md` § 2.1.)* PD-22's "in the PRD's own words" becomes "in the one wording
   `docs/CONTENT.md` § Standing sentences fixes". The PRD's sentence stays what the posture *means*: it
   is the limit R-143 and R-138 promise nothing beyond. RN-16 explains why these rules quote the PRD,
   so it is revised or superseded to say why they now quote the CONTENT row.
