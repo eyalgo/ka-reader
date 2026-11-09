@@ -423,18 +423,126 @@ Its licence file states no copyright line.
 
 ## Libraries the crates compile
 
-Some crates compile a library from source they carry, under a licence of its own that the crate's licence does not name. Each such library the app carries is named here with its licence, the crate that compiles it, and where that crate keeps the library's licence text.
+Some crates compile a library from source they carry, under a licence of its own that the crate's licence does not name. Each such library the app carries has an entry of its own, headed by its name. The entry gives the library's licence, the crate that compiles it and the file where that crate keeps the library's licence text. It then gives every copyright line that file states, or says that the file states none.
 
-| Library | Licence | Compiled by | Licence text kept in |
-|---|---|---|---|
-| libgit2 | GPL-2.0 with the linking exception | `libgit2-sys` | `libgit2/COPYING` |
-| LibXDiff | LGPL-2.1-or-later | `libgit2-sys` | `libgit2/deps/xdiff/xdiff.h` |
-| PCRE2 | the PCRE2 licence | `libgit2-sys` | `libgit2/deps/pcre2/LICENCE.md` |
-| the RFC 6234 SHA-256 code | the IETF Trust's BSD-3-Clause terms | `libgit2-sys` | `libgit2/src/util/hash/rfc6234/sha.h` |
-| ICU's UTF-8 and UTF-16 macros | ICU's Unicode licence | `tree-sitter` | `src/unicode/LICENSE` |
-| the portable endian header | the endian header's public-domain dedication | `tree-sitter` | `src/portable/endian.h` |
+### libgit2
 
-libgit2's licence file also names parts of libgit2 that came from elsewhere, each with its own terms. They are named there, in the place this table gives for libgit2.
+libgit2 is under GPL-2.0 with the linking exception.
+
+`libgit2-sys` compiles libgit2 and keeps the library's licence text in `libgit2/COPYING`.
+
+libgit2's licence file also names parts of libgit2 that came from elsewhere, each with its own terms. They are named there, and the copyright lines the file states for them are among the lines below.
+
+Below is every copyright line `libgit2/COPYING` states.
+
+```text
+Copyright (C) 1989, 1991 Free Software Foundation, Inc.
+(C) 1995-2022 Jean-loup Gailly and Mark Adler
+Copyright (c) 2011-2015 Vicent Marti
+Copyright (c) 1997-2007 University of Cambridge
+Copyright (c) 2007-2024 Philip Hazel
+Copyright (c) 2010-2024 Zoltan Herczeg
+Copyright (c) 2009-2024 Zoltan Herczeg
+Copyright (C) 2007 Francois Gouget
+Copyright (C) 1991, 1999 Free Software Foundation, Inc.
+Copyright (c) 2017:
+Marc Stevens
+Cryptology Group
+Centrum Wiskunde & Informatica
+P.O. Box 94079, 1090 GB Amsterdam, Netherlands
+marc@marc-stevens.nl
+
+Dan Shumow
+Microsoft Research
+danshu@microsoft.com
+Copyright Rich Salz.
+Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
+Copyright remains Eric Young's, and as such any Copyright notices in
+the code are not to be removed.
+Copyright (c) 1998-2007 The OpenSSL Project.  All rights reserved.
+Copyright (c) 2011 IETF Trust and the persons identified as
+authors of the code.  All rights reserved.
+Copyright (C) 2008 The Android Open Source Project
+Copyright (c) Edward Thomson.  All rights reserved.
+Copyright (c) Microsoft Corporation
+Copyright (c) 2003-2016 University of Illinois at Urbana-Champaign.
+Copyright 2001-2004 Unicode, Inc.
+Copyright (C) 1990-2, RSA Data Security, Inc. All rights reserved.
+Copyright Fedor Indutny, 2018.
+```
+
+### LibXDiff
+
+LibXDiff is under LGPL-2.1-or-later.
+
+`libgit2-sys` compiles LibXDiff and keeps the library's licence text in `libgit2/deps/xdiff/xdiff.h`.
+
+Below is every copyright line `libgit2/deps/xdiff/xdiff.h` states.
+
+```text
+Copyright (C) 2003  Davide Libenzi
+```
+
+### PCRE2
+
+PCRE2 is under the PCRE2 licence.
+
+`libgit2-sys` compiles PCRE2 and keeps the library's licence text in `libgit2/deps/pcre2/LICENCE.md`.
+
+Below is every copyright line `libgit2/deps/pcre2/LICENCE.md` states.
+
+```text
+Copyright (c) 1997-2007 University of Cambridge
+Copyright (c) 2007-2024 Philip Hazel
+Copyright (c) 2010-2024 Zoltan Herczeg
+Copyright (c) 2009-2024 Zoltan Herczeg
+```
+
+### The RFC 6234 SHA-256 code
+
+The RFC 6234 SHA-256 code is under the IETF Trust's BSD-3-Clause terms.
+
+`libgit2-sys` compiles the RFC 6234 SHA-256 code and keeps the library's licence text in `libgit2/src/util/hash/rfc6234/sha.h`.
+
+Below is every copyright line `libgit2/src/util/hash/rfc6234/sha.h` states.
+
+```text
+Copyright (c) 2011 IETF Trust and the persons identified as
+authors of the code.  All rights reserved.
+```
+
+### ICU's UTF-8 and UTF-16 macros
+
+ICU's UTF-8 and UTF-16 macros are under ICU's Unicode licence.
+
+`tree-sitter` compiles ICU's UTF-8 and UTF-16 macros and keeps the library's licence text in `src/unicode/LICENSE`.
+
+Below is every copyright line `src/unicode/LICENSE` states.
+
+```text
+Copyright © 1991-2019 Unicode, Inc. All rights reserved.
+Copyright (c) 1995-2016 International Business Machines Corporation and others
+Copyright (C) 2006-2008, Google Inc.
+Copyright 1996 Chih-Hao Tsai @ Beckman Institute,
+University of Illinois
+Copyright 2000, 2001, 2002, 2003 Nara Institute of Science
+and Technology.  All Rights Reserved.
+Copyright (c) 2013 International Business Machines Corporation
+and others. All Rights Reserved.
+Copyright (C) 2013 Brian Eugene Wilson, Robert Martin Campbell.
+Copyright (c) 2014 International Business Machines Corporation
+and others. All Rights Reserved.
+Copyright (c) 2013, LeRoy Benjamin Sharon
+Copyright 2006-2011, the V8 project authors. All rights reserved.
+```
+
+### The portable endian header
+
+The portable endian header is under the endian header's public-domain dedication.
+
+`tree-sitter` compiles the portable endian header and keeps the library's licence text in `src/portable/endian.h`.
+
+`src/portable/endian.h` states no copyright line.
 
 ## Icons
 
