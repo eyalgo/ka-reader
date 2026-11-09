@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Version: 1.2.0 — the copyright-lines rule: the stand-in `cargo` answers `metadata` with packages that have
+#   directories of their own, and the cases hold what the rule reads, carries, refuses and orders
 # Version: 1.1.0 — the missing names' byte order is held under a locale that orders them otherwise,
 #   and a name at the start of the file or directly between table bars is held as present
 # Version: 1.0.0 — first version: drives the real checks/notices.sh over fixture notices files with a
@@ -13,7 +15,9 @@
 #   it with its working directory a work directory of this suite's own, which holds a fixture notices
 #   file, and with a stand-in `cargo` first on PATH. The stand-in prints `--prefix none`-shaped lines,
 #   with versions, a `(*)` mark and a `[build-dependencies]` line, so the script's real reading is
-#   exercised. The last case runs the real `cargo` on the real tree. The runner is this file: the
+#   exercised, and answers `cargo metadata` with one package object for each name, each at a directory
+#   under the case's stub directory that holds no file until a case writes one. The last case runs the
+#   real `cargo` on the real tree. The runner is this file: the
 #   product has no Python (docs/nfdr.md § 9 names its toolchains), which is why the shell packet's
 #   pytest runner is not used here.
 #
@@ -30,6 +34,7 @@ set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 NOTICES_SH="$ROOT/checks/notices.sh"
 ARGS_EXPECTED="tree --workspace --locked --offline --prefix none --target aarch64-apple-darwin --target x86_64-apple-darwin"
+METADATA_EXPECTED="metadata --locked --offline --format-version 1 --filter-platform aarch64-apple-darwin --filter-platform x86_64-apple-darwin"
 
 STATUS=0
 WORK=""
@@ -49,6 +54,28 @@ test_a_signal_never_ends_with_zero
 test_cargo_is_asked_for_the_locked_offline_two_architecture_set
 test_writes_no_file
 test_reads_nothing_from_the_environment_but_path
+test_copyright_lines_in_their_entries_pass
+test_no_licence_file_and_no_copyright_line_pass
+test_terms_headings_and_placeholders_are_not_copyright_lines
+test_each_kind_of_copyright_line_is_asked_for
+test_a_copyright_line_not_carried_is_named
+test_missing_lines_are_named_in_order
+test_a_line_in_another_entry_or_section_is_not_carried
+test_a_line_in_another_case_is_not_carried
+test_outer_whitespace_is_free
+test_a_changed_copyright_line_is_not_carried
+test_a_name_miss_comes_before_a_copyright_miss
+test_both_versions_of_one_name_are_read
+test_licence_files_under_other_names_are_read
+test_a_notice_file_and_a_file_below_the_root_are_not_read
+test_a_heading_inside_a_fence_does_not_end_an_entry
+test_a_level_two_or_three_heading_ends_an_entry
+test_the_last_entry_runs_to_the_end_of_the_file
+test_only_the_first_entry_of_a_name_counts
+test_a_version_with_build_metadata_is_located
+test_unreadable_licence_file_is_a_refusal
+test_packages_not_located_is_a_refusal
+test_the_name_checks_refusals_read_no_licence_file
 test_real_tree_passes_and_is_left_as_it_was
 "
 
@@ -66,23 +93,127 @@ case_dirs() {
   mkdir -p "$CWD" "$STUBS"
 }
 
-# A stand-in `cargo` in $1 that records its arguments in $1/args and prints the names that follow, in
-# the shape of `cargo tree --prefix none`: versions, a `(*)` mark on a repeat, a blank line and a
-# `[build-dependencies]` line.
+# The directory of the package $2 at version $3, under the stand-in's directory $1.
+package_dir() {
+  echo "$1/packages/$2-$3"
+}
+
+# A stand-in `cargo` in $1 that records its arguments in $1/args, whatever it is asked, and answers
+#   tree      with the names that follow, in the shape of `cargo tree --prefix none`: versions, a `(*)`
+#             mark on a repeat, a blank line and a `[build-dependencies]` line;
+#   metadata  with one line of JSON in cargo's key order: one package object for each name, each with a
+#             dependency object and a target object that carry a "name" key of their own, and a
+#             `manifest_path` inside a package directory the stand-in makes. The `resolve` section after
+#             the packages repeats their ids. A package directory holds no file until a case writes one.
+# A name is `name` at version 1.2.3, or `name@version`. The files in $1 that hold the answers are
+# `tree`, `packages` (name, version, license_file and manifest_path as JSON, tab-separated) and, to make
+# `metadata` end non-zero, `metadata_status`.
 make_cargo() {
   dir="$1"
   shift
-  {
-    echo '#!/bin/sh'
-    echo "echo \"\$*\" >> \"$dir/args\""
-    for name in "$@"; do
-      echo "echo '$name v1.2.3 (/somewhere/$name)'"
-    done
-    echo "echo '$1 v1.2.3 (*)'"
-    echo "echo"
-    echo "echo '[build-dependencies]'"
-  } > "$dir/cargo"
+  : > "$dir/tree"
+  : > "$dir/packages"
+  first=""
+  for spec in "$@"; do
+    case "$spec" in
+      *@*) name="${spec%%@*}"; version="${spec#*@}" ;;
+      *) name="$spec"; version="1.2.3" ;;
+    esac
+    [ -n "$first" ] || first="$name v$version (*)"
+    mkdir -p "$(package_dir "$dir" "$name" "$version")"
+    echo "$name v$version (/somewhere/$name)" >> "$dir/tree"
+    printf '%s\t%s\tnull\t"%s/Cargo.toml"\n' "$name" "$version" "$(package_dir "$dir" "$name" "$version")" >> "$dir/packages"
+  done
+  { echo "$first"; echo; echo '[build-dependencies]'; } >> "$dir/tree"
+  cat > "$dir/cargo" <<'CARGO'
+#!/bin/sh
+d="$(dirname "$0")"
+echo "$*" >> "$d/args"
+case "$1" in
+  tree) cat "$d/tree" ;;
+  metadata)
+    if [ -f "$d/metadata_status" ]; then exit "$(cat "$d/metadata_status")"; fi
+    cat "$d/metadata.json" ;;
+  *) exit 64 ;;
+esac
+CARGO
   chmod +x "$dir/cargo"
+  write_metadata "$dir"
+}
+
+# Writes $1/metadata.json from $1/packages.
+write_metadata() {
+  awk -F'\t' '
+    BEGIN { printf "{\"packages\":[" }
+    {
+      id = "registry+https://example.test/index#" $1 "@" $2
+      ids[NR] = id
+      if (NR > 1) printf ","
+      printf "{\"name\":\"%s\",\"version\":\"%s\",\"id\":\"%s\",\"license\":\"MIT\",\"license_file\":%s,", $1, $2, id, $3
+      printf "\"description\":\"A stand-in package.\",\"source\":\"registry+https://example.test/index\","
+      printf "\"dependencies\":[{\"name\":\"%s\",\"source\":\"registry+https://example.test/index\",\"req\":\"^1\",\"kind\":null}],", $1
+      printf "\"targets\":[{\"kind\":[\"lib\"],\"crate_types\":[\"lib\"],\"name\":\"%s\",\"src_path\":\"/x/lib.rs\"}],", $1
+      printf "\"features\":{},\"manifest_path\":%s,\"metadata\":null}", $4
+    }
+    END {
+      printf "],\"workspace_members\":[],\"resolve\":{\"nodes\":["
+      for (i = 1; i <= NR; i++) printf "%s{\"id\":\"%s\",\"dependencies\":[]}", (i > 1 ? "," : ""), ids[i]
+      printf "],\"root\":null},\"target_directory\":\"/x\",\"version\":1,\"workspace_root\":\"/x\",\"metadata\":null}\n"
+    }
+  ' "$1/packages" > "$1/metadata.json"
+}
+
+# The package $2 names the file $3 as its license_file.
+set_license_file() {
+  awk -F'\t' -v OFS='\t' -v name="$2" -v file="$3" '$1 == name { $3 = "\"" file "\"" } { print }' "$1/packages" > "$1/packages.new"
+  mv "$1/packages.new" "$1/packages"
+  write_metadata "$1"
+}
+
+# The package $2 prints $3 as its manifest_path, the JSON string with its quotes.
+set_manifest_path() {
+  awk -F'\t' -v OFS='\t' -v name="$2" -v path="$3" '$1 == name { $4 = path } { print }' "$1/packages" > "$1/packages.new"
+  mv "$1/packages.new" "$1/packages"
+  write_metadata "$1"
+}
+
+# `cargo metadata` lists no object for the package $2 (the tree still lists it).
+drop_package() {
+  awk -F'\t' -v name="$2" '$1 != name { print }' "$1/packages" > "$1/packages.new"
+  mv "$1/packages.new" "$1/packages"
+  write_metadata "$1"
+}
+
+# `cargo metadata` ends with the status $2.
+metadata_ends() {
+  echo "$2" > "$1/metadata_status"
+}
+
+# Writes the file $3 in the directory of the package $2 (at 1.2.3) under $1, holding the lines that follow.
+licence_file() {
+  dir="$1"
+  name="$2"
+  file="$3"
+  shift 3
+  printf '%s\n' "$@" > "$(package_dir "$dir" "$name" 1.2.3)/$file"
+}
+
+# Appends to the fixture notices file in the directory $1 an entry for the crate $2, which holds the
+# lines that follow inside a text fence, or says it has none when no line follows.
+fixture_entry() {
+  dir="$1"
+  name="$2"
+  shift 2
+  {
+    printf '### `%s`\n\n`%s` is under `MIT`.\n\n' "$name" "$name"
+    if [ "$#" -gt 0 ]; then
+      printf 'Below is every copyright line its licence file states.\n\n```text\n'
+      printf '%s\n' "$@"
+      printf '```\n\n'
+    else
+      printf 'Its licence file states no copyright line.\n\n'
+    fi
+  } >> "$dir/THIRD_PARTY_NOTICES.md"
 }
 
 # A stand-in `cargo` in $1 whose whole body is $2.
@@ -130,6 +261,11 @@ expect_one_stderr_line_with() {
 
 miss_line() {
   printf 'notices.sh: %s — in cargo tree and not in THIRD_PARTY_NOTICES.md' "$1"
+}
+
+# One copyright-miss line: the component $1, the licence file $2, the line $3.
+copyright_miss_line() {
+  printf 'notices.sh: %s — copyright line in %s and not in its THIRD_PARTY_NOTICES.md entry: %s' "$1" "$2" "$3"
 }
 
 # --- cases ---
@@ -293,7 +429,8 @@ test_a_signal_never_ends_with_zero() {
   fail "expected 143 or 1, got $STATUS. stderr: $(cat "$WORK/stderr")"
 }
 
-# CP-1197, CP-1203: cargo is asked for exactly the locked, offline, two-architecture set.
+# CP-1197, CP-1203: cargo is asked for exactly the locked, offline, two-architecture set, and then, once,
+# for the packages' places, locked and offline too. No other call is made.
 test_cargo_is_asked_for_the_locked_offline_two_architecture_set() {
   case_dirs arguments-asked
   make_cargo "$STUBS" alpha
@@ -302,7 +439,10 @@ test_cargo_is_asked_for_the_locked_offline_two_architecture_set() {
   run_notices "$CWD" "$STUBS"
 
   expect_status 0 || return 1
-  expect_lines "$STUBS/args" "$ARGS_EXPECTED"
+  [ "$(sed -n 1p "$STUBS/args")" = "$ARGS_EXPECTED" ] || fail "line 1 of args is not the name set's call: $(sed -n 1p "$STUBS/args")" || return 1
+  [ "$(sed -n '2,$p' "$STUBS/args" | grep -c .)" -eq 1 ] || fail "expected one call after the name set's: $(cat "$STUBS/args")" || return 1
+  [ "$(sed -n 2p "$STUBS/args")" = "$METADATA_EXPECTED" ] || fail "the second call is not the metadata call: $(sed -n 2p "$STUBS/args")" || return 1
+  [ "$(grep -c -e '--locked' -e '--offline' "$STUBS/args")" -eq 2 ] || fail "a call is not locked and offline: $(cat "$STUBS/args")"
 }
 
 # CP-1203: the script writes no file, in the working directory or in TMPDIR, on a pass or on a miss.
@@ -345,6 +485,447 @@ test_reads_nothing_from_the_environment_but_path() {
   [ "$STATUS" -eq "$host_status" ] || fail "status under PATH alone was $STATUS, under the host's environment $host_status" || return 1
   [ "$(cat "$WORK/stdout")" = "$host_stdout" ] || fail "stdout differs under PATH alone: $(cat "$WORK/stdout")" || return 1
   [ "$(cat "$WORK/stderr")" = "$host_stderr" ] || fail "stderr differs under PATH alone: $(cat "$WORK/stderr")"
+}
+
+# CP-1237: lines that stand in their entries pass. `alpha`'s MIT file states one line and its Apache file
+# only the appendix placeholder, so the entry carries the one line and the placeholder is never asked for.
+test_copyright_lines_in_their_entries_pass() {
+  case_dirs lines-pass
+  make_cargo "$STUBS" alpha beta
+  licence_file "$STUBS" alpha LICENSE-MIT 'Copyright (c) 2014 Alex Crichton' '' 'Permission is hereby granted'
+  licence_file "$STUBS" alpha LICENSE-APACHE 'Copyright [yyyy] [name of copyright owner]'
+  licence_file "$STUBS" beta LICENSE 'Copyright (c) 2015 B'
+  fixture_entry "$CWD" alpha 'Copyright (c) 2014 Alex Crichton'
+  fixture_entry "$CWD" beta 'Copyright (c) 2015 B'
+
+  run_notices "$CWD" "$STUBS"
+
+  expect_status 0 || return 1
+  expect_lines "$WORK/stdout" "notices.sh: 2 names in cargo tree, each in THIRD_PARTY_NOTICES.md" || return 1
+  expect_stderr_empty
+}
+
+# CP-1234: a package with no licence file, and one whose licence file states no copyright line, have
+# nothing to carry; their entries say so and the run passes.
+test_no_licence_file_and_no_copyright_line_pass() {
+  case_dirs nothing-to-carry
+  make_cargo "$STUBS" alpha beta
+  licence_file "$STUBS" beta LICENSE 'Permission is hereby granted, free of charge, to any person obtaining a copy' 'of this software, to deal in the Software without restriction.'
+  fixture_entry "$CWD" alpha
+  fixture_entry "$CWD" beta
+
+  run_notices "$CWD" "$STUBS"
+
+  expect_status 0 || return 1
+  expect_lines "$WORK/stdout" "notices.sh: 2 names in cargo tree, each in THIRD_PARTY_NOTICES.md" || return 1
+  expect_stderr_empty
+}
+
+# CP-1226: terms, headings and placeholders are not copyright lines.
+test_terms_headings_and_placeholders_are_not_copyright_lines() {
+  case_dirs not-lines
+  make_cargo "$STUBS" alpha
+  licence_file "$STUBS" alpha LICENSE-APACHE \
+    'copyright notice that is included in or attached to the work' \
+    '(c) You must retain, in the Source form of any Derivative Works' \
+    'COPYRIGHT AND PERMISSION NOTICE' \
+    'COPYRIGHT AND PERMISSION NOTICE (ICU 58 and later)' \
+    'Copyright [yyyy] [name of copyright owner]' \
+    'Copyright {yyyy} {name of copyright owner}' \
+    'Copyright (C) <year>  <name of author>'
+  fixture_entry "$CWD" alpha
+
+  run_notices "$CWD" "$STUBS"
+
+  expect_status 0 || return 1
+  expect_stderr_empty
+}
+
+# CP-1226: every kind of line the rule takes in is asked for, each as its own line, in the order the
+# file states them.
+test_each_kind_of_copyright_line_is_asked_for() {
+  case_dirs each-kind
+  make_cargo "$STUBS" alpha
+  licence_file "$STUBS" alpha LICENSE \
+    'Copyright (c) 2014 Alex Crichton' \
+    'Copyright 2015 Google Inc. All rights reserved.' \
+    'Copyright © 1991-2023 Unicode, Inc.' \
+    'Copyright (c) 2016--2023' \
+    'Copyright 2015 Nicholas Allegra (comex).' \
+    'Copyrights in the `rustix` project are retained by their contributors.' \
+    'Copyright (C) 1989, 1991 Free Software Foundation, Inc.' \
+    'Copyright (c) The Rust Project Developers' \
+    'COPYRIGHT 2021 Upper Holder' \
+    '(c) 2019 Paren Holder' \
+    '(C) 2018 Cap Holder' \
+    '© 2017 Sign Holder'
+  fixture_entry "$CWD" alpha
+
+  run_notices "$CWD" "$STUBS"
+
+  expect_status 1 || return 1
+  expect_stdout_empty || return 1
+  expected=""
+  while IFS= read -r line; do
+    expected="$expected$(copyright_miss_line alpha LICENSE "$line")
+"
+  done < "$STUBS/packages/alpha-1.2.3/LICENSE"
+  expect_lines "$WORK/stderr" "${expected%?}"
+}
+
+# CP-1235: a line the entry does not carry is named in the pinned shape; nothing on stdout.
+test_a_copyright_line_not_carried_is_named() {
+  case_dirs not-carried
+  make_cargo "$STUBS" alpha
+  licence_file "$STUBS" alpha LICENSE 'Copyright (c) 2020 A'
+  fixture_entry "$CWD" alpha
+
+  run_notices "$CWD" "$STUBS"
+
+  expect_status 1 || return 1
+  expect_stdout_empty || return 1
+  expect_lines "$WORK/stderr" "$(copyright_miss_line alpha LICENSE 'Copyright (c) 2020 A')"
+}
+
+# CP-1235: the lines come ordered by name, then file name, each in byte order, whatever order the tree
+# lists the names in and whatever the locale; a line stated twice under one file name is named once.
+test_missing_lines_are_named_in_order() {
+  case_dirs order
+  make_cargo "$STUBS" beta alpha
+  licence_file "$STUBS" alpha LICENSE 'Copyright (c) 2020 A'
+  licence_file "$STUBS" beta LICENSE-MIT 'Copyright (c) 2020 B-MIT' 'Copyright (c) 2020 B-MIT'
+  licence_file "$STUBS" beta LICENSE-APACHE 'Copyright (c) 2020 B-APACHE'
+  fixture_entry "$CWD" alpha
+  fixture_entry "$CWD" beta
+  expected="$(copyright_miss_line alpha LICENSE 'Copyright (c) 2020 A')
+$(copyright_miss_line beta LICENSE-APACHE 'Copyright (c) 2020 B-APACHE')
+$(copyright_miss_line beta LICENSE-MIT 'Copyright (c) 2020 B-MIT')"
+
+  run_notices "$CWD" "$STUBS"
+  expect_status 1 || return 1
+  expect_lines "$WORK/stderr" "$expected" || return 1
+
+  ( cd "$CWD" && LC_ALL=en_US.UTF-8 PATH="$STUBS:$PATH" "$NOTICES_SH" ) > "$WORK/stdout" 2> "$WORK/stderr"
+  STATUS=$?
+  expect_status 1 || return 1
+  expect_lines "$WORK/stderr" "$expected"
+}
+
+# CP-1232, CP-1234: a line carried by another component's entry, or by a later section, is not carried.
+test_a_line_in_another_entry_or_section_is_not_carried() {
+  case_dirs other-entry
+  make_cargo "$STUBS" alpha beta
+  licence_file "$STUBS" alpha LICENSE 'Copyright (c) 2020 A'
+  fixture_entry "$CWD" alpha
+  fixture_entry "$CWD" beta 'Copyright (c) 2020 A'
+
+  run_notices "$CWD" "$STUBS"
+
+  expect_status 1 || return 1
+  expect_lines "$WORK/stderr" "$(copyright_miss_line alpha LICENSE 'Copyright (c) 2020 A')" || return 1
+
+  case_dirs other-section
+  make_cargo "$STUBS" alpha
+  licence_file "$STUBS" alpha LICENSE 'Copyright (c) 2020 A'
+  fixture_entry "$CWD" alpha
+  printf '## Licence texts\n\n### MIT\n\nCopyright (c) 2020 A\n' >> "$CWD/THIRD_PARTY_NOTICES.md"
+
+  run_notices "$CWD" "$STUBS"
+
+  expect_status 1 || return 1
+  expect_lines "$WORK/stderr" "$(copyright_miss_line alpha LICENSE 'Copyright (c) 2020 A')"
+}
+
+# CP-1234: the same characters in the same case — a line in another case is not carried.
+test_a_line_in_another_case_is_not_carried() {
+  case_dirs other-case
+  make_cargo "$STUBS" alpha
+  licence_file "$STUBS" alpha LICENSE 'Copyright (c) 2020 A'
+  fixture_entry "$CWD" alpha 'Copyright (C) 2020 A'
+
+  run_notices "$CWD" "$STUBS"
+
+  expect_status 1 || return 1
+  expect_lines "$WORK/stderr" "$(copyright_miss_line alpha LICENSE 'Copyright (c) 2020 A')"
+}
+
+# CP-1234: only the whitespace before and after a line is free: spaces, tabs and a carriage return.
+test_outer_whitespace_is_free() {
+  case_dirs whitespace
+  make_cargo "$STUBS" alpha
+  printf '  \t Copyright (c) 2020 A \r\n' > "$STUBS/packages/alpha-1.2.3/LICENSE"
+  fixture_entry "$CWD" alpha 'Copyright (c) 2020 A'
+
+  run_notices "$CWD" "$STUBS"
+
+  expect_status 0 || return 1
+  expect_stderr_empty
+}
+
+# CP-1235: a crate update that changes a line makes the old line stale, and the new line is named.
+test_a_changed_copyright_line_is_not_carried() {
+  case_dirs changed-line
+  make_cargo "$STUBS" cc
+  licence_file "$STUBS" cc LICENSE-MIT 'Copyright (c) 2014-2027 Alex Crichton'
+  fixture_entry "$CWD" cc 'Copyright (c) 2014 Alex Crichton'
+
+  run_notices "$CWD" "$STUBS"
+
+  expect_status 1 || return 1
+  expect_lines "$WORK/stderr" "$(copyright_miss_line cc LICENSE-MIT 'Copyright (c) 2014-2027 Alex Crichton')"
+}
+
+# CP-1236: a name miss is printed first, and the missing name gets no copyright-miss line.
+test_a_name_miss_comes_before_a_copyright_miss() {
+  case_dirs name-first
+  make_cargo "$STUBS" alpha zeta
+  licence_file "$STUBS" alpha LICENSE 'Copyright (c) 2020 A'
+  licence_file "$STUBS" zeta LICENSE 'Copyright (c) 2020 Z'
+  fixture_entry "$CWD" alpha
+
+  run_notices "$CWD" "$STUBS"
+
+  expect_status 1 || return 1
+  expect_stdout_empty || return 1
+  expect_lines "$WORK/stderr" "$(miss_line zeta)
+$(copyright_miss_line alpha LICENSE 'Copyright (c) 2020 A')"
+}
+
+# CP-1227: two versions of one name are two packages, and both are read.
+test_both_versions_of_one_name_are_read() {
+  case_dirs two-versions
+  make_cargo "$STUBS" alpha@1.2.3 alpha@2.0.0
+  printf 'Copyright (c) 2020 Old\n' > "$STUBS/packages/alpha-1.2.3/LICENSE"
+  printf 'Copyright (c) 2024 New\n' > "$STUBS/packages/alpha-2.0.0/LICENSE"
+  fixture_entry "$CWD" alpha 'Copyright (c) 2020 Old'
+
+  run_notices "$CWD" "$STUBS"
+
+  expect_status 1 || return 1
+  expect_lines "$WORK/stderr" "$(copyright_miss_line alpha LICENSE 'Copyright (c) 2024 New')" || return 1
+
+  case_dirs two-versions-carried
+  make_cargo "$STUBS" alpha@1.2.3 alpha@2.0.0
+  printf 'Copyright (c) 2020 Old\n' > "$STUBS/packages/alpha-1.2.3/LICENSE"
+  printf 'Copyright (c) 2024 New\n' > "$STUBS/packages/alpha-2.0.0/LICENSE"
+  fixture_entry "$CWD" alpha 'Copyright (c) 2020 Old' 'Copyright (c) 2024 New'
+
+  run_notices "$CWD" "$STUBS"
+
+  expect_status 0 || return 1
+  expect_stderr_empty
+}
+
+# CP-1225: a licence file is found by its name in any case, and by the package's license_file.
+test_licence_files_under_other_names_are_read() {
+  case_dirs other-names
+  make_cargo "$STUBS" alpha beta gamma
+  licence_file "$STUBS" alpha LICENCE.txt 'Copyright (c) 2020 A'
+  licence_file "$STUBS" beta license-mit 'Copyright (c) 2020 B'
+  licence_file "$STUBS" gamma LEGAL 'Copyright (c) 2020 G'
+  set_license_file "$STUBS" gamma LEGAL
+  fixture_entry "$CWD" alpha
+  fixture_entry "$CWD" beta
+  fixture_entry "$CWD" gamma
+
+  run_notices "$CWD" "$STUBS"
+
+  expect_status 1 || return 1
+  expect_lines "$WORK/stderr" "$(copyright_miss_line alpha LICENCE.txt 'Copyright (c) 2020 A')
+$(copyright_miss_line beta license-mit 'Copyright (c) 2020 B')
+$(copyright_miss_line gamma LEGAL 'Copyright (c) 2020 G')"
+}
+
+# CP-1225: a NOTICE file, a file below the root and a directory named like a licence file are not read.
+test_a_notice_file_and_a_file_below_the_root_are_not_read() {
+  case_dirs not-read
+  make_cargo "$STUBS" alpha
+  root="$STUBS/packages/alpha-1.2.3"
+  mkdir -p "$root/sub" "$root/LICENSES"
+  printf 'Copyright (c) 2020 N\n' > "$root/NOTICE"
+  printf 'Copyright (c) 2020 S\n' > "$root/sub/LICENSE"
+  printf 'Copyright (c) 2020 D\n' > "$root/LICENSES/MIT"
+  fixture_entry "$CWD" alpha
+
+  run_notices "$CWD" "$STUBS"
+
+  expect_status 0 || return 1
+  expect_stderr_empty
+}
+
+# CP-1232: a fence keeps its lines: a `### ` line inside one does not end the entry.
+test_a_heading_inside_a_fence_does_not_end_an_entry() {
+  case_dirs heading-in-fence
+  make_cargo "$STUBS" alpha
+  licence_file "$STUBS" alpha LICENSE 'Copyright (c) 2020 A'
+  fixture_entry "$CWD" alpha '### a line that looks like a heading' 'Copyright (c) 2020 A'
+
+  run_notices "$CWD" "$STUBS"
+
+  expect_status 0 || return 1
+  expect_stderr_empty
+}
+
+# CP-1232: a `## ` heading, and a `### ` heading outside a fence, each end an entry.
+test_a_level_two_or_three_heading_ends_an_entry() {
+  case_dirs heading-two
+  make_cargo "$STUBS" alpha
+  licence_file "$STUBS" alpha LICENSE 'Copyright (c) 2020 A'
+  fixture_entry "$CWD" alpha
+  printf '## Another section\n\nCopyright (c) 2020 A\n' >> "$CWD/THIRD_PARTY_NOTICES.md"
+
+  run_notices "$CWD" "$STUBS"
+
+  expect_status 1 || return 1
+  expect_lines "$WORK/stderr" "$(copyright_miss_line alpha LICENSE 'Copyright (c) 2020 A')" || return 1
+
+  case_dirs heading-three
+  make_cargo "$STUBS" alpha
+  licence_file "$STUBS" alpha LICENSE 'Copyright (c) 2020 A'
+  fixture_entry "$CWD" alpha
+  printf '### `beta`\n\nCopyright (c) 2020 A\n' >> "$CWD/THIRD_PARTY_NOTICES.md"
+
+  run_notices "$CWD" "$STUBS"
+
+  expect_status 1 || return 1
+  expect_lines "$WORK/stderr" "$(copyright_miss_line alpha LICENSE 'Copyright (c) 2020 A')"
+}
+
+# CP-1232: the last entry of the file runs to the end of the file, and its last line has no newline.
+test_the_last_entry_runs_to_the_end_of_the_file() {
+  case_dirs last-entry
+  make_cargo "$STUBS" alpha
+  licence_file "$STUBS" alpha LICENSE 'Copyright (c) 2020 A'
+  printf '### `alpha`\n\nCopyright (c) 2020 A' > "$CWD/THIRD_PARTY_NOTICES.md"
+
+  run_notices "$CWD" "$STUBS"
+
+  expect_status 0 || return 1
+  expect_stderr_empty
+}
+
+# CP-1232: a name with two entries has the first read; a line only under the second is not carried.
+test_only_the_first_entry_of_a_name_counts() {
+  case_dirs two-entries
+  make_cargo "$STUBS" alpha
+  licence_file "$STUBS" alpha LICENSE 'Copyright (c) 2020 A'
+  fixture_entry "$CWD" alpha
+  fixture_entry "$CWD" alpha 'Copyright (c) 2020 A'
+
+  run_notices "$CWD" "$STUBS"
+
+  expect_status 1 || return 1
+  expect_lines "$WORK/stderr" "$(copyright_miss_line alpha LICENSE 'Copyright (c) 2020 A')"
+}
+
+# CP-1234: a version with build metadata, as `libgit2-sys 0.18.8+1.9.7` is, pairs the listing and the
+# metadata object, and is never the not-located refusal.
+test_a_version_with_build_metadata_is_located() {
+  case_dirs build-metadata
+  make_cargo "$STUBS" alpha@1.2.3+4.5.6
+  printf 'Copyright (c) 2020 A\n' > "$STUBS/packages/alpha-1.2.3+4.5.6/LICENSE"
+  fixture_entry "$CWD" alpha 'Copyright (c) 2020 A'
+
+  run_notices "$CWD" "$STUBS"
+
+  expect_status 0 || return 1
+  expect_stderr_empty
+}
+
+# CP-1238: a licence file that cannot be read is a refusal naming the component and the file, never a
+# pass. Mode 000 does not stop root from reading, so the case reports that it cannot run when the file
+# is still readable after the chmod, and never passes without testing the refusal. Mode is restored.
+test_unreadable_licence_file_is_a_refusal() {
+  case_dirs unreadable-licence
+  make_cargo "$STUBS" alpha
+  licence_file "$STUBS" alpha LICENSE 'Copyright (c) 2020 A'
+  fixture_entry "$CWD" alpha 'Copyright (c) 2020 A'
+  file="$STUBS/packages/alpha-1.2.3/LICENSE"
+  chmod 000 "$file"
+  if [ -r "$file" ]; then
+    chmod 644 "$file"
+    fail "cannot run: the licence file is still readable after chmod 000 (running as root?)"
+    return 1
+  fi
+
+  run_notices "$CWD" "$STUBS"
+  chmod 644 "$file"
+
+  expect_status 1 || return 1
+  expect_one_stderr_line_with "cannot read LICENSE in alpha's package, so nothing was checked" || return 1
+  expect_one_stderr_line_with "Check that $file can be read"
+}
+
+# CP-1238: packages whose sources could not be located are one refusal line, however it came about, and
+# nothing on stdout even with a name missing beside it: `cargo metadata` ending non-zero, no object for a
+# package, and a printed path holding a backslash (a JSON string is never unescaped).
+test_packages_not_located_is_a_refusal() {
+  case_dirs not-located-status
+  make_cargo "$STUBS" alpha beta
+  metadata_ends "$STUBS" 101
+  fixture_entry "$CWD" alpha
+
+  run_notices "$CWD" "$STUBS"
+
+  expect_status 1 || return 1
+  expect_one_stderr_line_with "cargo metadata ended with status 101, so the packages' sources could not be located and nothing was checked" || return 1
+
+  case_dirs not-located-object
+  make_cargo "$STUBS" alpha beta
+  drop_package "$STUBS" beta
+  fixture_entry "$CWD" alpha
+
+  run_notices "$CWD" "$STUBS"
+
+  expect_status 1 || return 1
+  expect_one_stderr_line_with "found no package for beta 1.2.3 in what cargo metadata printed, so the packages' sources could not be located and nothing was checked" || return 1
+
+  case_dirs not-located-backslash
+  make_cargo "$STUBS" alpha beta
+  set_manifest_path "$STUBS" beta '"C:\\\\somewhere\\\\Cargo.toml"'
+  fixture_entry "$CWD" alpha
+
+  run_notices "$CWD" "$STUBS"
+
+  expect_status 1 || return 1
+  expect_one_stderr_line_with "the path cargo metadata printed for beta's package holds a backslash" || return 1
+  expect_one_stderr_line_with "so the packages' sources could not be located and nothing was checked" || return 1
+
+  case_dirs not-located-directory
+  make_cargo "$STUBS" alpha beta
+  rmdir "$STUBS/packages/beta-1.2.3"
+  fixture_entry "$CWD" alpha
+
+  run_notices "$CWD" "$STUBS"
+
+  expect_status 1 || return 1
+  expect_one_stderr_line_with "cargo metadata placed beta's package at $STUBS/packages/beta-1.2.3, and that is not a directory, so the packages' sources could not be located and nothing was checked"
+}
+
+# CP-1238: the name check's own refusals end the run before `cargo metadata` is asked for.
+test_the_name_checks_refusals_read_no_licence_file() {
+  case_dirs early-refusals
+  make_cargo "$STUBS" alpha
+
+  run_notices "$CWD" "$STUBS"
+  expect_status 1 || return 1
+  ! grep -q '^metadata' "$STUBS/args" 2> /dev/null || fail "metadata was asked for with no notices file" || return 1
+
+  case_dirs early-tree-fails
+  make_cargo_with_body "$STUBS" 'echo "$*" >> "$(dirname "$0")/args"; exit 101'
+  printf '`alpha`\n' > "$CWD/THIRD_PARTY_NOTICES.md"
+
+  run_notices "$CWD" "$STUBS"
+  expect_status 1 || return 1
+  ! grep -q '^metadata' "$STUBS/args" || fail "metadata was asked for after a failing tree call" || return 1
+
+  case_dirs early-no-names
+  make_cargo_with_body "$STUBS" 'echo "$*" >> "$(dirname "$0")/args"; echo; echo "[build-dependencies]"'
+  printf '`alpha`\n' > "$CWD/THIRD_PARTY_NOTICES.md"
+
+  run_notices "$CWD" "$STUBS"
+  expect_status 1 || return 1
+  ! grep -q '^metadata' "$STUBS/args" || fail "metadata was asked for after an empty listing"
 }
 
 # CP-1203, CP-1206: the real cargo on the real tree passes, and leaves the repository as it was.
