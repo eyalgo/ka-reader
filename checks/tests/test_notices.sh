@@ -183,6 +183,7 @@ test_a_name_between_non_name_characters_or_at_the_end_of_the_file_is_present() {
   run_notices "$CWD" "$STUBS"
 
   expect_status 0 || return 1
+  expect_lines "$WORK/stdout" "notices.sh: 3 names in cargo tree, each in THIRD_PARTY_NOTICES.md" || return 1
   expect_stderr_empty
 }
 

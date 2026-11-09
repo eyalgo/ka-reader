@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Version: 1.12.0 — the check that the notices file names every dependency, and its suite, join the
+#   list, after the no-network suite
 # Version: 1.11.0 — the release workflow's shape check and the four release scripts' suites join the
 #   list, after the strings suites
 # Version: 1.10.0 — the check that a page reads the same with the network denied, and its suite, join
@@ -118,6 +120,14 @@ run_step 'Read-only, displayed-file scene' 'checks/read-only.sh checks/fixtures/
 run_step 'Read-only suite' 'checks/tests/test_read_only.sh'
 run_step 'No-network dependency list' 'checks/no-network.sh'
 run_step 'No-network suite' 'checks/tests/test_no_network.sh'
+# The notices block comes after "Build the workspace": checks/notices.sh runs `cargo tree` offline,
+# which reads the crate sources that step's build fetched, and a fresh checkout does not have them
+# before it. "Notices check" runs the check itself, and it comes before "Notices check suite", so a
+# miss on the tree is named by the check's own step, as with "Strings check". Both come before
+# "Launch the built bundle", with "Own state" staying last. Their place after "No-network suite" is a
+# preference: a new dependency is named by the allowlist step before its notice is asked for.
+run_step 'Notices check' 'checks/notices.sh'
+run_step 'Notices check suite' 'checks/tests/test_notices.sh'
 run_step 'Offline page, repository' 'checks/offline-page.sh checks/fixtures/repo'
 run_step 'Offline page suite' 'checks/tests/test_offline_page.sh'
 # "Strings check" runs the lint itself, and it comes before "Strings check suite". The suite's
