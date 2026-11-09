@@ -2,7 +2,7 @@
 
 **Status:** Settled
 **Owner:** CTO
-**Version:** 15 — derived against PRD v18, on the owner's answer at `docs/trail/srs/cycle-13.md` § 2.1 (RN-41). C-7 and C-13 take the support posture's wording from `docs/CONTENT.md`'s support-posture row, carried whole on SECURITY.md and on the README; the PRD's posture stays the limit, so neither surface promises an acknowledgement or a response time. AC-14's README clause follows C-13. Nothing is left for the owner to answer; the companion is closed.
+**Version:** 16 — derived against PRD v19, on the owner's answer at `docs/trail/srs/cycle-14.md` § 3.1 (RN-42). C-12 takes PRD v19's two repositories: KA-Reader is built in a private `ka-reader-dev` that keeps every branch, and the public repository carries the main line's own commit history and no other branch, each commit it receives checked for anything private before it arrives, every later release adding to that history and never rewriting it. AC-14's history clause checks what the public repository received, that it holds only the main line, and from the second release on that the previous public history is still whole. Nothing is left for the owner to answer; the companion is closed. Prior revision: 15 — C-7 and C-13 take the support posture's wording from `docs/CONTENT.md`'s support-posture row (RN-41).
 **Inputs read:** PRD Settled
 
 > The SRS is the technical source of truth: the system-level **what**, derived from the PRD and
@@ -529,13 +529,21 @@ see RN-8)*
   §1.2; the version-floor placement: RN-21)*
 - **C-12:** Public identity: the product is published from `github.com/eyalgo/ka-reader`, under
   the maintainer's personal GitHub handle `eyalgo`, and maintained under that handle; that
-  repository is where C-7's channel is enabled and where releases are offered. The repository is
-  made public with its own commit history, not as a fresh copy, and only once that history has
-  been checked for anything private. *(traces to: PRD
+  repository is where C-7's channel is enabled and where releases are offered. The product is
+  built in a separate, private repository, `ka-reader-dev`, which keeps every branch. The public
+  repository carries the main line's own commit history — every commit on the main line as it was
+  made, not a fresh copy and not a cut tree — and no other branch. History reaches the public
+  repository only once exactly the commits it is to receive have been checked for anything
+  private; this holds for the first publication and for every later release, whether or not the
+  repository is visible yet, and a commit that reaches the main line after the check is not sent
+  until it has been checked itself. Each later release adds to the public history and never
+  rewrites it. *(traces to: PRD
   Assumptions "Public identity"; owner-confirmed: `docs/trail/prd/cycle-7.md` §1.1; the personal
   handle: changed at v13 with PRD v16, owner-confirmed `docs/trail/prd/cycle-14.md` § 3.1 and
   `docs/trail/srs/cycle-11.md` § 1.1; see RN-38; the public history: PRD v18, owner-confirmed
-  `docs/trail/prd/cycle-16.md` § 3.1 and `docs/trail/srs/cycle-12.md` § 2.1; see RN-39)*
+  `docs/trail/prd/cycle-16.md` § 3.1 and `docs/trail/srs/cycle-12.md` § 2.1; see RN-39; the two
+  repositories: changed at v16 with PRD v19, owner-confirmed `docs/trail/prd/cycle-17.md` § 3.1
+  and `docs/trail/srs/cycle-14.md` § 3.1; see RN-42)*
 - **C-13:** The README states the support posture in the one wording `docs/CONTENT.md`
   § Terminology, *Standing sentences*, fixes in its support-posture row — that row is the
   wording's one home, carried whole, every sentence of it, the security sentence included — and
@@ -621,10 +629,13 @@ see RN-8)*
   it is opened is not followed — and where the release follows Git state, the README carries no
   such line; the version number obeys C-6; SECURITY.md and the private
   reporting channel exist per C-7, on the repository C-12 names, and SECURITY.md promises nothing
-  the PRD does not; and before the repository was made public, its own commit history was checked
-  for anything private, per C-12. *(covers: C-4 – C-7, C-9, C-12, C-13, FR-35; widened at v5:
-  RN-24; the two README lines added at v8: RN-34; the known-gaps line and the history check added
-  at v14: RN-39; the README's posture clause changed at v15: RN-41)*
+  the PRD does not; and, per C-12, the commits the public repository received were checked for
+  anything private before they arrived, it holds no branch but the main line, and from the second
+  release on the public history the previous release left is still whole in it — where the check
+  finds something private, nothing is sent. *(covers: C-4 – C-7, C-9, C-12, C-13, FR-35; widened
+  at v5: RN-24; the two README lines added at v8: RN-34; the known-gaps line and the history check
+  added at v14: RN-39; the README's posture clause changed at v15: RN-41; the history check changed
+  at v16: RN-42)*
 - **AC-15:** With no file selected the empty state prompts selection; pointed at a path that does
   not exist, is not a folder, or cannot be read, the system states plainly what went wrong and
   what to do next, and a filesystem check shows it touched nothing. *(covers: FR-3, FR-4; widened
@@ -1160,3 +1171,33 @@ see RN-8)*
   posture plainly and promises nothing beyond it. If the row is removed, C-7 and C-13 keep their
   PRD limit and lose their wording, which reopens this *(re: C-7, C-13, AC-14, RN-16, RN-24; PRD
   source: Assumptions "Support posture")*.
+- **RN-42:** *(changed — C-12, AC-14's history clause; upstream: PRD v19)* KA-Reader is built in
+  a private repository and published to a public one. PRD v19 § Assumptions, "Public identity",
+  states that the product is built in a separate, private `ka-reader-dev` that keeps every branch,
+  and that the public repository carries the main line's own commit history, not a fresh copy and
+  not a cut tree, receiving it only once exactly what it is to receive has been checked for
+  anything private, each later release adding to that history and never rewriting it (owner:
+  `docs/trail/prd/cycle-17.md` § 3.1, superseding the one repository made public that
+  `docs/trail/prd/cycle-16.md` § 3.1 set). The owner confirmed the fold, with three additions, at
+  `docs/trail/srs/cycle-14.md` § 3.1; its reasoning is `docs/trail/srs/self_answer-6.md` § 3.1.
+  **C-12 carries all four of the PRD's statements:** the private repository keeping every branch;
+  the main line's own history, as made; no other branch, since work in progress, change branches
+  and anything not yet checked stay private; and never rewritten. **The check covers every
+  arrival:** it holds for the first publication and for every later release, and whether or not
+  the repository is visible yet, so a push into a repository that is still private and is made
+  public later is covered too. The check binds to exactly the commits sent: a commit that reaches
+  the main line after the check is not sent until it has been checked itself. **AC-14 inspects
+  three things:** that the commits the public repository received were checked before they
+  arrived, that it holds no branch but the main line, and from the second release on that the
+  public history the previous release left is still whole in it, which is how "never rewrites"
+  is checked at a release. Where the check finds something private, nothing is sent. What is done
+  about such a finding lands as no requirement: the PRD wants the main line's history as it was
+  made and wants nothing private in it, and it names no remedy. Where the tagged release build
+  runs, and which refs and which root commit the check compares, are the SDD's and the NFDR's.
+  The public identity, the address and C-7's channel on that repository are unchanged, so C-7,
+  RN-38 and §2's "what binds the first public release (C-4, C-7, C-12) binds the beta" stand as
+  written; RN-39 stays the record of why C-12 first took the public history, and RN-24 of why C-12
+  was added. **Reverse walk, PRD v18 → v19:** the PRD moved two units, its Version line, which
+  restates § Assumptions "Public identity", and that assumption itself, which is C-12's. No other
+  PRD unit moved between v18 and v19 *(re: C-12, AC-14, C-7, RN-24, RN-38, RN-39, §2; PRD source:
+  Assumptions "Public identity")*.
