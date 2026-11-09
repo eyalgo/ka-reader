@@ -73,6 +73,12 @@ CONTROL_CASE="test_negative_control_reports_unsandboxed"
 # real bundle the set is the fourteen files of third_party/lucide/icons.
 DRAWN_FROM_PASS_LINE="glyph set: 14 members checked"
 EXPECTED_SET_DIR="$ROOT/third_party/lucide/icons"
+# What the licence-and-notices rule prints on a pass (CP-1217), and the line that closes a refusal
+# for a copy that is missing or differs (CP-1214). The bundle paths are relative to the bundle.
+LICENCE_PASS_LINE="licence and notices: 2 copies checked — each is byte-identical to the tree's file"
+LICENCE_CLOSING_LINE="bundle.sh: the bundle's licence and notices are not the tree's; the bundle was not launched"
+LICENCE_COPY="Contents/Resources/KA-Reader-LICENSE"
+NOTICES_COPY="Contents/Resources/THIRD_PARTY_NOTICES.md"
 
 OUT=""
 STATUS=0
@@ -146,6 +152,20 @@ test_false_value_fails
 test_missing_key_fails
 test_invalid_probe_window_is_refused_before_launch
 test_header_names_the_probe_window
+test_licence_and_notices_pass_line_is_on_stdout
+test_negative_control_pass_carries_the_licence_line
+test_licence_copy_missing_fails
+test_notices_copy_missing_fails
+test_licence_copy_differing_fails
+test_notices_copy_differing_fails
+test_both_copies_wrong_are_named_licence_first
+test_negative_control_refuses_a_bundle_lacking_the_notices_copy
+test_licence_rule_judges_before_the_probe_is_compiled
+test_unreadable_tree_notices_is_refused
+test_unreadable_tree_licence_is_refused
+test_symlinked_copy_reads_as_missing
+test_licence_refusal_leaves_no_temporary
+test_header_names_the_licence_and_notices_rule
 test_empty_probe_window_reads_as_the_default
 test_leading_zero_window_reads_in_base_ten
 test_never_sandboxed_within_the_window_fails_naming_it
@@ -387,6 +407,9 @@ test_real_bundle_passes() {
   expect_output_lacks "copy of a checks/ file" || return 1
   expect_output_lacks "glyph missing from" || return 1
   expect_output_lacks "glyph outside" || return 1
+  expect_output_contains "$LICENCE_PASS_LINE" || return 1
+  expect_output_lacks "missing from the bundle" || return 1
+  expect_output_lacks "differs from the tree's" || return 1
   expect_no_bundle_process "$APP"
 }
 
@@ -1743,6 +1766,279 @@ test_temporaries_removed() {
   nested_work="$(cat "$log" 2> /dev/null || true)"
   [ -n "$nested_work" ] || fail "the nested suite recorded no temporary directory" || return 1
   [ ! -e "$nested_work" ] || fail "the temporary directory still exists: $nested_work"
+}
+
+# --- the licence-and-notices rule (QC-41; CP-1214 to CP-1220) ---
+
+# Runs the script with an `open` stub that records a launch in $WORK/open-$1.log and a separate
+# capture of each stream. $1 is the tag; the rest are the script's own arguments. A stub the caller
+# already placed in $WORK/stubs-$1 is kept. Sets STATUS, OUT_STDOUT and OUT_STDERR, and OUT to both,
+# so a failure message shows what was printed.
+run_split_unlaunched() {
+  tag="$1"
+  shift
+  mkdir -p "$WORK/stubs-$tag"
+  make_stub "$WORK/stubs-$tag" open "echo \"\$@\" >> \"$WORK/open-$tag.log\""
+  PATH="$WORK/stubs-$tag:$PATH" "$BUNDLE_SH" "$@" > "$WORK/split-$tag.out" 2> "$WORK/split-$tag.err"
+  STATUS=$?
+  OUT_STDOUT="$(cat "$WORK/split-$tag.out")"
+  OUT_STDERR="$(cat "$WORK/split-$tag.err")"
+  OUT="stdout: $OUT_STDOUT stderr: $OUT_STDERR"
+}
+
+# The refusal's whole stderr is exactly the lines in "$@", one per argument, in that order; the exit
+# is 1 and nothing was launched. $1 is the tag.
+expect_stderr_exactly() {
+  tag="$1"
+  shift
+  [ "$STATUS" -eq 1 ] || fail "expected exit 1, got $STATUS. output: $OUT" || return 1
+  expected="$(printf '%s\n' "$@")"
+  [ "$OUT_STDERR" = "$expected" ] \
+    || fail "expected stderr to be exactly: $expected. stderr: $OUT_STDERR" || return 1
+  expect_not_launched "$tag"
+}
+
+# A valid copy of the bundle, named $1, with the file $2 (relative to the bundle) removed.
+copy_without() {
+  copy="$(valid_copy "$1")" || return 1
+  rm -- "${copy:?}/${2:?}"
+  printf '%s' "$copy"
+}
+
+# Replaces the first byte of the file $2 (relative to the bundle) in the copy at $1.
+change_first_byte() {
+  chmod u+w "${1:?}/${2:?}"
+  printf '\001' | dd of="${1:?}/${2:?}" bs=1 count=1 conv=notrunc 2> /dev/null
+}
+
+# A valid copy of the bundle, named $1, with the first byte of the file $2 replaced.
+copy_with_changed_byte() {
+  copy="$(valid_copy "$1")" || return 1
+  change_first_byte "$copy" "$2"
+  printf '%s' "$copy"
+}
+
+# The line number of the first line of $1 that equals $2, or empty.
+line_number_of() {
+  printf '%s\n' "$1" | grep -n -x -F -- "$2" | head -1 | cut -d: -f1
+}
+
+# CP-1217: the pass line is printed on stdout, after the glyph pass line and before the launch, and
+# stderr never carries it. The probe is a stub so the run reaches its end quickly.
+test_licence_and_notices_pass_line_is_on_stdout() {
+  seq="$WORK/seq-licence-pass"
+  sequenced_probe_stub "$seq" "yes denied denied"
+
+  BUNDLE_SH_PROBE_TICKS=2 PATH="$seq:$PATH" "$BUNDLE_SH" "$APP" > "$WORK/licence-pass.out" 2> "$WORK/licence-pass.err"
+  STATUS=$?
+  OUT="stdout: $(cat "$WORK/licence-pass.out") stderr: $(cat "$WORK/licence-pass.err")"
+
+  [ "$STATUS" -eq 0 ] || fail "expected exit 0, got $STATUS. output: $OUT" || return 1
+  stdout_text="$(cat "$WORK/licence-pass.out")"
+  pass_at="$(line_number_of "$stdout_text" "$LICENCE_PASS_LINE")"
+  launched_at="$(printf '%s\n' "$stdout_text" | grep -n '^launched: ' | head -1 | cut -d: -f1)"
+  glyph_at="$(printf '%s\n' "$stdout_text" | grep -n '^glyph set: ' | head -1 | cut -d: -f1)"
+  [ -n "$pass_at" ] || fail "stdout lacks the exact line: $LICENCE_PASS_LINE. output: $OUT" || return 1
+  [ "$pass_at" -gt "$glyph_at" ] && [ "$pass_at" -lt "$launched_at" ] \
+    || fail "the line must come after the glyph line and before the launched: line. output: $OUT" || return 1
+  last_line="$(tail -1 "$WORK/licence-pass.out")"
+  case "$last_line" in
+    "sandbox observed: "*) ;;
+    *) fail "expected stdout's last line to be the sandbox observed: line. last line: $last_line" || return 1 ;;
+  esac
+  ! grep -q -F -- "$LICENCE_PASS_LINE" "$WORK/licence-pass.err" \
+    || fail "the pass line was printed on stderr. output: $OUT" || return 1
+  expect_no_bundle_process "$APP"
+}
+
+# CP-1217: the negative control passes through the same rule. On a copy re-signed with the empty
+# entitlement set that carries both copies, the control exits 0 with the line before the launch, and
+# its own line is still stdout's last.
+test_negative_control_pass_carries_the_licence_line() {
+  seq="$WORK/seq-control-licence"
+  write_entitlements "$WORK/empty.plist"
+  copy="$(resigned_copy control-licence "$WORK/empty.plist")" || fail "could not re-sign the copy" || return 1
+  sequenced_probe_stub "$seq" "no denied denied"
+
+  BUNDLE_SH_PROBE_TICKS=2 PATH="$seq:$PATH" "$BUNDLE_SH" --negative-control "$copy" > "$WORK/control-licence.out" 2> "$WORK/control-licence.err"
+  STATUS=$?
+  OUT="stdout: $(cat "$WORK/control-licence.out") stderr: $(cat "$WORK/control-licence.err")"
+
+  [ "$STATUS" -eq 0 ] || fail "expected exit 0, got $STATUS. output: $OUT" || return 1
+  stdout_text="$(cat "$WORK/control-licence.out")"
+  pass_at="$(line_number_of "$stdout_text" "$LICENCE_PASS_LINE")"
+  launched_at="$(printf '%s\n' "$stdout_text" | grep -n '^launched: ' | head -1 | cut -d: -f1)"
+  [ -n "$pass_at" ] && [ "$pass_at" -lt "$launched_at" ] \
+    || fail "stdout must carry the exact line before the launched: line. output: $OUT" || return 1
+  last_line="$(tail -1 "$WORK/control-licence.out")"
+  case "$last_line" in
+    "negative control: "*) ;;
+    *) fail "expected stdout's last line to begin 'negative control: '. last line: $last_line" || return 1 ;;
+  esac
+  expect_no_bundle_process "$copy"
+}
+
+# CP-1214: a missing licence copy is named with the tree's file it stands for, then the closing line.
+test_licence_copy_missing_fails() {
+  copy="$(copy_without licence-missing "$LICENCE_COPY")" || fail "could not build the copy" || return 1
+
+  run_split_unlaunched licence-missing "$copy"
+
+  expect_stderr_exactly licence-missing \
+    "missing from the bundle: $LICENCE_COPY (the tree's LICENSE)" "$LICENCE_CLOSING_LINE" || return 1
+  expect_no_bundle_process "$copy"
+}
+
+test_notices_copy_missing_fails() {
+  copy="$(copy_without notices-missing "$NOTICES_COPY")" || fail "could not build the copy" || return 1
+
+  run_split_unlaunched notices-missing "$copy"
+
+  expect_stderr_exactly notices-missing \
+    "missing from the bundle: $NOTICES_COPY (the tree's THIRD_PARTY_NOTICES.md)" "$LICENCE_CLOSING_LINE" || return 1
+  expect_no_bundle_process "$copy"
+}
+
+# CP-1214: a copy whose bytes are not the tree's file's is named, then the closing line.
+test_licence_copy_differing_fails() {
+  copy="$(copy_with_changed_byte licence-differs "$LICENCE_COPY")" || fail "could not build the copy" || return 1
+
+  run_split_unlaunched licence-differs "$copy"
+
+  expect_stderr_exactly licence-differs \
+    "differs from the tree's LICENSE: $LICENCE_COPY" "$LICENCE_CLOSING_LINE" || return 1
+  expect_no_bundle_process "$copy"
+}
+
+test_notices_copy_differing_fails() {
+  copy="$(copy_with_changed_byte notices-differs "$NOTICES_COPY")" || fail "could not build the copy" || return 1
+
+  run_split_unlaunched notices-differs "$copy"
+
+  expect_stderr_exactly notices-differs \
+    "differs from the tree's THIRD_PARTY_NOTICES.md: $NOTICES_COPY" "$LICENCE_CLOSING_LINE" || return 1
+  expect_no_bundle_process "$copy"
+}
+
+# CP-1214: every failing pair is named, in the list's order, and the closing line is printed once.
+test_both_copies_wrong_are_named_licence_first() {
+  copy="$(copy_without both-wrong "$LICENCE_COPY")" || fail "could not build the copy" || return 1
+  change_first_byte "$copy" "$NOTICES_COPY"
+
+  run_split_unlaunched both-wrong "$copy"
+
+  expect_stderr_exactly both-wrong \
+    "missing from the bundle: $LICENCE_COPY (the tree's LICENSE)" \
+    "differs from the tree's THIRD_PARTY_NOTICES.md: $NOTICES_COPY" \
+    "$LICENCE_CLOSING_LINE" || return 1
+  expect_no_bundle_process "$copy"
+}
+
+# CP-1214: the rule holds on the control's path too, and refuses before anything is launched.
+test_negative_control_refuses_a_bundle_lacking_the_notices_copy() {
+  write_entitlements "$WORK/empty.plist"
+  copy="$(resigned_copy control-no-notices "$WORK/empty.plist")" || fail "could not re-sign the copy" || return 1
+  rm -- "${copy:?}/$NOTICES_COPY"
+
+  run_split_unlaunched control-no-notices --negative-control "$copy"
+
+  expect_stderr_exactly control-no-notices \
+    "missing from the bundle: $NOTICES_COPY (the tree's THIRD_PARTY_NOTICES.md)" "$LICENCE_CLOSING_LINE" || return 1
+  expect_no_bundle_process "$copy"
+}
+
+# CP-1219: the rule judges before the probe is compiled, so a refused bundle costs no compile and no
+# launch.
+test_licence_rule_judges_before_the_probe_is_compiled() {
+  copy="$(copy_without before-probe "$LICENCE_COPY")" || fail "could not build the copy" || return 1
+  mkdir -p "$WORK/stubs-before-probe"
+  make_stub "$WORK/stubs-before-probe" rustc "echo \"\$@\" >> \"$WORK/rustc-before-probe.log\""
+
+  run_split_unlaunched before-probe "$copy"
+
+  expect_nonzero_status || return 1
+  [ ! -e "$WORK/rustc-before-probe.log" ] \
+    || fail "rustc was called before the rule judged: $(cat "$WORK/rustc-before-probe.log")" || return 1
+  expect_not_launched before-probe
+}
+
+# A directory holding a `cp` that forwards every call to the real one except a read of a path ending
+# in $2, which it fails with cp's own shape of message and status.
+failing_cp_stub() {
+  mkdir -p "$1"
+  make_stub "$1" cp "for argument in \"\$@\"; do
+  case \"\$argument\" in
+    */$2) echo \"cp: \$argument: Permission denied\" >&2; exit 1 ;;
+  esac
+done
+exec /bin/cp \"\$@\""
+}
+
+# CP-1216: a tree file that cannot be read is a refusal naming it, and no comparison is made, so no
+# CP-1214 line is printed.
+test_unreadable_tree_notices_is_refused() {
+  failing_cp_stub "$WORK/stubs-unreadable-notices" THIRD_PARTY_NOTICES.md
+
+  run_split_unlaunched unreadable-notices "$APP"
+
+  expect_stderr_exactly unreadable-notices \
+    "bundle.sh: cannot read the tree's THIRD_PARTY_NOTICES.md, so the bundle's copy was not compared; the bundle was not launched" || return 1
+  expect_no_bundle_process "$APP"
+}
+
+test_unreadable_tree_licence_is_refused() {
+  failing_cp_stub "$WORK/stubs-unreadable-licence" LICENSE
+
+  run_split_unlaunched unreadable-licence "$APP"
+
+  expect_stderr_exactly unreadable-licence \
+    "bundle.sh: cannot read the tree's LICENSE, so the bundle's copy was not compared; the bundle was not launched" || return 1
+  expect_no_bundle_process "$APP"
+}
+
+# CP-1214: a copy that is not a regular file is missing, a symlink to the tree's own file included.
+test_symlinked_copy_reads_as_missing() {
+  copy="$(valid_copy symlinked)" || fail "could not re-sign the copy" || return 1
+  rm -- "${copy:?}/$NOTICES_COPY"
+  ln -s "$ROOT/THIRD_PARTY_NOTICES.md" "$copy/$NOTICES_COPY"
+
+  run_split_unlaunched symlinked "$copy"
+
+  expect_stderr_exactly symlinked \
+    "missing from the bundle: $NOTICES_COPY (the tree's THIRD_PARTY_NOTICES.md)" "$LICENCE_CLOSING_LINE" || return 1
+  expect_no_bundle_process "$copy"
+}
+
+# CP-1218: a refusal leaves nothing behind. TMPDIR is a fresh empty directory, so whatever the run
+# made in its temporary directory is made there.
+test_licence_refusal_leaves_no_temporary() {
+  copy="$(copy_without no-temporary "$LICENCE_COPY")" || fail "could not build the copy" || return 1
+  mkdir -p "$WORK/stubs-no-temporary" "$WORK/tmpdir-no-temporary"
+  make_stub "$WORK/stubs-no-temporary" open "echo \"\$@\" >> \"$WORK/open-no-temporary.log\""
+
+  TMPDIR="$WORK/tmpdir-no-temporary" PATH="$WORK/stubs-no-temporary:$PATH" "$BUNDLE_SH" "$copy" > /dev/null 2>&1
+  STATUS=$?
+
+  [ "$STATUS" -eq 1 ] || fail "expected exit 1, got $STATUS" || return 1
+  left="$(ls -A "$WORK/tmpdir-no-temporary")"
+  [ -z "$left" ] || fail "the refused run left in its temporary directory: $left"
+}
+
+# CP-1214, CP-1217: the header is the contract. It names both in-bundle paths, and the sentence that
+# says when the script exits 0 names the licence and notices.
+test_header_names_the_licence_and_notices_rule() {
+  header="$(awk '/^set -euo pipefail$/{exit} {print}' "$BUNDLE_SH")"
+  for named in "$LICENCE_COPY" "$NOTICES_COPY"; do
+    case "$header" in
+      *"$named"*) ;;
+      *) fail "the header does not name $named. header: $header" || return 1 ;;
+    esac
+  done
+  exit_zero_sentence="$(printf '%s\n' "$header" | awk '/Exit 0 only when/{keep=1} /Every failure names its cause/{exit} keep{print}')"
+  case "$exit_zero_sentence" in
+    *"licence and notices"*) ;;
+    *) fail "USAGE's exit-0 sentence does not name the licence and notices. sentence: $exit_zero_sentence" ;;
+  esac
 }
 
 # QC-65 (CP-797, CP-798, CP-799): off a macOS virtual machine bundle.sh prints its one refusal line
