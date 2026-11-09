@@ -54,7 +54,18 @@ None.
   under both C-7 / C-13 and `docs/nfdr.md` QC-44. `docs/fdr.md` R-143, R-138 and PD-22 trace to C-7
   and C-13 and carry the same split, and `docs/fdr_open_issues.md` § 2.1 carries it there. The two
   should be answered the same way.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm, with four additions. (1) `SECURITY.md` and the README each carry
+  the CONTENT support-posture row **whole**, all three sentences, not the half that fits the surface:
+  the row allows "no shortened version", so C-13's README gains the security sentence and C-7's
+  `SECURITY.md` the issues sentences. (2) C-7 and C-13 name the CONTENT row as the one home of the
+  wording. Any words they quote are the row's, verbatim, so a later change to the row cannot leave
+  the SRS holding a stale copy. (3) C-7's "promising nothing the PRD does not" and C-13's "promises
+  nothing beyond it" stay, now against the PRD's sentence as meaning. That keeps "no acknowledgement
+  promised" binding as a limit, which the CONTENT row does not say in words. AC-14's README clause
+  moves to the CONTENT wording, and its `SECURITY.md` clause stands. (4) RN-24 and RN-16 stay as
+  written, by this document's own rule for settled notes (RN-20, RN-35). A new note records the move
+  and the owner's decision behind it (`ka-reader@3363a86`). Reasoning:
+  `docs/trail/srs/self_answer-5.md` § 2.1.
 
 ## 3. Raised from downstream — an item from a seat that did not write the SRS
 
