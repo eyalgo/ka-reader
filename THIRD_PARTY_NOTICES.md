@@ -1,6 +1,6 @@
 # Third-party notices
 
-KA-Reader's own code is under the MIT licence, in `LICENSE`. This file names the crates, libraries and icons KA-Reader is built from, each with its licence. The full text of each licence named here is under *Licence texts*, at the end of this file, once.
+KA-Reader's own code is under the MIT licence, in `LICENSE`. This file names the crates, libraries and icons KA-Reader is built from. Each third-party component has an entry of its own, headed by its name, that gives its licence and every copyright line its licence files state, or says that there is none. The full text of each licence named here is under *Licence texts*, at the end of this file, once.
 
 ## KA-Reader's own crates
 
@@ -546,7 +546,16 @@ The portable endian header is under the endian header's public-domain dedication
 
 ## Icons
 
+### Lucide
+
 The icons in `third_party/lucide` are from Lucide. Lucide is under the ISC licence, and the icons in it derived from Feather are under the MIT licence. Both texts are kept in `third_party/lucide/LICENSE`, and the ISC text is not repeated in this file.
+
+Below is every copyright line `third_party/lucide/LICENSE` states.
+
+```text
+Copyright (c) 2026 Lucide Icons and Contributors
+Copyright (c) 2013-present Cole Bemis
+```
 
 ## Licence texts
 
