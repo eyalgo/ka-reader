@@ -47,6 +47,7 @@ Each entry records a change to what a user of a fresh clone installs, runs, type
 - **ka-reader** — The launch steps refuse to run off a virtual machine. (`13e8d42e9`)
 - **ka-reader** — The bridge's C-string calls build under both Swift 6.3 and 6.4. (`24be58134`)
 - **ka-reader** — A Markdown file you open, one named `.md` or `.markdown`, no longer shows its text. The reading panel says *KA-Reader stopped while reading this file and can't tell why.* in its place. When an open Markdown file changes on disk, the window shows neither that change nor the changes to the file tree that arrive with it. (`89275360e`, `681135152`)
+- **ka-reader** — Each entry in `THIRD_PARTY_NOTICES.md` now gives every copyright line its component's licence files state, for every crate, every library a crate compiles, and the Lucide icons, and says so where a package holds no licence file or its licence files state no copyright line. `checks/notices.sh` now also reads every licence file of every crate it names, and exits 1 when a copyright line in one is missing from that crate's entry, naming the crate, the file and the line. It also exits 1, saying nothing was checked, when it cannot find or read a crate's licence files. Its name check, its pass line and its other messages are as they were. (`695f023d8`, `6580e2287`, `d42ab77f9`, `aacc44c42`, `77e8688ab`, `9da791d2b`, `c977941a0`, `4ab28e50f`)
 
 ### Removed
 
