@@ -674,7 +674,19 @@ test_outer_whitespace_is_free() {
   run_notices "$CWD" "$STUBS"
 
   expect_status 0 || return 1
-  expect_stderr_empty
+  expect_stderr_empty || return 1
+
+  # The same file against an entry without the line: the line was read, with its outer whitespace
+  # removed, and not passed over unrecognised, which exit 0 above cannot tell apart.
+  case_dirs whitespace-read
+  make_cargo "$STUBS" alpha
+  printf '  \t Copyright (c) 2020 A \r\n' > "$STUBS/packages/alpha-1.2.3/LICENSE"
+  fixture_entry "$CWD" alpha
+
+  run_notices "$CWD" "$STUBS"
+
+  expect_status 1 || return 1
+  expect_lines "$WORK/stderr" "$(copyright_miss_line alpha LICENSE 'Copyright (c) 2020 A')"
 }
 
 # CP-1230: the entry's line is trimmed the same way, so an indented or carriage-return-ended line in
