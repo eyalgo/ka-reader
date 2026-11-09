@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.5.0 — the licence-and-notices rule: the bundle's copies are the tree's files
 # Version: 1.4.0 — the launch steps refuse off a VM
 # Version: 1.3.0 — the suite prints the control line — test_bundle.sh publishes the control's one
 #   reading and refuses a report without it
