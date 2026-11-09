@@ -153,7 +153,7 @@ packages="$(printf '%s\n' "$cargo_metadata" | LC_ALL=C awk '
       } else if (have && substr(token, 1, 15) == "\"license_file\":" && license_file == "") {
         license_file = substr(token, 16)
         license_file = (license_file == "null") ? "null" : "s:" substr(license_file, 2, length(license_file) - 2)
-      } else if (have && substr(token, 1, 16) == "\"manifest_path\"") {
+      } else if (have && substr(token, 1, 15) == "\"manifest_path\"") {
         manifest = substr(token, 18, length(token) - 18)
         print name "\t" version "\t" (license_file == "" ? "null" : license_file) "\tp:" manifest
         have = 0

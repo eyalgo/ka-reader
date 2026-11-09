@@ -63,6 +63,8 @@ test_missing_lines_are_named_in_order
 test_a_line_in_another_entry_or_section_is_not_carried
 test_a_line_in_another_case_is_not_carried
 test_outer_whitespace_is_free
+test_outer_whitespace_in_the_entry_is_free
+test_misses_are_ordered_by_name_then_file_then_version_then_line_number
 test_a_changed_copyright_line_is_not_carried
 test_a_name_miss_comes_before_a_copyright_miss
 test_both_versions_of_one_name_are_read
@@ -660,6 +662,41 @@ test_outer_whitespace_is_free() {
 
   expect_status 0 || return 1
   expect_stderr_empty
+}
+
+# CP-1230: the entry's line is trimmed the same way, so an indented or carriage-return-ended line in the
+# entry carries a licence file's bare line.
+test_outer_whitespace_in_the_entry_is_free() {
+  case_dirs entry-whitespace
+  make_cargo "$STUBS" alpha
+  licence_file "$STUBS" alpha LICENSE 'Copyright (c) 2020 A'
+  printf '### `alpha`\n\n```text\n  \t Copyright (c) 2020 A \r\n```\n' > "$CWD/THIRD_PARTY_NOTICES.md"
+
+  run_notices "$CWD" "$STUBS"
+
+  expect_status 0 || return 1
+  expect_stderr_empty
+}
+
+# CP-1235: the misses stand in the order name, file, version, line number, each by byte but the line
+# number, which is by value. The line numbers here run against every other key: `beta` is listed first and
+# misses at line 1, `alpha` misses at lines 10 and 2, and `alpha`'s two versions are listed newest first.
+test_misses_are_ordered_by_name_then_file_then_version_then_line_number() {
+  case_dirs order-keys
+  make_cargo "$STUBS" beta alpha@2.0.0 alpha@1.2.3
+  licence_file "$STUBS" beta LICENSE 'Copyright (c) 2020 B'
+  printf '%s\n' x 'Copyright (c) 2020 A-two' x x x x x x x 'Copyright (c) 2020 A-ten' > "$STUBS/packages/alpha-1.2.3/LICENSE"
+  printf '%s\n' 'Copyright (c) 2021 A-newer' > "$STUBS/packages/alpha-2.0.0/LICENSE"
+  fixture_entry "$CWD" alpha
+  fixture_entry "$CWD" beta
+
+  run_notices "$CWD" "$STUBS"
+
+  expect_status 1 || return 1
+  expect_lines "$WORK/stderr" "$(copyright_miss_line alpha LICENSE 'Copyright (c) 2020 A-two')
+$(copyright_miss_line alpha LICENSE 'Copyright (c) 2020 A-ten')
+$(copyright_miss_line alpha LICENSE 'Copyright (c) 2021 A-newer')
+$(copyright_miss_line beta LICENSE 'Copyright (c) 2020 B')"
 }
 
 # CP-1235: a crate update that changes a line makes the old line stale, and the new line is named.
