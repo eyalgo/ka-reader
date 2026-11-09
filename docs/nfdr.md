@@ -2,7 +2,8 @@
 
 **Status:** Settled
 **Owner:** Principal Architect
-**Version:** 89 — Fold cycle-80 §§ 3.1–3.5, the close: QC-41 states that every release carries `LICENSE` and `THIRD_PARTY_NOTICES.md` at the root of the tagged source and inside `KA-Reader.app` in the disk image, byte-identical to the tree's, and that each notice entry carries its component's copyright lines and any `NOTICE` file as well as its licence; its tail names the gate's *Notices check* and *Notices check suite* steps at every change and the release workflow's *Test gate* at a tag, and names the two rules owed to `checks/bundle.sh` and to an extended `checks/notices.sh`, held by `development-design` until they land; § 9's suites bullet is re-measured at twenty-three suites with the twenty-two kept as a dated reading; QC-70's dated reading is re-measured at `ka-reader@06e4a34` with `checks/notices.sh`'s statuses. The companion is removed; Status is Settled — RN-99.
+**Version:** 90 — Fold cycle-81 § 3.1, the close: QC-41's tail names the check that now holds the bundle's copies — `checks/bundle.sh` and its suite, run by the gate's *Bundle probe* and *Bundle probe suite* steps at every change and, through the release workflow's *Test gate*, on the bundle its *Disk image* step packs — and the *Release image suite* step for the copy dragged off the image, with release inspection of the downloaded bundle kept; the copyright lines are the one rule still owed, held by `development-design` and release inspection until `checks/notices.sh` is extended; the statement's `assemble.sh` locators are re-pinned at `ka-reader@b503b6d`, with `06e4a34`'s kept as the dated reading; QC-41's § 10 row and § 10's review-gate list follow. The companion is removed; Status is Settled — RN-100.
+Version 89 — Fold cycle-80 §§ 3.1–3.5, the close: QC-41 states that every release carries `LICENSE` and `THIRD_PARTY_NOTICES.md` at the root of the tagged source and inside `KA-Reader.app` in the disk image, byte-identical to the tree's, and that each notice entry carries its component's copyright lines and any `NOTICE` file as well as its licence; its tail names the gate's *Notices check* and *Notices check suite* steps at every change and the release workflow's *Test gate* at a tag, and names the two rules owed to `checks/bundle.sh` and to an extended `checks/notices.sh`, held by `development-design` until they land; § 9's suites bullet is re-measured at twenty-three suites with the twenty-two kept as a dated reading; QC-70's dated reading is re-measured at `ka-reader@06e4a34` with `checks/notices.sh`'s statuses. The companion is removed; Status is Settled — RN-99.
 Version 88 — Fold cycle-79 § 3.1 and settle § 2.1 from upstream, the close: QC-42 binds what `SECURITY.md` promises and not its wording, which is QC-44's — `docs/CONTENT.md`'s support-posture row, whole — on the owner's answer; QC-44's list gains the beta's Git-view statement, the seventh standing sentence, on the Git view, the head of the tree and the README's known gaps of a release that reads Git state once, at open, and absent from the README of a release that follows it, with the README's uncovered-case line held at release inspection; QC-71, new, binds the public history: every ref the public remote will hold is scanned and read for anything private before the repository is made public, and it is published with that history. § 2.1 is settled from SRS v15, CONTENT v15, FDR v15 and SDD § 6 S-7, not by an answer. The companion is removed; Status is Settled — RN-98.
 Version 87 — Fold cycle-78 §§ 3.1–3.3, the close: QC-64 names `.github/workflows/ci.yml` as the workflow every rule of which `checks/gate.sh` holds, and states `.github/workflows/release.yml` at `ka-reader@2d7c4f9` — its step set held at the change by the gate's *Release workflow shape* step, its *Cargo audit* QC-27's release gate and its *Verify checksums* QC-29's, both run at a tag push and at no change; QC-27's tail names that step; § 9's suites bullet is re-measured at twenty-two suites with the seventeen kept as a dated reading; QC-70's dated reading is re-measured at `2d7c4f9` with the five release scripts, `checks/release-pack.sh`'s signal trap and `checks/tree-walk.sh`'s pass-through. The companion is removed; Status is Settled — RN-97.
 Version 86 — Fold cycle-77 § 3.1, the close: QC-70 records a known gap at `ka-reader@8823057` — `checks/offline-page.sh` ends its comparison pipeline `|| true`, so under `pipefail` a failed comparison, `diff`'s exit 2 among them, prints `same` and ends 0 — and its `verified by:` names the suite case the fix owes, held by `development-design` until it lands. The companion is removed; Status is Settled — RN-96.
@@ -1600,9 +1601,11 @@ import nothing forbidden and still read a path it was never granted.
   inside the bundle, not beside it on the volume: a copy of the app dragged off the image keeps
   them, and `checks/release-pack.sh` holds the volume to one item. Inside the bundle the product's
   `LICENSE` takes a name of its own, because `Contents/Resources/LICENSE` is the icon set's licence
-  (`ka-reader-mac/assemble.sh:L111` at `ka-reader@06e4a34`); which name is the delivery tier's.
-  Both are copied in before `codesign` signs the bundle (`ka-reader-mac/assemble.sh:L115`), or the
-  seal breaks. `THIRD_PARTY_NOTICES.md` lists every crate and package the bundle ships, at the
+  (`ka-reader-mac/assemble.sh:L119` at `ka-reader@b503b6d`; `:L111` at `ka-reader@06e4a34`); which
+  name is the delivery tier's, and at `ka-reader@b503b6d` it reads
+  `Contents/Resources/KA-Reader-LICENSE` (`:L120`). Both are copied in (`:L120-L121` at
+  `ka-reader@b503b6d`) before `codesign` signs the bundle (`:L125` at `ka-reader@b503b6d`; `:L115`
+  at `ka-reader@06e4a34`), or the seal breaks. `THIRD_PARTY_NOTICES.md` lists every crate and package the bundle ships, at the
   version `Cargo.lock` resolves, and each entry carries the component's licence as the component
   declares it, every copyright line the component's own licence file states, and the whole of any
   `NOTICE` file it ships (Apache-2.0 § 4(d); none at `ka-reader@06e4a34`). A component whose
@@ -1616,19 +1619,28 @@ import nothing forbidden and still read a path it was never granted.
   declares no dependency to notice (SDD § 4 C-R6, § 6 S-7) — run by the gate's *Notices check* and
   *Notices check suite* steps (`checks/gate.sh:L129-L130` at `ka-reader@06e4a34`) at every change,
   and at a tag by the release workflow's *Test gate* step *(through v88 the tail ended "(the
-  release)" — RN-99)*. Two rules are owed to a check and held by none at `ka-reader@06e4a34`. The
-  bundle's copies are owed to `checks/bundle.sh` and its suite `checks/tests/test_bundle.sh`,
-  failing when the built bundle lacks either file or holds one that differs from the tree's — the
-  tree; CI build; release, and on the downloaded bundle at release inspection. The copyright lines
-  are owed to `checks/notices.sh`, extended to read each resolved package's licence file and fail
-  on a copyright line the notices lack, so a crate update that changes its line fails the same
-  check. Until each lands, `development-design` reading this entry is that rule's gate, by the
-  header's per-rule rule, and release inspection reads the copyright lines before the first tag
+  release)" — RN-99)*. The bundle's copies are held by `checks/bundle.sh` and its suite
+  `checks/tests/test_bundle.sh` (the tree) — non-zero when the built bundle lacks either file, holds
+  one as a symlink, or holds one that differs from the tree's (`checks/bundle.sh:L358-L359` at
+  `ka-reader@b503b6d`) — run by the gate's *Bundle probe* and *Bundle probe suite* steps
+  (`checks/gate.sh:L95`, `:L97` at `ka-reader@b503b6d`) at every change, and at a tag by the
+  release workflow's *Test gate* (`.github/workflows/release.yml:L53-L54`), which probes the same
+  `target/release/bundle/macos/KA-Reader.app` its *Disk image* step then packs (`:L72`). The copy
+  dragged off the image is held by the gate's *Release image suite* step (`checks/gate.sh:L148`;
+  `checks/tests/test_release_pack.sh:L205-L208`), and release inspection still reads the downloaded
+  bundle *(through v89 "Two rules are owed to a check and held by none at `ka-reader@06e4a34`", the
+  bundle's copies among them, owed to `checks/bundle.sh` — RN-100)*. One rule is owed to a check
+  and held by none at `ka-reader@b503b6d`: the copyright lines, owed to `checks/notices.sh`,
+  extended to read each resolved package's licence file and fail on a copyright line the notices
+  lack, so a crate update that changes its line fails the same check. Until it lands,
+  `development-design` reading this entry is that rule's gate, by the header's per-rule rule, and
+  release inspection reads the copyright lines before the first tag
   *(traces to: SRS C-4, C-5, AC-14; FDR R-141; the script is this document's realization — RN-3;
   the two places, the bundle's copies and the copyright lines on the owner's seat's answers at
   `docs/trail/architecture/cycle-80.md` §§ 3.4–3.5, resting on the owner's
   `docs/trail/prd/cycle-1.md` § 2.5; the tail's steps on `docs/trail/architecture/cycle-80.md`
-  § 3.1 — RN-99)*
+  § 3.1 — RN-99; the bundle's copies held by a check, and the locators re-pinned, on
+  `docs/trail/architecture/cycle-81.md` § 3.1 — RN-100)*
 - **QC-42:** Before the first public release, private vulnerability reporting is enabled on
   `github.com/eyalgo/ka-reader` and `SECURITY.md` exists, promising nothing beyond
   *"Security reports have a private channel and are read, with no acknowledgement or response
@@ -3338,7 +3350,7 @@ is stated once, in § 8 *(added at v56, on the owner's answer at `docs/trail/arc
 | QC-38 | own-state fields | `checks/own-state.sh` (suite `test_own_state.sh`) | the tree | CI build |
 | QC-39, QC-52 | log shape and location | `cargo test --locked -p ka-reader-bridge` (layer 1); `checks/own-state.sh` (suite `test_own_state.sh`) | the change; the tree | `development-implementation`; CI build |
 | QC-40 | writer regressions; own-state retention; separate container-log size and relaunch proof | `cargo test --locked -p ka-reader-bridge`; `cargo test --locked -p ka-reader-core` (layer 1). Layer-5 proof owed by `follow-the-folder` (SDD § 6 S-8), not the tree or open-file slice; until its assertions run, review at `development-design`, for the reason in QC-40. No existing own-state check, tree-scene pass or writer-test result discharges that proof. | the change; the built bundle for layer 5 | `development-implementation` for writer and retention tests; `development-design` for the outstanding layer-5 obligation |
-| QC-41 | third-party notices: `LICENSE` and the notices in the tagged source and inside the bundle, byte-identical; each component's licence and copyright lines | `checks/notices.sh` (suite `test_notices.sh`); `checks/bundle.sh` (suite `test_bundle.sh`) for the bundle's copies — not held at `ka-reader@06e4a34`; `checks/notices.sh` extended to the copyright lines — not held at `ka-reader@06e4a34` | the tree | CI build; release; `development-design` reading the entry (the bundle's copies and the copyright lines, until their checks hold them) |
+| QC-41 | third-party notices: `LICENSE` and the notices in the tagged source and inside the bundle, byte-identical; each component's licence and copyright lines | `checks/notices.sh` (suite `test_notices.sh`); `checks/bundle.sh` (suite `test_bundle.sh`) and `checks/tests/test_release_pack.sh` for the bundle's copies; `checks/notices.sh` extended to the copyright lines — not held at `ka-reader@b503b6d` | the tree | CI build; release; `development-design` reading the entry (the copyright lines, until its check holds them) |
 | QC-42 | private reporting; SECURITY.md | `gh api repos/eyalgo/ka-reader/private-vulnerability-reporting` | the release | release |
 | QC-44 | standing sentences verbatim, the beta's Git-view statement included | `checks/readme.sh`; `grep -rF` of the beta's wording over `ka-reader-mac/Sources/Surfaces` — neither in the tree at `ka-reader@b46d896` | the release; the tree | release; `development-design` reading the entry until each lands |
 | QC-71 | the public history: no secret over every ref the public remote will hold; the published root commit is the checked one | `gitleaks git` over the `git ls-remote --heads --tags origin` set; `git rev-list --max-parents=0 HEAD` on a fresh clone of the public repository | the release | release |
@@ -3362,7 +3374,7 @@ is stated once, in § 8 *(added at v56, on the owner's answer at `docs/trail/arc
 | QC-70 | a check script exits 0 on a pass alone, 1 on a refusal, 2 on a wrong invocation, 128 + n or 1 on a signal, or a run child's status | `checks/tests/test_read_only.sh` — `test_no_argument_is_a_usage_error`, `test_extra_argument_is_a_usage_error`; `checks/tests/test_offline_page.sh` — `test_no_argument_and_two_arguments_print_usage_and_exit_two`; `checks/tests/test_notices.sh` — `test_wrong_argument_count_is_a_usage_error`; a case in `checks/tests/test_offline_page.sh` that fails the comparison and requires a non-zero end with no `same` — not in the suite at `ka-reader@8823057` | the change | `development-implementation` (the suites, through `checks/gate.sh`); `development-design` reading the entry (a new script, or a new way one ends; the failed comparison until its case lands) |
 
 Entries with no row are review gates, each arguing its downgrade in its own tail: QC-10 (the setting-aside
-of the trait-collaborator line, and the read seam until it is built), QC-13 (the delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a listed crate and name), QC-18, QC-21, QC-31, QC-33, QC-43, QC-45, QC-50, QC-54, QC-57, QC-69 (until the read seam is built), QC-44 (the README's uncovered-case line), QC-71 (the private half), QC-41 (the bundle's copies and the copyright lines, until their checks hold them), QC-70 (a new script's statuses, or a new way one ends, and the offline-page check's failed comparison until its case lands), and QC-59's behaviour member.
+of the trait-collaborator line, and the read seam until it is built), QC-13 (the delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a listed crate and name), QC-18, QC-21, QC-31, QC-33, QC-43, QC-45, QC-50, QC-54, QC-57, QC-69 (until the read seam is built), QC-44 (the README's uncovered-case line), QC-71 (the private half), QC-41 (the copyright lines, until its check holds them), QC-70 (a new script's statuses, or a new way one ends, and the offline-page check's failed comparison until its case lands), and QC-59's behaviour member.
 
 ---
 
@@ -8905,3 +8917,43 @@ of the trait-collaborator line, and the read seam until it is built), QC-13 (the
   rows and adds QC-41 to the review-gate list. The inputs' status lines read as in the header, so
   the `Inputs read:` line stands. `docs/trail/architecture/cycle-80.md` holds the answered
   companion whole. Nothing is left open, so the companion is removed and `Status:` stays Settled.
+
+- **RN-100:** *(v90 — the cycle-81 fold, § 3.1, and the close)* The owner's seat's committed
+  answer at `docs/trail/architecture/cycle-81.md` § 3.1 authorizes every change here; its reasoning
+  is `docs/trail/architecture/self_answer-84.md`. No `product-architecture` run wrote that
+  companion: the PM opened it on 2026-11-09 and raised one item, read at `ka-reader@98867b3`, where
+  `ka-reader-mac/assemble.sh` copies the tree's `LICENSE` and `THIRD_PARTY_NOTICES.md` into the app
+  before it signs and `checks/bundle.sh` fails on a missing or differing copy.
+
+  **§ 3.1 → QC-41's statement, tail and § 10 row, and § 10's review-gate list.** Taken as written.
+  The tail stops saying two rules are held by none: the bundle's copies are held by
+  `checks/bundle.sh` and its suite through the gate's *Bundle probe* and *Bundle probe suite* steps
+  at every change and through the release workflow's *Test gate* at a tag, on the bundle the
+  *Disk image* step packs; the dragged-off copy is held by the *Release image suite* step; release
+  inspection of the downloaded bundle stays, as cycle-80 § 3.4 settled. The copyright lines are the
+  one rule owed, and `development-design` and release inspection before the first tag stay its gate.
+  The § 10 row and the closing list read the same way. The statement's locators are re-pinned at
+  `ka-reader@b503b6d`, with `06e4a34`'s kept as the dated reading, and the name the delivery tier
+  chose, `Contents/Resources/KA-Reader-LICENSE`, is stated as a reading; the choice stays theirs. No
+  obligation moves: the copies were already owed, and a check now holds them.
+
+  **Beyond the answer's words.** Two things, each named here. (1) The tail names the symlinked copy
+  among the cases `checks/bundle.sh` refuses, because the PM's item and the suite's
+  `test_symlinked_copy_reads_as_missing` both name it, and cites `checks/bundle.sh:L358-L359` so the
+  pairing opens. (2) The trace tag gains the cycle-81 citation beside cycle-80's, which keeps the
+  two-places and copyright-lines authority where it was.
+
+  **Read by this run.** At `ka-reader@77dfdcb`, whose `checks/`, `ka-reader-mac/`, `.github/`,
+  `LICENSE` and `THIRD_PARTY_NOTICES.md` are `b503b6d`'s (`git diff --stat b503b6d HEAD` over them
+  prints nothing): `ka-reader-mac/assemble.sh:L119-L121`, `:L125`; `checks/bundle.sh:L358-L359`;
+  `checks/gate.sh:L95`, `:L97`, `:L129-L130`, `:L148`; `.github/workflows/release.yml:L53-L54`,
+  `:L72`; `checks/tests/test_release_pack.sh:L205-L208`; `grep -ni copyright checks/notices.sh`
+  finds nothing, so the copyright-lines rule is still unheld. No product test ran: nothing under
+  `crates/`, `checks/` or `ka-reader-mac/` is changed by this fold.
+
+  **Limits.** No ADR is written or restatused, so the index is unchanged: a check landing for an
+  obligation already bound is not a decision, and clears none of the three gates. No `QC` is added,
+  renumbered or reused; QC-41 is the one entry edited, and § 10 re-states its row and its place in
+  the review-gate list. The inputs' status lines read as in the header, so the `Inputs read:` line
+  stands. `docs/trail/architecture/cycle-81.md` holds the answered companion whole. Nothing is left
+  open, so the companion is removed and `Status:` stays Settled.
