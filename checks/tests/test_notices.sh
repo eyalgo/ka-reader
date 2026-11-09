@@ -106,13 +106,13 @@ package_dir() {
 #             `manifest_path` inside a package directory the stand-in makes. The `resolve` section after
 #             the packages repeats their ids. A package directory holds no file until a case writes one.
 # A name is `name` at version 1.2.3, or `name@version`. The files in $1 that hold the answers are
-# `tree`, `packages` (name, version, license_file and manifest_path as JSON, tab-separated) and, to make
+# `tree`, `packages.tsv` (name, version, license_file and manifest_path as JSON, tab-separated) and, to make
 # `metadata` end non-zero, `metadata_status`.
 make_cargo() {
   dir="$1"
   shift
   : > "$dir/tree"
-  : > "$dir/packages"
+  : > "$dir/packages.tsv"
   first=""
   for spec in "$@"; do
     case "$spec" in
@@ -122,7 +122,7 @@ make_cargo() {
     [ -n "$first" ] || first="$name v$version (*)"
     mkdir -p "$(package_dir "$dir" "$name" "$version")"
     echo "$name v$version (/somewhere/$name)" >> "$dir/tree"
-    printf '%s\t%s\tnull\t"%s/Cargo.toml"\n' "$name" "$version" "$(package_dir "$dir" "$name" "$version")" >> "$dir/packages"
+    printf '%s\t%s\tnull\t"%s/Cargo.toml"\n' "$name" "$version" "$(package_dir "$dir" "$name" "$version")" >> "$dir/packages.tsv"
   done
   { echo "$first"; echo; echo '[build-dependencies]'; } >> "$dir/tree"
   cat > "$dir/cargo" <<'CARGO'
@@ -160,27 +160,27 @@ write_metadata() {
       for (i = 1; i <= NR; i++) printf "%s{\"id\":\"%s\",\"dependencies\":[]}", (i > 1 ? "," : ""), ids[i]
       printf "],\"root\":null},\"target_directory\":\"/x\",\"version\":1,\"workspace_root\":\"/x\",\"metadata\":null}\n"
     }
-  ' "$1/packages" > "$1/metadata.json"
+  ' "$1/packages.tsv" > "$1/metadata.json"
 }
 
 # The package $2 names the file $3 as its license_file.
 set_license_file() {
-  awk -F'\t' -v OFS='\t' -v name="$2" -v file="$3" '$1 == name { $3 = "\"" file "\"" } { print }' "$1/packages" > "$1/packages.new"
-  mv "$1/packages.new" "$1/packages"
+  awk -F'\t' -v OFS='\t' -v name="$2" -v file="$3" '$1 == name { $3 = "\"" file "\"" } { print }' "$1/packages.tsv" > "$1/packages.tsv.new"
+  mv "$1/packages.tsv.new" "$1/packages.tsv"
   write_metadata "$1"
 }
 
 # The package $2 prints $3 as its manifest_path, the JSON string with its quotes.
 set_manifest_path() {
-  awk -F'\t' -v OFS='\t' -v name="$2" -v path="$3" '$1 == name { $4 = path } { print }' "$1/packages" > "$1/packages.new"
-  mv "$1/packages.new" "$1/packages"
+  awk -F'\t' -v OFS='\t' -v name="$2" -v path="$3" '$1 == name { $4 = path } { print }' "$1/packages.tsv" > "$1/packages.tsv.new"
+  mv "$1/packages.tsv.new" "$1/packages.tsv"
   write_metadata "$1"
 }
 
 # `cargo metadata` lists no object for the package $2 (the tree still lists it).
 drop_package() {
-  awk -F'\t' -v name="$2" '$1 != name { print }' "$1/packages" > "$1/packages.new"
-  mv "$1/packages.new" "$1/packages"
+  awk -F'\t' -v name="$2" '$1 != name { print }' "$1/packages.tsv" > "$1/packages.tsv.new"
+  mv "$1/packages.tsv.new" "$1/packages.tsv"
   write_metadata "$1"
 }
 
