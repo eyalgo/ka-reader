@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.8.0 — the bundle's licence and notices are the tree's, byte for byte, judged before the probe is compiled
 # Version: 1.7.0 — the launch steps refuse off a VM
 # Version: 1.6.0 — the Tauri build leaves — native bundle assembled, bundle.sh and no-network.sh
 #   read it, CI builds it, boundaries and README pinned
@@ -27,6 +28,15 @@
 #   with any execute bit, or a Mach-O binary whatever its mode), no font, no byte copy of a file
 #   tracked under checks/, and every file of third_party/lucide/icons under Contents/Resources and
 #   nowhere else in the bundle. Each offending path is named on stderr.
+#   The licence and notices are read after that, still before the probe is compiled and before
+#   anything is launched: Contents/Resources/KA-Reader-LICENSE and
+#   Contents/Resources/THIRD_PARTY_NOTICES.md must each be a regular file, never a symlink, whose
+#   bytes are the tree's LICENSE and THIRD_PARTY_NOTICES.md (docs/nfdr.md QC-41). Each tree file is
+#   read once into this run's temporary directory, LICENSE first, and the bundle's copy is compared
+#   with that read. A tree file that cannot be read ends the run at once and names it. Otherwise
+#   every copy that is missing or differs is named on stderr, in that order, and the run ends with
+#   one closing line. Contents/Resources/LICENSE is the icon set's licence and is not part of this
+#   rule. It runs on the negative control's path too.
 #
 # USAGE
 #   checks/bundle.sh target/release/bundle/macos/KA-Reader.app
@@ -37,9 +47,10 @@
 #     C-R2 keys, so it is not a route past the gate above. It
 #     exists because the ordinary path refuses to launch anything but C-R2's set, and a probe that
 #     cannot tell the two builds apart has not run (NFDR QC-25).
-#   Exit 0 only when the entitlement set is exactly the expected one, every value boolean true, and
-#   the operating system reports the launched process sandboxed, an out-of-grant file read denied
-#   and an outbound network connection denied for it. Every failure names its cause on stderr. On
+#   Exit 0 only when the entitlement set is exactly the expected one, every value boolean true, the
+#   bundle's licence and notices are the tree's files, and the operating system reports the launched
+#   process sandboxed, an out-of-grant file read denied and an outbound network connection denied
+#   for it. Every failure names its cause on stderr. On
 #   every exit path the one process this run launched, and recorded, is stopped — and only that one:
 #   a process of the same bundle already running when the script started, or started by anything
 #   else while it ran, is never signalled.
@@ -337,6 +348,42 @@ done <<< "$(find "$app/Contents" -mindepth 1 -path "$app/Contents/Resources" -pr
 
 [ -z "$glyph_problems" ] || { printf '%s' "$glyph_problems" >&2; die "the bundle's glyphs are not exactly under Contents/Resources; the bundle was not launched"; }
 echo "glyph set: $(printf '%s\n' "$glyph_members" | wc -l | tr -d ' ') members checked — each is under Contents/Resources and nowhere else in the bundle"
+
+# --- the licence and notices: the bundle's copies are the tree's files, byte for byte ---
+
+# One fixed, ordered list orders the tree reads, the comparisons and the lines printed: the tree's
+# file, then where the bundle keeps its copy. Contents/Resources/LICENSE is the icon set's licence,
+# so the tree's licence travels under another name. Read before the probe is compiled and before
+# anything is launched, like the blocks above, and it reads nothing from the environment.
+notice_pairs="LICENSE|Contents/Resources/KA-Reader-LICENSE
+THIRD_PARTY_NOTICES.md|Contents/Resources/THIRD_PARTY_NOTICES.md"
+
+# Each tree file is read once, by a plain `cp` into the run's temporary directory, and the bundle's
+# copy is compared with that read, never with the tree path: a non-zero comparison can then only come
+# from the bundle's side. One status covers a file that is absent and one that is unreadable. The
+# message `cp` gives is dropped, because the refusal below names the file.
+mkdir -p "$work/tree-notices"
+while IFS='|' read -r tree_file bundle_path; do
+  cp "$product_root/$tree_file" "$work/tree-notices/$tree_file" 2> /dev/null \
+    || die "cannot read the tree's $tree_file, so the bundle's copy was not compared; the bundle was not launched"
+done <<< "$notice_pairs"
+
+# A copy that is not a regular file, a symlink included, is missing: a link to the tree's own file
+# would pass a byte comparison and ship nothing. A copy that is there but cannot be read differs.
+notice_problems=""
+while IFS='|' read -r tree_file bundle_path; do
+  bundle_copy="$app/$bundle_path"
+  if [ ! -f "$bundle_copy" ] || [ -L "$bundle_copy" ]; then
+    notice_problems="${notice_problems}missing from the bundle: $bundle_path (the tree's $tree_file)
+"
+  elif ! cmp -s "$work/tree-notices/$tree_file" "$bundle_copy"; then
+    notice_problems="${notice_problems}differs from the tree's $tree_file: $bundle_path
+"
+  fi
+done <<< "$notice_pairs"
+
+[ -z "$notice_problems" ] || { printf '%s' "$notice_problems" >&2; die "the bundle's licence and notices are not the tree's; the bundle was not launched"; }
+echo "licence and notices: $(printf '%s\n' "$notice_pairs" | wc -l | tr -d ' ') copies checked — each is byte-identical to the tree's file"
 
 # --- the probe that asks the operating system ---
 

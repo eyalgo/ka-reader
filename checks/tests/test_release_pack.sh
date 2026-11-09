@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # checks/tests/test_release_pack.sh — the tests of checks/release-pack.sh, which packs the built
 # bundle into the release's disk image (CP-1176).
+# Version: 1.1.0 — a copy dragged off the mounted image keeps the licence and the notices
 # Version: 1.0.0 — first version: the gate-built bundle packed and mounted, the refusals that leave
 #   nothing behind, the signal path, and every exit status the script returns
 #
@@ -45,6 +46,7 @@ MOUNT=""
 
 CASES="
 test_the_gate_built_bundle_packs
+test_a_copy_off_the_image_keeps_the_licence_and_notices
 test_an_existing_outdir_is_refused
 test_a_directory_that_is_not_a_bundle_is_refused
 test_a_bundle_with_no_version_key_is_refused
@@ -174,6 +176,36 @@ test_the_gate_built_bundle_packs() {
   volume="$(diskutil info -plist "$MOUNT" | plutil -extract VolumeName raw -o - -)"
   detach_mount
   [ "$volume" = "$VOLUME_NAME" ] || { fail "the volume is named \"$volume\", expected \"$VOLUME_NAME\""; return 1; }
+}
+
+# CP-1211: the licence and the notices travel with the app when a person drags it off the image.
+# The gate-built bundle is packed and mounted read-only, the app is copied off with ditto, and both
+# copies in that copy are the tree's files byte for byte. The mount is detached before the copy is
+# read, so every path through the case leaves nothing mounted.
+test_a_copy_off_the_image_keeps_the_licence_and_notices() {
+  [ -d "$TREE_BUNDLE" ] || { fail "no bundle at $TREE_BUNDLE: run \"Build KA-Reader.app\" (ka-reader-mac/assemble.sh) first"; return 1; }
+  version="$("$PLIST_BUDDY" -c "Print :$KEY" "$TREE_BUNDLE/Contents/Info.plist")" || { fail "the bundle has no $KEY"; return 1; }
+  outdir="$WORK/pack-off-image/dist"
+  mkdir -p "$WORK/pack-off-image"
+  run_script "$TREE_BUNDLE" "$outdir"
+  expect_status 0 || return 1
+
+  MOUNT="$WORK/pack-off-image/mnt"
+  dragged="$WORK/pack-off-image/dragged"
+  mkdir -p "$MOUNT" "$dragged"
+  hdiutil attach -nobrowse -readonly -mountpoint "$MOUNT" "$outdir/KA-Reader-$version.dmg" > "$WORK/attach-off-image.log" 2>&1 \
+    || { fail "the image did not mount: $(cat "$WORK/attach-off-image.log")"; MOUNT=""; return 1; }
+  if ! ditto "$MOUNT/KA-Reader.app" "$dragged/KA-Reader.app" > "$WORK/ditto-off-image.log" 2>&1; then
+    fail "the app could not be copied off the image: $(cat "$WORK/ditto-off-image.log")"
+    detach_mount
+    return 1
+  fi
+  detach_mount
+
+  cmp -s "$ROOT/LICENSE" "$dragged/KA-Reader.app/Contents/Resources/KA-Reader-LICENSE" \
+    || { fail "the copy off the image lacks the tree's LICENSE as Contents/Resources/KA-Reader-LICENSE, or it differs"; return 1; }
+  cmp -s "$ROOT/THIRD_PARTY_NOTICES.md" "$dragged/KA-Reader.app/Contents/Resources/THIRD_PARTY_NOTICES.md" \
+    || { fail "the copy off the image lacks the tree's THIRD_PARTY_NOTICES.md, or it differs"; return 1; }
 }
 
 test_an_existing_outdir_is_refused() {
