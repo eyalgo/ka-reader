@@ -2,7 +2,7 @@
 
 **Status:** Settled
 **Owner:** CPO
-**Version:** 19 — KA-Reader is built in a private repository and published from it to a public one: the public repository carries the main line's own commit history, checked for anything private before it arrives and never rewritten after, while branches and work in progress stay private (§ Assumptions, **Public identity**). Prior revision: 18 — the beta comes first and waits for nothing beyond the tree and the open file following the disk and Markdown reading rendered; choosing a theme and keeping that choice come after it, and both that and the Git view following the disk are in place before 1.0.0.
+**Version:** 20 — The README's first screen carries one first step a stranger takes with the tool in place of one copy-paste example: KA-Reader takes no typed input, and its only input is the folder chosen in the Open panel (§ Goals, **Pick-it-up adoption**; the owner, 2026-11-09, by hand). Prior revision: 19 — KA-Reader is built in a private repository and published from it to a public one: the public repository carries the main line's own commit history, checked for anything private before it arrives and never rewritten after, while branches and work in progress stay private (§ Assumptions, **Public identity**). Prior revision: 18 — the beta comes first and waits for nothing beyond the tree and the open file following the disk and Markdown reading rendered; choosing a theme and keeping that choice come after it, and both that and the Git view following the disk are in place before 1.0.0.
 
 > The PRD is the product source of truth: the product-facing **what and why**, read cold
 > by the CTO, the CDO, Principal PM, and Principal Architect. It is updated in place with
@@ -91,7 +91,7 @@ assumption (see Assumptions).
   certainty that nothing about it changes.
 - **Pick-it-up adoption** — a stranger goes from finding the tool to viewing a file of their own
   repository in minutes, guided by the README alone. The README's first screen is product
-  surface: what the tool does in one sentence, one install path, one copy-paste example, and
+  surface: what the tool does in one sentence, one install path, one first step a stranger takes with it (for KA-Reader, choosing a folder of their own in the Open panel), and
   what the tool will and will not touch *(added — instance doctrine, not in the input)*.
 - **No learning curve** — anyone who works with Git and can follow a README can use KA-Reader: the
   reader is assumed to know Git, and the product may leave Git's own vocabulary unexplained. No

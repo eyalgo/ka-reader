@@ -2,7 +2,7 @@
 
 **Status:** Settled
 **Owner:** CTO
-**Version:** 16 — derived against PRD v19, on the owner's answer at `docs/trail/srs/cycle-14.md` § 3.1 (RN-42). C-12 takes PRD v19's two repositories: KA-Reader is built in a private `ka-reader-dev` that keeps every branch, and the public repository carries the main line's own commit history and no other branch, each commit it receives checked for anything private before it arrives, every later release adding to that history and never rewriting it. AC-14's history clause checks what the public repository received, that it holds only the main line, and from the second release on that the previous public history is still whole. Nothing is left for the owner to answer; the companion is closed. Prior revision: 15 — C-7 and C-13 take the support posture's wording from `docs/CONTENT.md`'s support-posture row (RN-41).
+**Version:** 17 — derived against PRD v20: C-9 takes PRD v20's first step in place of a copy-paste example (the owner, 2026-11-09, by hand). Prior revision: 16 — derived against PRD v19, on the owner's answer at `docs/trail/srs/cycle-14.md` § 3.1 (RN-42). C-12 takes PRD v19's two repositories: KA-Reader is built in a private `ka-reader-dev` that keeps every branch, and the public repository carries the main line's own commit history and no other branch, each commit it receives checked for anything private before it arrives, every later release adding to that history and never rewriting it. AC-14's history clause checks what the public repository received, that it holds only the main line, and from the second release on that the previous public history is still whole. Nothing is left for the owner to answer; the companion is closed. Prior revision: 15 — C-7 and C-13 take the support posture's wording from `docs/CONTENT.md`'s support-posture row (RN-41).
 **Inputs read:** PRD Settled
 
 > The SRS is the technical source of truth: the system-level **what**, derived from the PRD and
@@ -514,7 +514,7 @@ see RN-8)*
   owner-confirmed `docs/trail/srs/cycle-13.md` § 2.1: RN-41)*
 - **C-8:** UI language: English. *(traces to: PRD UX Notes)*
 - **C-9:** The README's first screen is product surface and carries: what the tool does in one
-  sentence, one install path, one copy-paste example, and what the tool will and will not touch.
+  sentence, one install path, one first step a stranger takes with it (for KA-Reader, choosing a folder of their own in the Open panel), and what the tool will and will not touch.
   *(traces to: PRD Goals "Pick-it-up adoption")*
 - **C-10:** Regulatory posture: the product stays free, non-monetized open source outside any
   commercial activity — the premise of its position outside the EU Cyber Resilience Act's scope.
