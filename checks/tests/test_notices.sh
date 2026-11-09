@@ -59,6 +59,7 @@ test_reads_nothing_from_the_environment_but_path
 test_copyright_lines_in_their_entries_pass
 test_no_licence_file_and_no_copyright_line_pass
 test_terms_headings_and_placeholders_are_not_copyright_lines
+test_a_line_with_four_digits_and_a_bracketed_span_is_asked_for
 test_each_kind_of_copyright_line_is_asked_for
 test_a_copyright_line_not_carried_is_named
 test_missing_lines_are_named_in_order
@@ -78,7 +79,9 @@ test_the_last_entry_runs_to_the_end_of_the_file
 test_only_the_first_entry_of_a_name_counts
 test_a_version_with_build_metadata_is_located
 test_unreadable_licence_file_is_a_refusal
+test_the_first_unreadable_licence_file_in_byte_order_is_named
 test_packages_not_located_is_a_refusal
+test_the_first_package_not_located_in_byte_order_is_named
 test_the_name_checks_refusals_read_no_licence_file
 test_real_tree_passes_and_is_left_as_it_was
 "
@@ -554,6 +557,28 @@ test_terms_headings_and_placeholders_are_not_copyright_lines() {
   expect_stderr_empty
 }
 
+# CP-1226: a placeholder holds no run of four digits, so a line with a year is asked for whatever
+# bracketed span it holds, an address in angle brackets among them.
+test_a_line_with_four_digits_and_a_bracketed_span_is_asked_for() {
+  case_dirs year-and-brackets
+  make_cargo "$STUBS" alpha
+  licence_file "$STUBS" alpha LICENSE \
+    'Copyright (c) 2016 Jane Doe <jane@example.com>' \
+    'Copyright [2019] Square Holder' \
+    'Copyright {2018} Brace Holder' \
+    '(c) 2017 Paren Holder <paren@example.com>'
+  fixture_entry "$CWD" alpha
+
+  run_notices "$CWD" "$STUBS"
+
+  expect_status 1 || return 1
+  expect_stdout_empty || return 1
+  expect_lines "$WORK/stderr" "$(copyright_miss_line alpha LICENSE 'Copyright (c) 2016 Jane Doe <jane@example.com>')
+$(copyright_miss_line alpha LICENSE 'Copyright [2019] Square Holder')
+$(copyright_miss_line alpha LICENSE 'Copyright {2018} Brace Holder')
+$(copyright_miss_line alpha LICENSE '(c) 2017 Paren Holder <paren@example.com>')"
+}
+
 # CP-1226: every kind of line the rule takes in is asked for, each as its own line, in the order the
 # file states them.
 test_each_kind_of_copyright_line_is_asked_for() {
@@ -854,6 +879,18 @@ test_a_level_two_or_three_heading_ends_an_entry() {
   run_notices "$CWD" "$STUBS"
 
   expect_status 1 || return 1
+  expect_lines "$WORK/stderr" "$(copyright_miss_line alpha LICENSE 'Copyright (c) 2020 A')" || return 1
+
+  # A `### ` heading that is no crate's, as a library's or a licence text's is, ends the entry too.
+  case_dirs heading-three-plain
+  make_cargo "$STUBS" alpha
+  licence_file "$STUBS" alpha LICENSE 'Copyright (c) 2020 A'
+  fixture_entry "$CWD" alpha
+  printf '### MIT\n\nCopyright (c) 2020 A\n' >> "$CWD/THIRD_PARTY_NOTICES.md"
+
+  run_notices "$CWD" "$STUBS"
+
+  expect_status 1 || return 1
   expect_lines "$WORK/stderr" "$(copyright_miss_line alpha LICENSE 'Copyright (c) 2020 A')"
 }
 
@@ -923,6 +960,52 @@ test_unreadable_licence_file_is_a_refusal() {
   expect_status 1 || return 1
   expect_one_stderr_line_with "cannot read LICENSE in alpha's package, so nothing was checked" || return 1
   expect_one_stderr_line_with "Check that $file can be read"
+}
+
+# CP-1238: with several licence files that cannot be read, the refusal names the first component
+# and file in byte order, whatever order the tree lists the names in: `beta` is listed first, and
+# `alpha`'s `LICENSE-APACHE` sorts before its `LICENSE-MIT`. Mode is restored, and the case reports
+# that it cannot run when a file is still readable after the chmod.
+test_the_first_unreadable_licence_file_in_byte_order_is_named() {
+  case_dirs unreadable-first
+  make_cargo "$STUBS" beta alpha
+  licence_file "$STUBS" beta LICENSE 'Copyright (c) 2020 B'
+  licence_file "$STUBS" alpha LICENSE-MIT 'Copyright (c) 2020 A'
+  licence_file "$STUBS" alpha LICENSE-APACHE 'Copyright (c) 2020 A'
+  fixture_entry "$CWD" alpha 'Copyright (c) 2020 A'
+  fixture_entry "$CWD" beta 'Copyright (c) 2020 B'
+  beta_file="$STUBS/packages/beta-1.2.3/LICENSE"
+  alpha_mit="$STUBS/packages/alpha-1.2.3/LICENSE-MIT"
+  alpha_apache="$STUBS/packages/alpha-1.2.3/LICENSE-APACHE"
+  chmod 000 "$beta_file" "$alpha_mit" "$alpha_apache"
+  if [ -r "$beta_file" ] || [ -r "$alpha_mit" ] || [ -r "$alpha_apache" ]; then
+    chmod 644 "$beta_file" "$alpha_mit" "$alpha_apache"
+    fail "cannot run: a licence file is still readable after chmod 000 (running as root?)"
+    return 1
+  fi
+
+  run_notices "$CWD" "$STUBS"
+  chmod 644 "$beta_file" "$alpha_mit" "$alpha_apache"
+
+  expect_status 1 || return 1
+  expect_one_stderr_line_with "cannot read LICENSE-APACHE in alpha's package, so nothing was checked"
+}
+
+# CP-1238: with several packages that cannot be located, the refusal names the first in byte order,
+# whatever order the tree lists the names in.
+test_the_first_package_not_located_in_byte_order_is_named() {
+  case_dirs not-located-first
+  make_cargo "$STUBS" zeta beta alpha
+  drop_package "$STUBS" zeta
+  drop_package "$STUBS" beta
+  fixture_entry "$CWD" alpha
+  fixture_entry "$CWD" beta
+  fixture_entry "$CWD" zeta
+
+  run_notices "$CWD" "$STUBS"
+
+  expect_status 1 || return 1
+  expect_one_stderr_line_with "found no package for beta 1.2.3 in what cargo metadata printed"
 }
 
 # CP-1238: packages whose sources could not be located are one refusal line, however it came about,
