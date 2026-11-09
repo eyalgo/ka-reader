@@ -10,16 +10,14 @@
 #
 # WHY THIS EXISTS
 #   checks/notices.sh is the check that every name `cargo tree` reports is in
-#   THIRD_PARTY_NOTICES.md. A bug in it is a dependency shipped without its notice, so these cases run
-#   the real script — never a copy of its logic — by its absolute path. Every case but the last runs
-#   it with its working directory a work directory of this suite's own, which holds a fixture notices
-#   file, and with a stand-in `cargo` first on PATH. The stand-in prints `--prefix none`-shaped lines,
-#   with versions, a `(*)` mark and a `[build-dependencies]` line, so the script's real reading is
-#   exercised, and answers `cargo metadata` with one package object for each name, each at a
-#   directory
-#   under the case's stub directory that holds no file until a case writes one. The last case runs
-#   the
-#   real `cargo` on the real tree. The runner is this file: the
+#   THIRD_PARTY_NOTICES.md. A bug in it is a dependency shipped without its notice, so these cases
+#   run the real script — never a copy of its logic — by its absolute path. Every case but the last
+#   runs it with its working directory a work directory of this suite's own, which holds a fixture
+#   notices file, and with a stand-in `cargo` first on PATH. The stand-in prints `--prefix
+#   none`-shaped lines, with versions, a `(*)` mark and a `[build-dependencies]` line, so the
+#   script's real reading is exercised, and answers `cargo metadata` with one package object for
+#   each name, each at a directory under the case's stub directory that holds no file until a case
+#   writes one. The last case runs the real `cargo` on the real tree. The runner is this file: the
 #   product has no Python (docs/nfdr.md § 9 names its toolchains), which is why the shell packet's
 #   pytest runner is not used here.
 #
@@ -93,7 +91,8 @@ fail() {
   return 1
 }
 
-# A case's directories: the working directory the script runs in, and the directory of its stand-ins.
+# A case's directories: the working directory the script runs in, and the directory of its
+# stand-ins.
 case_dirs() {
   CWD="$WORK/$1"
   STUBS="$WORK/$1-stubs"
@@ -106,20 +105,16 @@ package_dir() {
 }
 
 # A stand-in `cargo` in $1 that records its arguments in $1/args, whatever it is asked, and answers
-#   tree      with the names that follow, in the shape of `cargo tree --prefix none`: versions, a
-#   `(*)`
-#             mark on a repeat, a blank line and a `[build-dependencies]` line;
+#   tree      with the names that follow, in the shape of `cargo tree --prefix none`: versions,
+#             a `(*)` mark on a repeat, a blank line and a `[build-dependencies]` line;
 #   metadata  with one line of JSON in cargo's key order: one package object for each name, each
-#   with a
-#             dependency object and a target object that carry a "name" key of their own, and a
-#             `manifest_path` inside a package directory the stand-in makes. The `resolve` section
-#             after
-#             the packages repeats their ids. A package directory holds no file until a case writes
-#             one.
+#             with a dependency object and a target object that carry a "name" key of their own, and
+#             a `manifest_path` inside a package directory the stand-in makes. The `resolve` section
+#             after the packages repeats their ids. A package directory holds no file until a case
+#             writes one.
 # A name is `name` at version 1.2.3, or `name@version`. The files in $1 that hold the answers are
 # `tree`, `packages.tsv` (name, version, license_file and manifest_path as JSON, tab-separated) and,
-# to make
-# `metadata` end non-zero, `metadata_status`.
+# to make `metadata` end non-zero, `metadata_status`.
 make_cargo() {
   dir="$1"
   shift
@@ -235,8 +230,8 @@ make_cargo_with_body() {
   chmod +x "$1/cargo"
 }
 
-# Runs the script with the working directory $1 and the stand-ins $2 ahead on PATH, with the arguments
-# that follow. The streams are kept apart in $WORK/stdout and $WORK/stderr.
+# Runs the script with the working directory $1 and the stand-ins $2 ahead on PATH, with the
+# arguments that follow. The streams are kept apart in $WORK/stdout and $WORK/stderr.
 run_notices() {
   cwd="$1"
   stubs="$2"
@@ -426,9 +421,9 @@ test_wrong_argument_count_is_a_usage_error() {
   [ ! -e "$STUBS/args" ] || fail "cargo was called: $(cat "$STUBS/args")"
 }
 
-# CP-1202: a signal ends the run with 143, or with 1 when it lands in a command substitution. Never 0.
-# The stand-in sends TERM to its parent and returns, so the case is deterministic. A suite cannot
-# deliver INT to a background job of a non-interactive shell; the same trap holds INT (130).
+# CP-1202: a signal ends the run with 143, or with 1 when it lands in a command substitution.
+# Never 0. The stand-in sends TERM to its parent and returns, so the case is deterministic. A suite
+# cannot deliver INT to a background job of a non-interactive shell; the same trap holds INT (130).
 test_a_signal_never_ends_with_zero() {
   case_dirs signal
   make_cargo_with_body "$STUBS" 'kill -TERM $PPID; exit 0'
@@ -443,8 +438,7 @@ test_a_signal_never_ends_with_zero() {
 }
 
 # CP-1197, CP-1203: cargo is asked for exactly the locked, offline, two-architecture set, and then,
-# once,
-# for the packages' places, locked and offline too. No other call is made.
+# once, for the packages' places, locked and offline too. No other call is made.
 test_cargo_is_asked_for_the_locked_offline_two_architecture_set() {
   case_dirs arguments-asked
   make_cargo "$STUBS" alpha
@@ -502,8 +496,7 @@ test_reads_nothing_from_the_environment_but_path() {
 }
 
 # CP-1237: lines that stand in their entries pass. `alpha`'s MIT file states one line and its Apache
-# file
-# only the appendix placeholder, so the entry carries the one line and the placeholder is never
+# file only the appendix placeholder, so the entry carries the one line and the placeholder is never
 # asked for.
 test_copyright_lines_in_their_entries_pass() {
   case_dirs lines-pass
@@ -626,8 +619,8 @@ test_a_copyright_line_not_carried_is_named() {
 }
 
 # CP-1235: the lines come ordered by name, then file name, each in byte order, whatever order the
-# tree
-# lists the names in and whatever the locale; a line stated twice under one file name is named once.
+# tree lists the names in and whatever the locale; a line stated twice under one file name is named
+# once.
 test_missing_lines_are_named_in_order() {
   case_dirs order
   make_cargo "$STUBS" beta alpha
@@ -715,8 +708,7 @@ test_outer_whitespace_is_free() {
 }
 
 # CP-1230: the entry's line is trimmed the same way, so an indented or carriage-return-ended line in
-# the
-# entry carries a licence file's bare line.
+# the entry carries a licence file's bare line.
 test_outer_whitespace_in_the_entry_is_free() {
   case_dirs entry-whitespace
   make_cargo "$STUBS" alpha
@@ -731,9 +723,8 @@ test_outer_whitespace_in_the_entry_is_free() {
 
 # CP-1235: the misses stand in the order name, file, version, line number, each by byte but the line
 # number, which is by value. The line numbers here run against every other key: `beta` is listed
-# first and
-# misses at line 1, `alpha` misses at lines 10 and 2, and `alpha`'s two versions are listed newest
-# first.
+# first and misses at line 1, `alpha` misses at lines 10 and 2, and `alpha`'s two versions are
+# listed newest first.
 test_misses_are_ordered_by_name_then_file_then_version_then_line_number() {
   case_dirs order-keys
   make_cargo "$STUBS" beta alpha@2.0.0 alpha@1.2.3
@@ -922,8 +913,7 @@ test_only_the_first_entry_of_a_name_counts() {
 }
 
 # CP-1234: a version with build metadata, as `libgit2-sys 0.18.8+1.9.7` is, pairs the listing and
-# the
-# metadata object, and is never the not-located refusal.
+# the metadata object, and is never the not-located refusal.
 test_a_version_with_build_metadata_is_located() {
   case_dirs build-metadata
   make_cargo "$STUBS" alpha@1.2.3+4.5.6
@@ -937,10 +927,9 @@ test_a_version_with_build_metadata_is_located() {
 }
 
 # CP-1238: a licence file that cannot be read is a refusal naming the component and the file, never
-# a
-# pass. Mode 000 does not stop root from reading, so the case reports that it cannot run when the
-# file
-# is still readable after the chmod, and never passes without testing the refusal. Mode is restored.
+# a pass. Mode 000 does not stop root from reading, so the case reports that it cannot run when the
+# file is still readable after the chmod, and never passes without testing the refusal. Mode is
+# restored.
 test_unreadable_licence_file_is_a_refusal() {
   case_dirs unreadable-licence
   make_cargo "$STUBS" alpha
@@ -1009,10 +998,8 @@ test_the_first_package_not_located_in_byte_order_is_named() {
 }
 
 # CP-1238: packages whose sources could not be located are one refusal line, however it came about,
-# and
-# nothing on stdout even with a name missing beside it: `cargo metadata` ending non-zero, no object
-# for a
-# package, and a printed path holding a backslash (a JSON string is never unescaped).
+# and nothing on stdout even with a name missing beside it: `cargo metadata` ending non-zero, no
+# object for a package, and a printed path holding a backslash (a JSON string is never unescaped).
 test_packages_not_located_is_a_refusal() {
   case_dirs not-located-status
   make_cargo "$STUBS" alpha beta
