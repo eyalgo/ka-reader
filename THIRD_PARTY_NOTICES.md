@@ -1,6 +1,6 @@
 # Third-party notices
 
-KA-Reader's own code is under the MIT licence, in `LICENSE`. This file names the crates, libraries and icons KA-Reader is built from, each with its licence. The full text of each licence named here is under *Licence texts*, at the end of this file, once.
+KA-Reader's own code is under the MIT licence, in `LICENSE`. This file names the crates, libraries and icons KA-Reader is built from. Each third-party component has an entry of its own, headed by its name, that gives its licence and every copyright line its licence files state, or says that there is none. The full text of each licence named here is under *Licence texts*, at the end of this file, once.
 
 ## KA-Reader's own crates
 
@@ -8,75 +8,554 @@ KA-Reader's own code is under the MIT licence, in `LICENSE`. This file names the
 
 ## Crates
 
-This list names every other crate KA-Reader depends on, as `Cargo.lock` resolves it, whether the app carries it or it is used only to build or test KA-Reader. Each is named with the licence its resolved version declares, written as the crate declares it. Each licence in that expression has its text under *Licence texts*, headed by the same name.
+This section names every other crate KA-Reader depends on, as `Cargo.lock` resolves it, whether the app carries it or it is used only to build or test KA-Reader. Each crate has an entry of its own, headed by its name. The entry first gives the licence the crate's resolved version declares, written as the crate declares it, and each licence in that expression has its text under *Licence texts*, headed by the same name. It then gives every copyright line the crate's licence files state, which are the files at the root of its package that hold its licence text or its copyright statement. Where the package holds no licence file, or its licence files state no copyright line, the entry says so.
 
-| Crate | Licence |
-|---|---|
-| `aho-corasick` | `Unlicense OR MIT` |
-| `bitflags` | `MIT OR Apache-2.0` |
-| `cc` | `MIT OR Apache-2.0` |
-| `equivalent` | `Apache-2.0 OR MIT` |
-| `errno` | `MIT OR Apache-2.0` |
-| `find-msvc-tools` | `MIT OR Apache-2.0` |
-| `git2` | `MIT OR Apache-2.0` |
-| `hashbrown` | `MIT OR Apache-2.0` |
-| `indexmap` | `Apache-2.0 OR MIT` |
-| `itoa` | `MIT OR Apache-2.0` |
-| `jobserver` | `MIT OR Apache-2.0` |
-| `libc` | `MIT OR Apache-2.0` |
-| `libgit2-sys` | `MIT OR Apache-2.0` |
-| `libz-sys` | `MIT OR Apache-2.0` |
-| `log` | `MIT OR Apache-2.0` |
-| `memchr` | `Unlicense OR MIT` |
-| `pkg-config` | `MIT OR Apache-2.0` |
-| `proc-macro2` | `MIT OR Apache-2.0` |
-| `pulldown-cmark` | `MIT` |
-| `quote` | `MIT OR Apache-2.0` |
-| `regex` | `MIT OR Apache-2.0` |
-| `regex-automata` | `MIT OR Apache-2.0` |
-| `regex-syntax` | `MIT OR Apache-2.0` |
-| `rustix` | `Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT` |
-| `serde` | `MIT OR Apache-2.0` |
-| `serde_core` | `MIT OR Apache-2.0` |
-| `serde_derive` | `MIT OR Apache-2.0` |
-| `serde_json` | `MIT OR Apache-2.0` |
-| `shlex` | `MIT OR Apache-2.0` |
-| `streaming-iterator` | `MIT OR Apache-2.0` |
-| `syn` | `MIT OR Apache-2.0` |
-| `thiserror` | `MIT OR Apache-2.0` |
-| `thiserror-impl` | `MIT OR Apache-2.0` |
-| `tree-sitter` | `MIT` |
-| `tree-sitter-bash` | `MIT` |
-| `tree-sitter-highlight` | `MIT` |
-| `tree-sitter-javascript` | `MIT` |
-| `tree-sitter-json` | `MIT` |
-| `tree-sitter-language` | `MIT` |
-| `tree-sitter-python` | `MIT` |
-| `tree-sitter-toml-ng` | `MIT` |
-| `tree-sitter-yaml` | `MIT` |
-| `unicase` | `MIT OR Apache-2.0` |
-| `unicode-ident` | `(MIT OR Apache-2.0) AND Unicode-3.0` |
-| `vcpkg` | `MIT/Apache-2.0` |
-| `zmij` | `MIT` |
+### `aho-corasick`
+
+`aho-corasick` is under `Unlicense OR MIT`.
+
+Below is every copyright line its licence files state.
+
+```text
+Copyright (c) 2015 Andrew Gallant
+```
+
+### `bitflags`
+
+`bitflags` is under `MIT OR Apache-2.0`.
+
+Below is every copyright line its licence files state.
+
+```text
+Copyright (c) 2014 The Rust Project Developers
+```
+
+### `cc`
+
+`cc` is under `MIT OR Apache-2.0`.
+
+Below is every copyright line its licence files state.
+
+```text
+Copyright (c) 2014 Alex Crichton
+```
+
+### `equivalent`
+
+`equivalent` is under `Apache-2.0 OR MIT`.
+
+Below is every copyright line its licence files state.
+
+```text
+Copyright (c) 2016--2023
+```
+
+### `errno`
+
+`errno` is under `MIT OR Apache-2.0`.
+
+Below is every copyright line its licence files state.
+
+```text
+Copyright (c) 2014 Chris Wong
+```
+
+### `find-msvc-tools`
+
+`find-msvc-tools` is under `MIT OR Apache-2.0`.
+
+Below is every copyright line its licence files state.
+
+```text
+Copyright (c) 2014 Alex Crichton
+```
+
+### `git2`
+
+`git2` is under `MIT OR Apache-2.0`.
+
+Below is every copyright line its licence files state.
+
+```text
+Copyright (c) 2014 Alex Crichton
+```
+
+### `hashbrown`
+
+`hashbrown` is under `MIT OR Apache-2.0`.
+
+Below is every copyright line its licence files state.
+
+```text
+Copyright (c) 2016 Amanieu d'Antras
+```
+
+### `indexmap`
+
+`indexmap` is under `Apache-2.0 OR MIT`.
+
+Below is every copyright line its licence files state.
+
+```text
+Copyright (c) 2016--2017
+```
+
+### `itoa`
+
+`itoa` is under `MIT OR Apache-2.0`.
+
+Its licence files state no copyright line.
+
+### `jobserver`
+
+`jobserver` is under `MIT OR Apache-2.0`.
+
+Below is every copyright line its licence files state.
+
+```text
+Copyright (c) 2014 Alex Crichton
+```
+
+### `libc`
+
+`libc` is under `MIT OR Apache-2.0`.
+
+Below is every copyright line its licence files state.
+
+```text
+Copyright (c) The Rust Project Developers
+```
+
+### `libgit2-sys`
+
+`libgit2-sys` is under `MIT OR Apache-2.0`.
+
+Below is every copyright line its licence files state.
+
+```text
+Copyright (c) 2014 Alex Crichton
+```
+
+### `libz-sys`
+
+`libz-sys` is under `MIT OR Apache-2.0`.
+
+Below is every copyright line its licence files state.
+
+```text
+Copyright (c) 2014 Alex Crichton
+Copyright (c) 2020 Josh Triplett
+```
+
+### `log`
+
+`log` is under `MIT OR Apache-2.0`.
+
+Below is every copyright line its licence files state.
+
+```text
+Copyright (c) 2014 The Rust Project Developers
+```
+
+### `memchr`
+
+`memchr` is under `Unlicense OR MIT`.
+
+Below is every copyright line its licence files state.
+
+```text
+Copyright (c) 2015 Andrew Gallant
+```
+
+### `pkg-config`
+
+`pkg-config` is under `MIT OR Apache-2.0`.
+
+Below is every copyright line its licence files state.
+
+```text
+Copyright (c) 2014 Alex Crichton
+```
+
+### `proc-macro2`
+
+`proc-macro2` is under `MIT OR Apache-2.0`.
+
+Its licence files state no copyright line.
+
+### `pulldown-cmark`
+
+`pulldown-cmark` is under `MIT`.
+
+Below is every copyright line its licence file states.
+
+```text
+Copyright 2015 Google Inc. All rights reserved.
+```
+
+### `quote`
+
+`quote` is under `MIT OR Apache-2.0`.
+
+Its licence files state no copyright line.
+
+### `regex`
+
+`regex` is under `MIT OR Apache-2.0`.
+
+Below is every copyright line its licence files state.
+
+```text
+Copyright (c) 2014 The Rust Project Developers
+```
+
+### `regex-automata`
+
+`regex-automata` is under `MIT OR Apache-2.0`.
+
+Below is every copyright line its licence files state.
+
+```text
+Copyright (c) 2014 The Rust Project Developers
+```
+
+### `regex-syntax`
+
+`regex-syntax` is under `MIT OR Apache-2.0`.
+
+Below is every copyright line its licence files state.
+
+```text
+Copyright (c) 2014 The Rust Project Developers
+```
+
+### `rustix`
+
+`rustix` is under `Apache-2.0 WITH LLVM-exception OR Apache-2.0 OR MIT`.
+
+Below is every copyright line its licence files state.
+
+```text
+Copyrights in the `rustix` project are retained by their contributors.
+```
+
+### `serde`
+
+`serde` is under `MIT OR Apache-2.0`.
+
+Its licence files state no copyright line.
+
+### `serde_core`
+
+`serde_core` is under `MIT OR Apache-2.0`.
+
+Its licence files state no copyright line.
+
+### `serde_derive`
+
+`serde_derive` is under `MIT OR Apache-2.0`.
+
+Its licence files state no copyright line.
+
+### `serde_json`
+
+`serde_json` is under `MIT OR Apache-2.0`.
+
+Its licence files state no copyright line.
+
+### `shlex`
+
+`shlex` is under `MIT OR Apache-2.0`.
+
+Below is every copyright line its licence files state.
+
+```text
+Copyright 2015 Nicholas Allegra (comex).
+Copyright (c) 2015 Nicholas Allegra (comex).
+```
+
+### `streaming-iterator`
+
+`streaming-iterator` is under `MIT OR Apache-2.0`.
+
+Below is every copyright line its licence files state.
+
+```text
+Copyright (c) 2016 Steven Fackler
+```
+
+### `syn`
+
+`syn` is under `MIT OR Apache-2.0`.
+
+Its licence files state no copyright line.
+
+### `thiserror`
+
+`thiserror` is under `MIT OR Apache-2.0`.
+
+Its licence files state no copyright line.
+
+### `thiserror-impl`
+
+`thiserror-impl` is under `MIT OR Apache-2.0`.
+
+Its licence files state no copyright line.
+
+### `tree-sitter`
+
+`tree-sitter` is under `MIT`.
+
+Below is every copyright line its licence file states.
+
+```text
+Copyright (c) 2018 Max Brunsfeld
+```
+
+### `tree-sitter-bash`
+
+`tree-sitter-bash` is under `MIT`.
+
+Below is every copyright line its licence file states.
+
+```text
+Copyright (c) 2017 Max Brunsfeld
+```
+
+### `tree-sitter-highlight`
+
+`tree-sitter-highlight` is under `MIT`.
+
+Below is every copyright line its licence file states.
+
+```text
+Copyright (c) 2018 Max Brunsfeld
+```
+
+### `tree-sitter-javascript`
+
+`tree-sitter-javascript` is under `MIT`.
+
+Below is every copyright line its licence file states.
+
+```text
+Copyright (c) 2014 Max Brunsfeld
+```
+
+### `tree-sitter-json`
+
+`tree-sitter-json` is under `MIT`.
+
+Its package holds no licence file.
+
+### `tree-sitter-language`
+
+`tree-sitter-language` is under `MIT`.
+
+Below is every copyright line its licence file states.
+
+```text
+Copyright (c) 2018 Max Brunsfeld
+```
+
+### `tree-sitter-python`
+
+`tree-sitter-python` is under `MIT`.
+
+Below is every copyright line its licence file states.
+
+```text
+Copyright (c) 2016 Max Brunsfeld
+```
+
+### `tree-sitter-toml-ng`
+
+`tree-sitter-toml-ng` is under `MIT`.
+
+Its package holds no licence file.
+
+### `tree-sitter-yaml`
+
+`tree-sitter-yaml` is under `MIT`.
+
+Below is every copyright line its licence file states.
+
+```text
+Copyright (c) 2024 tree-sitter-grammars contributors
+Copyright (c) 2019-2021 Ika
+```
+
+### `unicase`
+
+`unicase` is under `MIT OR Apache-2.0`.
+
+Below is every copyright line its licence files state.
+
+```text
+Copyright (c) 2014-2026 Sean McArthur
+```
+
+### `unicode-ident`
+
+`unicode-ident` is under `(MIT OR Apache-2.0) AND Unicode-3.0`.
+
+Below is every copyright line its licence files state.
+
+```text
+Copyright © 1991-2023 Unicode, Inc.
+```
+
+### `vcpkg`
+
+`vcpkg` is under `MIT/Apache-2.0`.
+
+Below is every copyright line its licence files state.
+
+```text
+Copyright (c) 2017 Jim McGrath
+```
+
+### `zmij`
+
+`zmij` is under `MIT`.
+
+Its licence file states no copyright line.
 
 ## Libraries the crates compile
 
-Some crates compile a library from source they carry, under a licence of its own that the crate's licence does not name. Each such library the app carries is named here with its licence, the crate that compiles it, and where that crate keeps the library's licence text.
+Some crates compile a library from source they carry, under a licence of its own that the crate's licence does not name. Each such library the app carries has an entry of its own, headed by its name. The entry gives the library's licence, the crate that compiles it and the file where that crate keeps the library's licence text. It then gives every copyright line that file states, or says that the file states none.
 
-| Library | Licence | Compiled by | Licence text kept in |
-|---|---|---|---|
-| libgit2 | GPL-2.0 with the linking exception | `libgit2-sys` | `libgit2/COPYING` |
-| LibXDiff | LGPL-2.1-or-later | `libgit2-sys` | `libgit2/deps/xdiff/xdiff.h` |
-| PCRE2 | the PCRE2 licence | `libgit2-sys` | `libgit2/deps/pcre2/LICENCE.md` |
-| the RFC 6234 SHA-256 code | the IETF Trust's BSD-3-Clause terms | `libgit2-sys` | `libgit2/src/util/hash/rfc6234/sha.h` |
-| ICU's UTF-8 and UTF-16 macros | ICU's Unicode licence | `tree-sitter` | `src/unicode/LICENSE` |
-| the portable endian header | the endian header's public-domain dedication | `tree-sitter` | `src/portable/endian.h` |
+### libgit2
 
-libgit2's licence file also names parts of libgit2 that came from elsewhere, each with its own terms. They are named there, in the place this table gives for libgit2.
+libgit2 is under GPL-2.0 with the linking exception.
+
+`libgit2-sys` compiles libgit2 and keeps the library's licence text in `libgit2/COPYING`.
+
+libgit2's licence file also names parts of libgit2 that came from elsewhere, each with its own terms. They are named there, and the copyright lines the file states for them are among the lines below.
+
+Below is every copyright line `libgit2/COPYING` states.
+
+```text
+Copyright (C) 1989, 1991 Free Software Foundation, Inc.
+(C) 1995-2022 Jean-loup Gailly and Mark Adler
+Copyright (c) 2011-2015 Vicent Marti
+Copyright (c) 1997-2007 University of Cambridge
+Copyright (c) 2007-2024 Philip Hazel
+Copyright (c) 2010-2024 Zoltan Herczeg
+Copyright (c) 2009-2024 Zoltan Herczeg
+Copyright (C) 2007 Francois Gouget
+Copyright (C) 1991, 1999 Free Software Foundation, Inc.
+Copyright (c) 2017:
+Marc Stevens
+Cryptology Group
+Centrum Wiskunde & Informatica
+P.O. Box 94079, 1090 GB Amsterdam, Netherlands
+marc@marc-stevens.nl
+
+Dan Shumow
+Microsoft Research
+danshu@microsoft.com
+Copyright Rich Salz.
+Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
+Copyright remains Eric Young's, and as such any Copyright notices in
+the code are not to be removed.
+Copyright (c) 1998-2007 The OpenSSL Project.  All rights reserved.
+Copyright (c) 2011 IETF Trust and the persons identified as
+authors of the code.  All rights reserved.
+Copyright (C) 2008 The Android Open Source Project
+Copyright (c) Edward Thomson.  All rights reserved.
+Copyright (c) Microsoft Corporation
+Copyright (c) 2003-2016 University of Illinois at Urbana-Champaign.
+Copyright 2001-2004 Unicode, Inc.
+Copyright (C) 1990-2, RSA Data Security, Inc. All rights reserved.
+Copyright Fedor Indutny, 2018.
+```
+
+### LibXDiff
+
+LibXDiff is under LGPL-2.1-or-later.
+
+`libgit2-sys` compiles LibXDiff and keeps the library's licence text in `libgit2/deps/xdiff/xdiff.h`.
+
+Below is every copyright line `libgit2/deps/xdiff/xdiff.h` states.
+
+```text
+Copyright (C) 2003  Davide Libenzi
+```
+
+### PCRE2
+
+PCRE2 is under the PCRE2 licence.
+
+`libgit2-sys` compiles PCRE2 and keeps the library's licence text in `libgit2/deps/pcre2/LICENCE.md`.
+
+Below is every copyright line `libgit2/deps/pcre2/LICENCE.md` states.
+
+```text
+Copyright (c) 1997-2007 University of Cambridge
+Copyright (c) 2007-2024 Philip Hazel
+Copyright (c) 2010-2024 Zoltan Herczeg
+Copyright (c) 2009-2024 Zoltan Herczeg
+```
+
+### The RFC 6234 SHA-256 code
+
+The RFC 6234 SHA-256 code is under the IETF Trust's BSD-3-Clause terms.
+
+`libgit2-sys` compiles the RFC 6234 SHA-256 code and keeps the library's licence text in `libgit2/src/util/hash/rfc6234/sha.h`.
+
+Below is every copyright line `libgit2/src/util/hash/rfc6234/sha.h` states.
+
+```text
+Copyright (c) 2011 IETF Trust and the persons identified as
+authors of the code.  All rights reserved.
+```
+
+### ICU's UTF-8 and UTF-16 macros
+
+ICU's UTF-8 and UTF-16 macros are under ICU's Unicode licence.
+
+`tree-sitter` compiles ICU's UTF-8 and UTF-16 macros and keeps the library's licence text in `src/unicode/LICENSE`.
+
+Below is every copyright line `src/unicode/LICENSE` states.
+
+```text
+Copyright © 1991-2019 Unicode, Inc. All rights reserved.
+Copyright (c) 1995-2016 International Business Machines Corporation and others
+Copyright (C) 2006-2008, Google Inc.
+Copyright 1996 Chih-Hao Tsai @ Beckman Institute,
+University of Illinois
+Copyright 2000, 2001, 2002, 2003 Nara Institute of Science
+and Technology.  All Rights Reserved.
+Copyright (c) 2013 International Business Machines Corporation
+and others. All Rights Reserved.
+Copyright (C) 2013 Brian Eugene Wilson, Robert Martin Campbell.
+Copyright (c) 2014 International Business Machines Corporation
+and others. All Rights Reserved.
+Copyright (c) 2013, LeRoy Benjamin Sharon
+Copyright 2006-2011, the V8 project authors. All rights reserved.
+```
+
+### The portable endian header
+
+The portable endian header is under the endian header's public-domain dedication.
+
+`tree-sitter` compiles the portable endian header and keeps the library's licence text in `src/portable/endian.h`.
+
+`src/portable/endian.h` states no copyright line.
 
 ## Icons
 
+### Lucide
+
 The icons in `third_party/lucide` are from Lucide. Lucide is under the ISC licence, and the icons in it derived from Feather are under the MIT licence. Both texts are kept in `third_party/lucide/LICENSE`, and the ISC text is not repeated in this file.
+
+Below is every copyright line `third_party/lucide/LICENSE` states.
+
+```text
+Copyright (c) 2026 Lucide Icons and Contributors
+Copyright (c) 2013-present Cole Bemis
+```
 
 ## Licence texts
 
