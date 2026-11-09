@@ -24,7 +24,36 @@ None.
 
 ## 2. Choices to confirm — the Principal Architect drafted a best-effort answer; confirm or override
 
-None.
+### 2.1 The NFDR has not seen the beta: QC-44's list misses the beta's standing sentence, and nothing checks the read-at-open release
+
+> A `companion-self-answer` run opened this item on 2026-11-09, while answering
+> `docs/fdr_open_issues.md` § 2.1 (the FDR's beta fold). No `product-architecture` run wrote it. It
+> exists because the beta moved the SRS (v14, `ka-reader@c7440d7`) and CONTENT (v15,
+> `ka-reader@1c3ca12`) after the NFDR last read them, and the NFDR carries none of it. The reasoning
+> is at `docs/trail/fdr/self_answer-10.md` § *Companions opened*.
+
+- **Lands in:** `nfdr.md` QC-44, and a new QC or a widened one beside it
+- **Drafted into the records:** nothing yet. The proposed change:
+  1. QC-44 names every standing sentence by list: the read-only promise, the network statement, the
+     pre-1.0.0 statement, the support posture, the archiving sentence and the accessibility posture.
+     `docs/CONTENT.md` v15 added a seventh row, the beta's Git-view statement, and says the Git view,
+     the tree's markers and the README's known gaps all carry it word for word. QC-44's list gains it,
+     with its condition: it is checked on a release that reads Git state once, at open, and its
+     absence is checked on a release that follows Git state (`docs/SRS.md` AC-14, AC-26).
+  2. The release checks gain what SRS v14 added to AC-14 and C-12: the README's known gaps carry the
+     line about a repository created after open only on a read-at-open release, and the repository's
+     own commit history is checked for anything private before it is made public.
+  3. Whether the in-app statement (SRS FR-35, AC-26; FDR R-192 – R-195 as drafted in FDR v14) needs a
+     QC of its own, or stays with acceptance by inspection, is the Principal Architect's call.
+- **Rationale:** a search of `docs/nfdr.md` for `FR-35`, `AC-26`, `read once` and the beta's
+  sentence finds nothing, and none of `commit history` or `anything private` either. QC-44 promises
+  "every standing sentence", then lists six of what are now seven, so `checks/readme.sh` as QC-44
+  binds it would pass a README that drops the beta's sentence. The NFDR's header reads SRS and CONTENT
+  Settled, but at versions before the beta. This is upstream moving under a settled record, not a new
+  requirement.
+- **If overridden:** the NFDR stays as it is. The beta's README line and its history check are then
+  held only by release inspection under SRS AC-14, and `checks/readme.sh` does not check them.
+- **Confirm or override:** <"confirm", or "override: <what to do instead>">
 
 ## 3. Raised from downstream — an item from a seat that did not write these records
 
