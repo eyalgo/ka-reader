@@ -2,7 +2,8 @@
 # Version: 1.1.0 — the second rule: every copyright line the licence files of the packages in the name set state stands in that component's entry of THIRD_PARTY_NOTICES.md
 # Version: 1.0.0 — first version: every name `cargo tree` reports, found whole in THIRD_PARTY_NOTICES.md
 #
-# checks/notices.sh — proves the notices file names everything the product is built from, and carries
+# checks/notices.sh — proves the notices file names everything the product is built from, and
+# carries
 # the copyright lines of the packages it is built from.
 #
 # WHY THIS EXISTS
@@ -10,24 +11,33 @@
 #   (docs/nfdr.md QC-41). What it is built from is what could outgrow them. The names `cargo tree`
 #   reports are compared with the notices file: a name in the tree that the file does not hold, as a
 #   whole name, fails, and every such name is named. Then each package in that set is asked of
-#   `cargo metadata` where its sources are, and every copyright line its licence files state must stand
-#   in that component's entry of the notices file: a line that does not fails, and every such line is
+#   `cargo metadata` where its sources are, and every copyright line its licence files state must
+#   stand
+#   in that component's entry of the notices file: a line that does not fails, and every such line
+#   is
 #   named, with the component and the licence file it came from.
 #
 # WHAT IT HOLDS, AND WHAT IT DOES NOT
-#   It holds the names, and the copyright lines of every package in the name set. It does not hold the
+#   It holds the names, and the copyright lines of every package in the name set. It does not hold
+#   the
 #   libraries' and the icon set's lines, `NOTICE` files, the sentences that say a component has no
 #   licence file or no copyright line, or the licences themselves; review holds those.
 #
 # USAGE
 #   checks/notices.sh
 #   Run from the product root, which is the directory it reads THIRD_PARTY_NOTICES.md from. Exit 0 when
-#   every name is present and every copyright line is carried, printing one line that holds the count.
-#   Exit 1, naming each missing name and then each copyright line not carried on stderr, when either is
-#   missing. Exit 1 too, with one line that says which, when the check could not compare: the notices
-#   file cannot be read, `cargo tree` ends non-zero or reports no name, `cargo metadata` ends non-zero,
-#   a package in the set cannot be located in what it printed, or a licence file cannot be read. Exit 2
-#   when given an argument. INT ends it with 130 and TERM with 143; a signal that lands inside a command
+#   every name is present and every copyright line is carried, printing one line that holds the
+#   count.
+#   Exit 1, naming each missing name and then each copyright line not carried on stderr, when either
+#   is
+#   missing. Exit 1 too, with one line that says which, when the check could not compare: the
+#   notices
+#   file cannot be read, `cargo tree` ends non-zero or reports no name, `cargo metadata` ends
+#   non-zero,
+#   a package in the set cannot be located in what it printed, or a licence file cannot be read.
+#   Exit 2
+#   when given an argument. INT ends it with 130 and TERM with 143; a signal that lands inside a
+#   command
 #   substitution may end it with 1. It never ends with 0 on a signal.
 #
 # THE NAME SET IS CHECKS/NO-NETWORK.SH'S
@@ -42,32 +52,46 @@
 #
 # THE ORDER OF A RUN
 #   The argument count; the notices file; `cargo tree` and a name set that is not empty; `cargo
-#   metadata`; the place of every package in the set; every licence file; and only then the comparison.
-#   A finding is printed after every one of those has passed, so a refusal is always the run's one line.
+#   metadata`; the place of every package in the set; every licence file; and only then the
+#   comparison.
+#   A finding is printed after every one of those has passed, so a refusal is always the run's one
+#   line.
 #
 # THE PACKAGES, THEIR LICENCE FILES AND THEIR COPYRIGHT LINES
-#   The packages are read from `cargo metadata` for the two Apple-Darwin triples. It is parsed here as
-#   text, since bash 3.2 has no JSON tool, and fails closed: a package object is the only object that
+#   The packages are read from `cargo metadata` for the two Apple-Darwin triples. It is parsed here
+#   as
+#   text, since bash 3.2 has no JSON tool, and fails closed: a package object is the only object
+#   that
 #   opens {"name":"<name>","version":"<version>","id":", it is paired with the first "manifest_path"
-#   after it, and a JSON string is never unescaped, so a path that holds a backslash is refused. A name
-#   and version the tree lists with no package object is refused; the working directory is never read
+#   after it, and a JSON string is never unescaped, so a path that holds a backslash is refused. A
+#   name
+#   and version the tree lists with no package object is refused; the working directory is never
+#   read
 #   in its place. Two versions of one name are two packages.
 #   A licence file is a regular file directly in the package's root whose name, in any case, holds
-#   `licen`, `copying` or `copyright`, and the file the package's license_file names. A directory, a file
-#   below the root and a NOTICE file are not one. A copyright line is a line with the spaces, tabs and
-#   carriage returns before and after it removed that opens with `Copyright` and is not a placeholder, or
-#   opens with `COPYRIGHT`, `©`, `(c)` or `(C)` and holds a run of four digits. A placeholder holds no
+#   `licen`, `copying` or `copyright`, and the file the package's license_file names. A directory, a
+#   file
+#   below the root and a NOTICE file are not one. A copyright line is a line with the spaces, tabs
+#   and
+#   carriage returns before and after it removed that opens with `Copyright` and is not a
+#   placeholder, or
+#   opens with `COPYRIGHT`, `©`, `(c)` or `(C)` and holds a run of four digits. A placeholder holds
+#   no
 #   run of four digits and holds a bracketed span: [...], {...} or <...>.
-#   A line is carried when a line of its component's entry is byte for byte the same, outer spaces, tabs
-#   and carriage returns apart. An entry runs from its `### ` heading, the component's name in backticks,
+#   A line is carried when a line of its component's entry is byte for byte the same, outer spaces,
+#   tabs
+#   and carriage returns apart. An entry runs from its `### ` heading, the component's name in
+#   backticks,
 #   to the line before the next `## ` or `### ` heading outside a fenced block, or to the end of the
 #   file; only the first heading of a name is read.
 #
 # NO FILE IS WRITTEN, AND NOTHING BUT PATH IS READ
-#   Every list is held in a variable and handed on through a pipe or process substitution. There is no
+#   Every list is held in a variable and handed on through a pipe or process substitution. There is
+#   no
 #   temporary file, no heredoc and no here-string, since bash 3.2 writes the body of either to a
 #   temporary file. The script reads no variable of its own: `cargo` is found through PATH, which is
-#   how a test stands a tree in for the real one (docs/nfdr.md QC-67). Every comparison and sort runs
+#   how a test stands a tree in for the real one (docs/nfdr.md QC-67). Every comparison and sort
+#   runs
 #   under LC_ALL=C.
 
 set -euo pipefail
@@ -116,7 +140,8 @@ if [ -z "$names" ]; then
 fi
 
 # A name is present exactly when it is one of the tokens the file splits into at every byte outside
-# [A-Za-z0-9_-]. Both lists are byte-sorted, which `comm` needs, and reach it without a file. The names
+# [A-Za-z0-9_-]. Both lists are byte-sorted, which `comm` needs, and reach it without a file. The
+# names
 # that are missing are printed with the findings, after the refusals below have been ruled out.
 tokens="$(LC_ALL=C tr -cs 'A-Za-z0-9_-' '\n' < "$NOTICES_FILE" | LC_ALL=C sort -u)"
 missing="$(LC_ALL=C comm -23 <(printf '%s\n' "$names") <(printf '%s\n' "$tokens"))"
@@ -132,10 +157,14 @@ if [ "$metadata_status" -ne 0 ]; then
 fi
 
 # One record for each package object, in the order cargo printed them: name, version, license_file
-# (`null`, or `s:` and the string as printed) and manifest_path (`p:` and the string as printed). Only
-# three things are looked for: the opening of a package object, its license_file and its manifest_path.
-# A dependency object opens {"name":…,"source": and a target object {"kind":, so neither is mistaken for
-# a package, and the `resolve` section after the packages opens none. A string is read to its closing
+# (`null`, or `s:` and the string as printed) and manifest_path (`p:` and the string as printed).
+# Only
+# three things are looked for: the opening of a package object, its license_file and its
+# manifest_path.
+# A dependency object opens {"name":…,"source": and a target object {"kind":, so neither is mistaken
+# for
+# a package, and the `resolve` section after the packages opens none. A string is read to its
+# closing
 # quote, a backslash and the character after it passing as one, and is never unescaped.
 packages="$(printf '%s\n' "$cargo_metadata" | LC_ALL=C awk '
   {
@@ -162,11 +191,13 @@ packages="$(printf '%s\n' "$cargo_metadata" | LC_ALL=C awk '
   }
 ')"
 
-# Every name and version the tree lists, in byte order: two versions of one name are two packages, and
+# Every name and version the tree lists, in byte order: two versions of one name are two packages,
+# and
 # the leading `v` of a version is dropped.
 pairs="$(printf '%s\n' "$cargo_tree" | awk 'NF && $1 !~ /^\[/ { version = $2; sub(/^v/, "", version); print $1 "\t" version }' | LC_ALL=C sort -u)"
 
-# Each pair with the package object that has its name and version, the first if there are several, or
+# Each pair with the package object that has its name and version, the first if there are several,
+# or
 # `none`. A field is never empty, since `read` would run the tabs on.
 joined="$(LC_ALL=C awk -F"$TAB" -v OFS="$TAB" '
   FNR == NR {
@@ -184,8 +215,10 @@ joined="$(LC_ALL=C awk -F"$TAB" -v OFS="$TAB" '
   }
 ' <(printf '%s\n' "$packages") <(printf '%s\n' "$pairs"))"
 
-# Every package is located before any licence file is read. The first that cannot be, in byte order, is
-# the one named. A package's root is the directory of its manifest_path, and the working directory is
+# Every package is located before any licence file is read. The first that cannot be, in byte order,
+# is
+# the one named. A package's root is the directory of its manifest_path, and the working directory
+# is
 # never read in its place: a path with no directory part is not a directory here.
 located=""
 while IFS="$TAB" read -r name version state license_file manifest; do
@@ -210,7 +243,8 @@ done < <(printf '%s\n' "$joined")
 
 # --- the licence files ---
 
-# One record for each copyright line a licence file states: component, file, version, line number, line.
+# One record for each copyright line a licence file states: component, file, version, line number,
+# line.
 records=""
 while IFS="$TAB" read -r name version root license_file; do
   [ -n "$name" ] || continue
@@ -224,8 +258,10 @@ while IFS="$TAB" read -r name version root license_file; do
         ;;
     esac
   done
-  # The file the package's license_file names, when it is a regular file directly in the root. A name
-  # that holds a backslash is a JSON string this check does not unescape, so the file is not read and
+  # The file the package's license_file names, when it is a regular file directly in the root. A
+  # name
+  # that holds a backslash is a JSON string this check does not unescape, so the file is not read
+  # and
   # the run is refused rather than a licence file passed over.
   case "$license_file" in
     s:*)
@@ -281,7 +317,8 @@ done < <(printf '%s' "$located")
 # --- the comparison ---
 
 # The lines of each component's entry, tagged E; the names the name check reports missing, tagged M,
-# which get no copyright-miss line; and the copyright lines found, tagged R. The one awk that reads the
+# which get no copyright-miss line; and the copyright lines found, tagged R. The one awk that reads
+# the
 # three streams keeps each line that is not carried, once per component, file, version and line, and
 # `sort` orders them by component, file, version and line number.
 copyright_misses="$({
