@@ -2,7 +2,8 @@
 
 **Status:** Settled
 **Owner:** Principal Architect
-**Version:** 86 — Fold cycle-77 § 3.1, the close: QC-70 records a known gap at `ka-reader@8823057` — `checks/offline-page.sh` ends its comparison pipeline `|| true`, so under `pipefail` a failed comparison, `diff`'s exit 2 among them, prints `same` and ends 0 — and its `verified by:` names the suite case the fix owes, held by `development-design` until it lands. The companion is removed; Status is Settled — RN-96.
+**Version:** 87 — Fold cycle-78 §§ 3.1–3.3, the close: QC-64 names `.github/workflows/ci.yml` as the workflow every rule of which `checks/gate.sh` holds, and states `.github/workflows/release.yml` at `ka-reader@2d7c4f9` — its step set held at the change by the gate's *Release workflow shape* step, its *Cargo audit* QC-27's release gate and its *Verify checksums* QC-29's, both run at a tag push and at no change; QC-27's tail names that step; § 9's suites bullet is re-measured at twenty-two suites with the seventeen kept as a dated reading; QC-70's dated reading is re-measured at `2d7c4f9` with the five release scripts, `checks/release-pack.sh`'s signal trap and `checks/tree-walk.sh`'s pass-through. The companion is removed; Status is Settled — RN-97.
+Version 86 — Fold cycle-77 § 3.1, the close: QC-70 records a known gap at `ka-reader@8823057` — `checks/offline-page.sh` ends its comparison pipeline `|| true`, so under `pipefail` a failed comparison, `diff`'s exit 2 among them, prints `same` and ends 0 — and its `verified by:` names the suite case the fix owes, held by `development-design` until it lands. The companion is removed; Status is Settled — RN-96.
 Version 85 — Fold cycle-76 §§ 3.1–3.3, the close: § 9's suites bullet is re-measured at `ka-reader@3fa227e` — seventeen suites, `test_tree_scene.sh` and `test_offline_page.sh` added, every locator re-pinned and the fifteen kept as a dated reading; QC-2's and QC-35's locators for the walk's dropped Git answer are re-pinned with their commit; QC-70 states the check scripts' exit statuses as the product's own and sets the shell packet's two-status line aside for `checks/*.sh`. The companion is removed; Status is Settled — RN-95.
 Version 84 — Fold cycle-75 §§ 3.1–3.3, the close: ADR-0026 supersedes ADR-0025 — a *relative* link is a contained file's path, sent as one `open_relative_link` call, and a folder target is *external* — and ADR-0027 supersedes ADR-0014, whose *rests on* paragraph names TextKit 1's `NSLayoutManager`; the thirteen entries that traced to either record trace to its successor, and no obligation changes. The companion is removed; Status is Settled — RN-94.
 Version 83 — Fold cycle-74 § 2.1, the close, on SDD v75: QC-10 is taken as drafted; QC-69 is taken as drafted but for its third verifier, which narrows from the whole tree's `0o000` grep to the files the seam's building change names — 23 of the 37 lines at `ka-reader@98aaa71`, in 8 files — and its obligation sentence narrows the same way; the 14 lines outside the seam are named as outside it. The companion is removed; Status is Settled — RN-93.
@@ -1241,7 +1242,11 @@ reviewed tag.
   severity threshold, so it gates on every advisory, stricter than *critical*: a non-critical
   advisory a release carries is ignored by id, `--ignore <RUSTSEC-id>`, the ignore and its reason
   added in the change that adds it and reviewed as code the way `checks/deps.allow` is (QC-26);
-  over the tree, as a release gate. The Swift package declares no dependency, so there is nothing
+  over the tree, as a release gate: the *Cargo audit* step of `.github/workflows/release.yml`
+  (`:L63-L66` at `ka-reader@2d7c4f9`), which runs at a tag push and at no change, after the gate
+  and before anything is packed (QC-64). While Actions is off that workflow runs nowhere, so the
+  audit gates no release, and QC-29 offers none *(added at v87, on the owner's seat's answer at
+  `docs/trail/architecture/cycle-78.md` § 3.1 — RN-97)*. The Swift package declares no dependency, so there is nothing
   on that side to audit (SDD § 4 C-R6); `pnpm audit` left with `ka-reader-ui` at `ka-reader@0aca57e`
   (RN-22; RN-25) *(traces to:
   `quality_defaults.md` § Dependencies; SRS C-7,
@@ -2328,7 +2333,8 @@ answer at `docs/trail/architecture/cycle-51.md` § 3.2 — RN-69)*.
   R-109; the rule raised from this document, answered on the FDR's companion and folded at FDR v2
   — `docs/trail/architecture/cycle-1.md` § 2.2, RN-5, RN-11)*
 
-- **QC-64:** One script, `checks/gate.sh`, holds every rule the CI workflow holds. It runs every
+- **QC-64:** One script, `checks/gate.sh`, holds every rule the CI workflow, `.github/workflows/ci.yml`,
+  holds. It runs every
   step of `.github/workflows/ci.yml` that runs a command, except packaging the bundle. It runs them
   in the workflow's order, each fatal: the toolchain print first, then the workspace build, the
   bridge's assembly, the test gate, and every other moved `checks/*.sh` script, suite and step after
@@ -2357,11 +2363,25 @@ answer at `docs/trail/architecture/cycle-51.md` § 3.2 — RN-69)*.
   the moved steps and not the owner's — `docs/trail/architecture/cycle-49.md` § 3.1 names none —
   re-worded on the owner's seat's answer at `docs/trail/architecture/cycle-59.md` § 3.1 — RN-77)*.
   The script exits 0 only when every step exits 0, and it names the step that
-  failed. The card's test command runs it, so it runs at every change, at both gates (§ 8). The
-  workflow holds no rule of its own. When Actions runs, its job runs `checks/gate.sh` and the
+  failed. The card's test command runs it, so it runs at every change, at both gates (§ 8).
+  `ci.yml` holds no rule of its own. When Actions runs, its job runs `checks/gate.sh` and the
   packaging and upload steps, and nothing else, so a rule added to one is added to both.
   `.github/workflows/ci.yml` stays in the tree whether Actions runs or not (§ 8, *Where the gate
-  runs*).
+  runs*). The tree holds a second workflow at `ka-reader@2d7c4f9`, `.github/workflows/release.yml`,
+  and the sentence that a workflow holds no rule of its own is said of `ci.yml` alone.
+  `release.yml`'s first step after the checkout runs `checks/gate.sh` (its *Test gate* step,
+  `release.yml:L53-L54`). Its step set and order, the *nothing else* half included, are held at
+  the change by the gate's *Release workflow shape* step (`checks/gate.sh:L135`,
+  `checks/release-shape.sh`), whose *No other write* requirement (CP-1181,
+  `checks/release-shape.sh:L484`) refuses a step it does not list; the four release scripts it runs
+  are held by their suites (`checks/gate.sh:L137-L140`). Its *Cargo audit* step (`release.yml:L63-L66`) is
+  QC-27's release gate and its *Verify checksums* step (`:L77-L78`) is QC-29's; both run at a tag
+  push and at no change. While Actions is off `release.yml` runs nowhere, so the audit gates no
+  release, and none can be offered, because QC-29 offers only a release built from its tag by that
+  workflow *(added at v87, on the owner's seat's answer at `docs/trail/architecture/cycle-78.md`
+  § 3.1 — RN-97; through v86 this entry read "every rule the CI workflow holds" and "The workflow
+  holds no rule of its own", true of `ci.yml` and false from `ka-reader@2d7c4f9`, where
+  `release.yml` landed)*.
   — *verified by:* the card's test command, issued by the pipeline's gate tool at the developer's
   closing run and at code-integrity, whose `Environment:` line names where it ran (layer 5, every
   change); `grep -nE '^[[:space:]]+run:' .github/workflows/ci.yml` prints the line that runs
@@ -2376,7 +2396,10 @@ answer at `docs/trail/architecture/cycle-51.md` § 3.2 — RN-69)*.
   `run:` is `checks/gate.sh`, directly before `Package KA-Reader.app`. The workflow case does not hold
   the first comparison's *nothing else* half — an extra `run:` step before the gate step, or after
   packaging, passes it — so that half is held by no script, and `development-design` reading this
-  entry is its gate for a change under `.github/workflows/`.
+  entry is its gate for a change to `.github/workflows/ci.yml`. It is the gate on `ci.yml`'s
+  *nothing else* half only: `release.yml`'s is held by the *Release workflow shape* step and its
+  suite, `checks/tests/test_release_shape.sh` (`checks/gate.sh:L135-L136` at `ka-reader@2d7c4f9`,
+  layer 6, every change) *(through v86 "for a change under `.github/workflows/`" — RN-97)*.
   The suite holds the rest, and the card's command runs the script, so the suite runs at every
   change (§ 8, *Until the card runs the script*) *(through v61 "The suite holds the rest, but no
   run issues it at a change until the card's command runs the script …, so until then
@@ -2508,15 +2531,25 @@ answer at `docs/trail/architecture/cycle-51.md` § 3.2 — RN-69)*.
   product's own. **0** is a pass, and only a pass is 0. **1** is a refusal: a finding, or a
   precondition that failed. **2** is a wrong invocation, an argument count the script does not
   take, with the usage line on stderr. **128 + n** is a run that signal *n* ended through the
-  script's own trap; a script may map a signal to 1 instead, as `checks/offline-page.sh` does, and
-  never to 0. A script whose job is to run one other check script exits with that script's status.
+  script's own trap; a script may map a signal to 1 instead, as `checks/offline-page.sh` and
+  `checks/release-pack.sh` do, and never to 0 *(through v86 "as `checks/offline-page.sh` does" —
+  RN-97)*. A script whose job is to run one other check script exits with that script's status.
   No other status is returned. This sets aside the shell packet's line that the corpus "uses
   exactly two exit values … There is no third status" (`languages/shell/errors_logging.md`
   `:L33-L34`) for `checks/*.sh`, which the engineering doctrine lets this record do: a packet never
   overrides the product's own records (`languages/README.md` § Precedence). No gate turns on which
   non-zero status a script returns: `run_step` reads only zero or non-zero and exits 1 itself
-  (`checks/gate.sh:L38-L45` at `ka-reader@3fa227e`), so the 2 is for the person who typed the
-  command and for the suites. At `ka-reader@3fa227e` the tree holds these: `exit 2` on a wrong
+  (`checks/gate.sh:L40-L47` at `ka-reader@2d7c4f9`; `:L38-L45` at `ka-reader@3fa227e` — RN-97), so
+  the 2 is for the person who typed the command and for the suites. At `ka-reader@2d7c4f9` the
+  tree holds the `3fa227e` reading below, every locator in it unmoved, and adds: `exit 2` on a
+  wrong count in the five release scripts — `checks/release-version.sh:L39`,
+  `checks/release-pack.sh:L43`, `checks/release-sums.sh:L33`, `checks/release-absent.sh:L34` and
+  `checks/release-shape.sh:L39`; `checks/release-pack.sh`'s `trap 'exit 1' HUP INT TERM`
+  (`:L68`); and the child's status passed through by `checks/tree-walk.sh`, `exit "$scene_status"`
+  (`:L128`), already in the tree at `3fa227e` and not named there. The literal scan still finds
+  only 0, 1, 2, 130 and 143 *(re-measured at v87, on the owner's seat's answer at
+  `docs/trail/architecture/cycle-78.md` § 3.3 — RN-97)*. **Dated reading retained from v86:** at
+  `ka-reader@3fa227e` the tree holds these: `exit 2` on a wrong
   count in `checks/read-only.sh` (`:L98`) and in `checks/offline-page.sh` (its header, `:L19`);
   128 + n through `checks/read-only.sh`'s `on_signal` (`:L215-L226`) and through
   `trap 'exit 130' INT` and `trap 'exit 143' TERM` in `checks/bundle.sh` (`:L154-L155`),
@@ -2724,7 +2757,20 @@ left with `ka-reader-ui` at `ka-reader@0aca57e` (RN-22; RN-25).
   nowhere is ADR-0012's rule broken one level down: a gate that cannot go red has not run. A script
   that lands with a suite lands the suite as a step of `checks/gate.sh` in the same change, and the
   workflow runs it through `Test gate` *(through v57 "lands the suite's CI step in the same change" —
-  RN-69)*. Seventeen top-level shell suites are in the tree at
+  RN-69)*. Twenty-two top-level shell suites are in the tree at `ka-reader@2d7c4f9`, each the
+  whole command of one `run_step` line of `checks/gate.sh` (1.11.0): `test_secret_scan.sh`
+  (`checks/gate.sh:L59`), `test_secret_scan_planted.sh` (`:L77`), `test_structure.sh` (`:L90`),
+  `test_entry_points.sh` (`:L92`), `test_bundle.sh` (`:L95`), `test_view.sh` (`:L97`),
+  `test_renderer.sh` (`:L107`), `test_read_only.sh` (`:L118`), `test_no_network.sh` (`:L120`),
+  `test_offline_page.sh` (`:L122`), `test_strings.sh` (`:L128`), `test_strings_step.sh` (`:L129`),
+  `test_release_shape.sh` (`:L136`), `test_release_version.sh` (`:L137`), `test_release_pack.sh`
+  (`:L138`), `test_release_sums.sh` (`:L139`), `test_release_absent.sh` (`:L140`),
+  `test_own_state.sh` (`:L141`), `test_vm_refusal.sh` (`:L147`), `test_launch.sh` (`:L148`),
+  `test_own_state_step.sh` (`:L149`) and `test_tree_scene.sh` (`:L150`). The measurement
+  enumerates `checks/tests/*.sh` and matches each path to an exact whole-command `run_step` line;
+  it executes no suite *(re-measured at v87 from seventeen, on the owner's seat's answer at
+  `docs/trail/architecture/cycle-78.md` § 3.2 — RN-97)*.
+  **Dated reading retained from v86:** seventeen suites at
   `ka-reader@3fa227e9b35c1324bc1aca2aac83e371e98279bb`, each the whole command of one gate step:
   `test_secret_scan.sh` (`checks/gate.sh:L57`), `test_secret_scan_planted.sh` (`:L75`),
   `test_structure.sh` (`:L88`), `test_entry_points.sh` (`:L90`), `test_bundle.sh` (`:L93`),
@@ -2732,9 +2778,8 @@ left with `ka-reader-ui` at `ka-reader@0aca57e` (RN-22; RN-25).
   `test_no_network.sh` (`:L118`), `test_offline_page.sh` (`:L120`), `test_strings.sh` (`:L126`),
   `test_strings_step.sh` (`:L127`), `test_own_state.sh` (`:L128`), `test_vm_refusal.sh` (`:L134`),
   `test_launch.sh` (`:L135`), `test_own_state_step.sh` (`:L136`) and `test_tree_scene.sh`
-  (`:L137`). The measurement enumerates `checks/tests/*.sh` and matches each path to an exact
-  whole-command `run_step` line; it executes no suite *(re-measured at v85 from fifteen, on the
-  owner's seat's answer at `docs/trail/architecture/cycle-76.md` § 3.1 — RN-95)*.
+  (`:L137`) *(re-measured at v85 from fifteen, on the owner's seat's answer at
+  `docs/trail/architecture/cycle-76.md` § 3.1 — RN-95)*.
   **Dated reading retained from v84:** fifteen suites at
   `ka-reader@33b8661cb289ad01b6123a98dfcc8979f5dea278`, each the whole command of one gate step:
   `test_secret_scan.sh` (`checks/gate.sh:L52`), `test_secret_scan_planted.sh` (`:L70`),
@@ -2775,9 +2820,11 @@ left with `ka-reader-ui` at `ka-reader@0aca57e` (RN-22; RN-25).
   `:L96`, `:L99`, `:L100` and `:L101` — true at that pin)* *(re-measured at v66 from eleven, on the owner's seat's answer at
   `docs/trail/architecture/cycle-59.md` § 3.1 — RN-77; through v65 it counted eleven, all steps of
   the gate at `ka-reader@8b93322` — `:L50`, `:L52`, `:L55`, `:L57`, `:L67`, `:L71`, `:L73`, `:L74`,
-  `:L77`, `:L78` and `:L79` — true at that pin)*. Three of the seventeen have no `checks/<name>.sh` of
-  their own name *(through v84 "Three of the fifteen" — RN-95; through v70 "Two of the fourteen" — RN-82; through v67 "Two of the thirteen"
-  — RN-79)*; the two suites counted at v85 pair by name, `test_tree_scene.sh` with
+  `:L77`, `:L78` and `:L79` — true at that pin)*. Three of the twenty-two have no `checks/<name>.sh` of
+  their own name *(through v86 "Three of the seventeen" — RN-97; through v84 "Three of the fifteen" — RN-95; through v70 "Two of the fourteen" — RN-82; through v67 "Two of the thirteen"
+  — RN-79)*; the five suites counted at v87 pair by name with `checks/release-shape.sh`,
+  `checks/release-version.sh`, `checks/release-pack.sh`, `checks/release-sums.sh` and
+  `checks/release-absent.sh` (RN-97), as the two counted at v85 do, `test_tree_scene.sh` with
   `checks/tree-scene.sh` and `test_offline_page.sh` with `checks/offline-page.sh` (RN-95).
   `test_vm_refusal.sh` holds the refusal cases of the two guarded suites and checks
   the gate's step list and the workflow's shape (QC-64, QC-65). `test_secret_scan_planted.sh` is a
@@ -3178,7 +3225,7 @@ is stated once, in § 8 *(added at v56, on the owner's answer at `docs/trail/arc
 | QC-25 | entitlements; sandbox present; the control's out-of-grant read on the hosted image | `checks/bundle.sh` (suite `test_bundle.sh`); `gh run view <run-id> --repo eyalgo/ka-reader --log \| awk -F'\t' '$2 == "Test gate" { if (after && /out-of-grant-read:/) print; after = /ok   test_negative_control_reports_unsandboxed$/ }'` on a commit that holds `ka-reader@8b93322`, and `awk -F'\t' '$2 == "Bundle probe suite" && /out-of-grant-read:/'` before it, whose empty read on a run whose step concluded `success` is a break from run 38577309118 on (RN-59, RN-61, RN-62, RN-69) | the tree; the CI run | CI build; release gate; `development-design` on a change that renames the workflow's `Test gate` step or the control case |
 | QC-62 | the shell runs under the shipped entitlements | `checks/renderer.sh KA-Reader.app` (suite `test_renderer.sh`) and `checks/fixtures/idle-shell` | the tree | CI build; release gate |
 | QC-26 | allowlist; locked build; no Swift dependency | `checks/no-network.sh` (suite `test_no_network.sh`); `cargo build --locked` | the tree | CI build |
-| QC-27 | critical vulnerability | `cargo audit` (every advisory; `--ignore <RUSTSEC-id>` with its reason) | the tree | release |
+| QC-27 | critical vulnerability | `cargo audit` (every advisory; `--ignore <RUSTSEC-id>` with its reason), the *Cargo audit* step of `.github/workflows/release.yml` | the tree | release (a tag push; none while Actions is off) |
 | QC-28 | no secret in the history HEAD reaches; the scan goes red at a planted secret; no signing identity | `checks/secret-scan.sh gitleaks git` (suite `test_secret_scan.sh`) and its control `checks/tests/test_secret_scan_planted.sh`; `gh secret list --repo eyalgo/ka-reader`; `codesign -dv KA-Reader.app` | the change; the release | `development-implementation`; release |
 | QC-29 | artifact = tag build | `shasum -a 256 -c SHA256SUMS` against a rebuild | the release | release |
 | QC-30, QC-58 | no other entry point; no configuration — the product's own units | `checks/structure.sh` (suite `test_structure.sh`); `checks/view.sh` (suite `test_view.sh`) | the tree; the change | CI build; `development-implementation` (the structure pair) |
@@ -3207,7 +3254,7 @@ is stated once, in § 8 *(added at v56, on the owner's answer at `docs/trail/arc
 | QC-59 | priced contract against its major's pin | `checks/contract.sh <tag>` | the release | release, from `v1.0.0` |
 | QC-60 | own-state read across versions; unreadable state discarded whole | `checks/own-state.sh --from <previous-tag>` (suite `test_own_state.sh`); layer-1 unit test on the own-state reader with an unreadable fixture, as QC-60 states | the release; the change | release; `development-implementation` (the unit test) |
 | QC-61 | logging facade and its implementation | `checks/no-network.sh` (suite `test_no_network.sh`); `checks/structure.sh` (suite `test_structure.sh`) | the tree; the change | CI build; `development-implementation` (the structure pair) |
-| QC-64 | every workflow rule held by one script, run at the change; the workflow holds none of its own | the card's test command through the gate tool; `grep -nE '^[[:space:]]+run:' .github/workflows/ci.yml`; the suites loop over `checks/gate.sh`; `checks/tests/test_vm_refusal.sh` — `test_every_toplevel_suite_is_an_entire_fatal_step`, `test_moved_steps_are_single_line_commands_in_order` | the change; the tree | `development-implementation`; `development-design` reading the entry |
+| QC-64 | every rule of `ci.yml` held by one script, run at the change; `ci.yml` holds none of its own; `release.yml`'s step set held at the change | the card's test command through the gate tool; `grep -nE '^[[:space:]]+run:' .github/workflows/ci.yml`; the suites loop over `checks/gate.sh`; `checks/tests/test_vm_refusal.sh` — `test_every_toplevel_suite_is_an_entire_fatal_step`, `test_moved_steps_are_single_line_commands_in_order`; `checks/release-shape.sh .github/workflows/release.yml` and `checks/tests/test_release_shape.sh` | the change; the tree | `development-implementation`; `development-design` reading the entry (`ci.yml`'s *nothing else* half) |
 | QC-65 | the launching and home-reading steps refuse outside a virtual machine | the refusal case in each guarded script's suite, and the two guarded suites' cases in `checks/tests/test_vm_refusal.sh`, the tree-scene helper's case in `checks/tests/test_tree_scene.sh` and in `checks/tests/test_vm_refusal.sh`; the gate tool's `Environment:` line | the change | `development-implementation` |
 | QC-67 | a check script's own environment reads are bounds or seams, and none reaches a gate run | a case in a gate suite setting each listed variable to a sabotaging value; a scan of `checks/*.sh` for a script's own environment reads — neither in the tree at `ka-reader@2529a42` | the change; the tree | `development-design` reading the entry until both land |
 | QC-68 | the containment port's one implementation, one fake and one contract suite | `cargo test --locked -p ka-reader-core --test containment`, against `FolderContainment` and `SeededContainment` (layer 2); `grep -rnE '^[[:space:]]*impl ContainmentCheck for' crates` printing the two alone; the two manifest greps QC-68 names | the change; the tree | `development-implementation` (the suite, through the gate's *Test gate*); `development-design` when a change touches the port (the greps) |
@@ -8583,3 +8630,56 @@ of the trait-collaborator line, and the read seam until it is built), QC-13 (the
   header, so the `Inputs read:` line stands. `docs/trail/architecture/cycle-77.md` holds the
   answered companion whole. Nothing is left open, so the companion is removed and `Status:` stays
   Settled.
+- **RN-97:** *(v87 — the cycle-78 fold, §§ 3.1–3.3, and the close)* The owner's seat's committed
+  answers at `docs/trail/architecture/cycle-78.md` §§ 3.1–3.3 authorize this fold. Their reasoning
+  is `docs/trail/architecture/self_answer-81.md`. No `product-architecture` run wrote that
+  companion: the PM opened it on 2026-11-09 and raised three items, read at `ka-reader@2d7c4f9`,
+  where the tree gained `.github/workflows/release.yml`, five release scripts under `checks/` and
+  their five suites.
+
+  **§ 3.1 → QC-64 and QC-27.** Taken as written. QC-64's statement names `ci.yml` as the workflow
+  every rule of which `checks/gate.sh` holds, and "holds no rule of its own" is said of `ci.yml`
+  alone. One passage states `release.yml` at `2d7c4f9`: its *Test gate* first after the checkout;
+  its step set and order held at the change by the gate's *Release workflow shape* step, whose
+  *No other write* requirement refuses an unlisted step; its four release scripts held by their
+  suites; its *Cargo audit* step QC-27's release gate and its *Verify checksums* step QC-29's, both
+  run at a tag push and at no change; and, while Actions is off, no audit and no release. The
+  review gate in QC-64's tail is scoped to `ci.yml`'s *nothing else* half. QC-27's tail names the
+  *Cargo audit* step as where its audit runs. § 10's QC-64 and QC-27 rows follow.
+
+  **§ 3.2 → § 9's suites bullet.** Taken as written. Twenty-two suites at `2d7c4f9`, each mapped to
+  its `run_step` line; the seventeen at `3fa227e` are kept as a dated reading, and the v85 marker
+  moves onto it. The pairing sentence reads three of twenty-two, the same three, and names the five
+  new pairs. The `Test gate` locator, `ci.yml:L28`, is unmoved; `release.yml`'s own *Test gate* is
+  stated once, in QC-64.
+
+  **§ 3.3 → QC-70.** Taken as written. `run_step` is re-pinned at `checks/gate.sh:L40-L47`. The
+  reading at `2d7c4f9` adds the five release scripts' `exit 2`, `checks/release-pack.sh`'s signal
+  trap and `checks/tree-walk.sh`'s pass-through (`:L128`, in the tree at `3fa227e` and not named
+  there); the `3fa227e` reading is kept dated. The clause that lets a script map a signal to 1 names
+  both scripts that do. No status outside the five is added.
+
+  **Beyond the answers' words.** Three things, each named here. (1) QC-64's *verified by:* gains one
+  sentence and its § 10 row one command: `release.yml`'s *nothing else* half is held by
+  `checks/release-shape.sh` and its suite, at every change. The answer states that the shape step
+  holds it; the tail says so where a reader of the verification looks, so the narrowed review gate
+  does not read as leaving `release.yml` unchecked. (2) § 10's QC-27 row names the step and that it
+  runs at a tag push, none while Actions is off. (3) The sentences cite the scripts at their commit,
+  and the items' *Tracked by* lines stay out of the record, because the definition set never names
+  the journey.
+
+  **Read by this run.** At `ka-reader@5380b1a`, whose tree outside `docs/` is `2d7c4f9`'s
+  (`git diff --stat 2d7c4f9 HEAD -- . ':!docs'` prints nothing): `ls .github/workflows/` prints
+  `ci.yml` and `release.yml`; `release.yml:L46-L54`, `:L60-L66`, `:L77-L78`; `grep -n audit
+  checks/gate.sh` prints nothing; `grep -nE '^[[:space:]]+run:' .github/workflows/ci.yml` prints
+  `:L28` and `:L34`; `checks/gate.sh:L40` (`run_step() {`) and `:L130-L150`; `ls checks/tests/*.sh |
+  wc -l` prints `22`; `checks/release-shape.sh:L484`; the `exit 2` and `trap` lines of
+  `checks/release-*.sh`; `checks/tree-walk.sh:L115`, `:L128`; `grep -ohE 'exit [0-9]+' checks/*.sh`
+  finds only 0, 1, 2, 130 and 143. No product test ran: nothing under `crates/`, `checks/` or
+  `ka-reader-mac/` is changed by this fold.
+
+  **Limits.** No ADR is written or restatused, so the index is unchanged. No `QC` is added,
+  renumbered or reused; QC-27, QC-64 and QC-70 and § 9's suites bullet are the entries edited. The
+  inputs' status lines read as in the header, so the `Inputs read:` line stands.
+  `docs/trail/architecture/cycle-78.md` holds the answered companion whole. Nothing is left open, so
+  the companion is removed and `Status:` stays Settled.
