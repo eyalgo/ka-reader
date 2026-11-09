@@ -2,7 +2,7 @@
 
 **Status:** Settled
 **Owner:** CTO
-**Version:** 14 — follows PRD v17 – v18, derived against PRD v18, on the owner's answer at `docs/trail/srs/cycle-12.md` § 2.1 (RN-39). FR-20 and AC-11 drop "from the first release": the choice between the two themes, kept between sessions, is in place before 1.0.0. FR-35 and AC-26 carry the beta's statement as a system state: where Git state is read at open and not followed, the Git view and the tree's markers say so. C-12 gains the public history checked for anything private; AC-14 inspects it and the README's known gaps. The finish line's path is repaired (RN-40). Nothing is left for the owner to answer; the companion is closed.
+**Version:** 15 — derived against PRD v18, on the owner's answer at `docs/trail/srs/cycle-13.md` § 2.1 (RN-41). C-7 and C-13 take the support posture's wording from `docs/CONTENT.md`'s support-posture row, carried whole on SECURITY.md and on the README; the PRD's posture stays the limit, so neither surface promises an acknowledgement or a response time. AC-14's README clause follows C-13. Nothing is left for the owner to answer; the companion is closed.
 **Inputs read:** PRD Settled
 
 > The SRS is the technical source of truth: the system-level **what**, derived from the PRD and
@@ -502,12 +502,16 @@ see RN-8)*
   §2.4; see RN-15, RN-24)*
 - **C-7:** Before the first public release, a private vulnerability-reporting channel is enabled
   on the public repository (C-12), and a SECURITY.md names where to report and states the
-  posture the PRD sets for what follows — "Security reports have a private channel and are read,
-  with no acknowledgement or response time promised" (`docs/PRD.md` § Assumptions, "Support
-  posture") — in those terms, promising nothing the PRD does not. *(traces to: PRD Risks
-  "Maintenance is a standing liability", Assumptions "Support posture"; owner-confirmed:
+  support posture in the one wording `docs/CONTENT.md` § Terminology, *Standing sentences*, fixes
+  in its support-posture row — that row is the wording's one home, carried whole, every sentence
+  of it, the issues sentences included — promising nothing the PRD does not. What the posture
+  means, and so the limit nothing is promised beyond, is the PRD's: "Security reports have a
+  private channel and are read, with no acknowledgement or response time promised"
+  (`docs/PRD.md` § Assumptions, "Support posture"). *(traces to: PRD Risks "Maintenance is a
+  standing liability", Assumptions "Support posture"; owner-confirmed:
   `docs/trail/srs/cycle-1.md` §2.5; the response wording resolved at v5 from the PRD's stated
-  posture: RN-24; see RN-16)*
+  posture: RN-24; see RN-16; changed at v15 — the wording is CONTENT's, the limit stays the PRD's,
+  owner-confirmed `docs/trail/srs/cycle-13.md` § 2.1: RN-41)*
 - **C-8:** UI language: English. *(traces to: PRD UX Notes)*
 - **C-9:** The README's first screen is product surface and carries: what the tool does in one
   sentence, one install path, one copy-paste example, and what the tool will and will not touch.
@@ -532,12 +536,17 @@ see RN-8)*
   handle: changed at v13 with PRD v16, owner-confirmed `docs/trail/prd/cycle-14.md` § 3.1 and
   `docs/trail/srs/cycle-11.md` § 1.1; see RN-38; the public history: PRD v18, owner-confirmed
   `docs/trail/prd/cycle-16.md` § 3.1 and `docs/trail/srs/cycle-12.md` § 2.1; see RN-39)*
-- **C-13:** The README states the support posture in the PRD's terms — "Issues and questions are
-  welcome and read when there is time, with no response time, no commitment to fix, and no
-  commitment that a fix ever arrives" (`docs/PRD.md` § Assumptions, "Support posture") — and
-  promises nothing beyond it. *(traces to: PRD Assumptions "Support posture" — "The README says
-  this plainly rather than implying more"; owner-confirmed: `docs/trail/prd/cycle-7.md` §2.4;
-  see RN-24)*
+- **C-13:** The README states the support posture in the one wording `docs/CONTENT.md`
+  § Terminology, *Standing sentences*, fixes in its support-posture row — that row is the
+  wording's one home, carried whole, every sentence of it, the security sentence included — and
+  promises nothing beyond the posture the PRD sets: "Issues and questions are welcome and read
+  when there is time, with no response time, no commitment to fix, and no commitment that a fix
+  ever arrives. Security reports have a private channel and are read, with no acknowledgement or
+  response time promised" (`docs/PRD.md` § Assumptions, "Support posture"), which is what the
+  posture means and the limit of what is promised. *(traces to: PRD Assumptions "Support
+  posture" — "The README says this plainly rather than implying more"; owner-confirmed:
+  `docs/trail/prd/cycle-7.md` §2.4; see RN-24; changed at v15 — the wording is CONTENT's, the
+  limit stays the PRD's, owner-confirmed `docs/trail/srs/cycle-13.md` § 2.1: RN-41)*
 
 ## 8. Acceptance Criteria
 
@@ -605,7 +614,8 @@ see RN-8)*
   README first screen carries its four items, its one-sentence description does not call the
   tool a web app, the README states sidebar search / filter, pane resizing and keyboard
   navigation as outside the product's done rather than promising them, and the README states the
-  support posture in the PRD's terms; where the release ships FR-35's read-at-open state, the
+  support posture in `docs/CONTENT.md`'s support-posture row, whole, per C-13; where the release
+  ships FR-35's read-at-open state, the
   README's known gaps state that the Git view and the tree's changed-file markers show the Git
   state read when the folder was opened, and that a repository created at the folder's root after
   it is opened is not followed — and where the release follows Git state, the README carries no
@@ -614,7 +624,7 @@ see RN-8)*
   the PRD does not; and before the repository was made public, its own commit history was checked
   for anything private, per C-12. *(covers: C-4 – C-7, C-9, C-12, C-13, FR-35; widened at v5:
   RN-24; the two README lines added at v8: RN-34; the known-gaps line and the history check added
-  at v14: RN-39)*
+  at v14: RN-39; the README's posture clause changed at v15: RN-41)*
 - **AC-15:** With no file selected the empty state prompts selection; pointed at a path that does
   not exist, is not a folder, or cannot be read, the system states plainly what went wrong and
   what to do next, and a filesystem check shows it touched nothing. *(covers: FR-3, FR-4; widened
@@ -1121,3 +1131,32 @@ see RN-8)*
   terminus they describe is the same file. Elsewhere in these notes "the Agari" stays as written
   and names that same finish line. No other PRD unit moved between v16 and v18 *(re: §2, §5.1,
   RN-26, RN-31; PRD source: Out of Scope, UX Notes, Assumptions)*.
+- **RN-41:** *(changed — C-7, C-13, AC-14's README clause)* The support posture's wording is
+  `docs/CONTENT.md`'s, and its limit stays the PRD's. The owner decided that SECURITY.md and the
+  README carry the posture in the one wording `docs/CONTENT.md` § Terminology, *Standing
+  sentences*, fixes in its support-posture row, verbatim, citing that row and not the PRD's
+  sentence (`docs/architecture_open_issues.md` § 3.1, *Answer*, committed at `ka-reader@3363a86`),
+  and confirmed the fold here with four additions at `docs/trail/srs/cycle-13.md` § 2.1; its
+  reasoning is `docs/trail/srs/self_answer-5.md` § 2.1. **Each surface carries the row whole:**
+  the row allows "no paraphrase, no shortened version", so the README's posture includes the
+  security sentence and SECURITY.md's includes the issues sentences; SECURITY.md stating that
+  issues are welcome promises nothing C-7's channel does not already provide. **The row is the
+  wording's one home:** C-7 and C-13 point at it and quote none of its words, so a change to the
+  row cannot leave this document holding a stale copy; pointing at the row meets the writing bar's
+  rule that a commitment is quoted, never paraphrased (`system/doctrine/writing_bar.md` § 1.5),
+  which RN-24 cites. **The PRD's sentence stays the limit:** the row says security reports are
+  "read on the same terms" and does not say that no acknowledgement is promised, so C-7's
+  "promising nothing the PRD does not" and C-13's "promises nothing beyond" stay, measured against
+  the PRD's posture as its meaning — and C-13's limit quotes the PRD's security sentence beside
+  its issues sentence, because the README now states both and neither surface may promise an
+  acknowledgement. The split is the one the content guide already draws: "Whether the product
+  states a promise at all is the PRD's, and whether a promise is true of the built system is the
+  SRS's. This table fixes only the words, once the promise exists" (`docs/CONTENT.md`
+  § Terminology, *Standing sentences*). AC-14's README clause moves to the row, per C-13; its
+  clause "SECURITY.md promises nothing the PRD does not" stands as written. RN-24 and RN-16 stand
+  as written, the record of why C-7 and C-13 first quoted the PRD; this note records the move.
+  No other requirement names the posture: C-4, C-6, C-9 and C-12 do not move, and the PRD's "the
+  README says this plainly rather than implying more" still holds, because the row states the
+  posture plainly and promises nothing beyond it. If the row is removed, C-7 and C-13 keep their
+  PRD limit and lose their wording, which reopens this *(re: C-7, C-13, AC-14, RN-16, RN-24; PRD
+  source: Assumptions "Support posture")*.
