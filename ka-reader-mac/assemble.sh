@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.2.0 — the bundle carries the tree's LICENSE and THIRD_PARTY_NOTICES.md, copied in before the seal
 # Version: 1.1.0 — the product declares the macOS 26 floor and builds its bridge for it
 # Version: 1.0.0 — first version: builds the bridge and the package in release, lays out KA-Reader.app, copies the glyphs in, signs last
 #
@@ -26,6 +27,11 @@
 #   is rebuilt from this checkout on every run (a stale or foreign-architecture one cannot survive) and
 #   names only the architecture the toolchain reports it built for. It is git-ignored.
 #   The glyphs are copied from third_party/lucide/icons/ at assembly and never kept in ka-reader-mac.
+#   The tree's LICENSE and THIRD_PARTY_NOTICES.md are copied into Contents/Resources, as
+#   KA-Reader-LICENSE and THIRD_PARTY_NOTICES.md, so the disk image carries them with the app
+#   (docs/nfdr.md QC-41). The licence gets a name of its own because Contents/Resources/LICENSE is
+#   the icon set's licence. Both are copied before the signature, which covers them, and
+#   checks/bundle.sh holds them byte-identical to the tree's files.
 #   The signature is ad hoc, with the hardened runtime and ka-reader-mac/Entitlements.plist.
 
 set -euo pipefail
@@ -40,8 +46,10 @@ REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 APP="$REPO_ROOT/target/release/bundle/macos/KA-Reader.app"
 GLYPH_DIR="$REPO_ROOT/third_party/lucide/icons"
 GLYPH_LICENSE="$REPO_ROOT/third_party/lucide/LICENSE"
+TREE_LICENSE="$REPO_ROOT/LICENSE"
+TREE_NOTICES="$REPO_ROOT/THIRD_PARTY_NOTICES.md"
 
-for required in "$SCRIPT_DIR/Info.plist" "$SCRIPT_DIR/Entitlements.plist" "$SCRIPT_DIR/icon.icns" "$GLYPH_LICENSE"; do
+for required in "$SCRIPT_DIR/Info.plist" "$SCRIPT_DIR/Entitlements.plist" "$SCRIPT_DIR/icon.icns" "$GLYPH_LICENSE" "$TREE_LICENSE" "$TREE_NOTICES"; do
   [ -f "$required" ] || die "missing $required"
 done
 [ -d "$GLYPH_DIR" ] || die "missing $GLYPH_DIR"
@@ -109,6 +117,8 @@ cp "$executable" "$APP/Contents/MacOS/KAReader"
 cp "$SCRIPT_DIR/Info.plist" "$APP/Contents/Info.plist"
 cp "$GLYPH_DIR"/* "$APP/Contents/Resources/"
 cp "$GLYPH_LICENSE" "$APP/Contents/Resources/LICENSE"
+cp "$TREE_LICENSE" "$APP/Contents/Resources/KA-Reader-LICENSE"
+cp "$TREE_NOTICES" "$APP/Contents/Resources/THIRD_PARTY_NOTICES.md"
 cp "$SCRIPT_DIR/icon.icns" "$APP/Contents/Resources/icon.icns"
 
 # --- 5. the signature, last: a file added after this breaks the seal ---
