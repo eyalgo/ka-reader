@@ -197,6 +197,9 @@ test_catalogue_statuses_signals_and_inputs_are_preserved() {
   for signal in cat awk grep; do wrap "$signal" 'printf "input-read\n" >&2; exit 17'; done
   run_check wrong another || return 1
   equal "$status" 2 && equal "$out" '' && equal "$err" 'Usage: checks/git-beta.sh' || return 1
+  # Any argument at all is a wrong invocation, a single one included (CP-1273).
+  run_check only || return 1
+  equal "$status" 2 && equal "$out" '' && equal "$err" 'Usage: checks/git-beta.sh' || return 1
   for signal in HUP INT TERM; do
     fixture; wrap cat "kill -$signal \"\$TEST_BETA_SUBJECT_PID\"; exit 17"
     run_check || return 1

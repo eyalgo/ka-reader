@@ -156,6 +156,55 @@ struct GitBetaNoticeTests {
         }
         withExtendedLifetime(window) {}
     }
+    private func statusSlots(_ view: NSView) -> [StatusMessageView] {
+        view.subviews.flatMap { child in
+            (child as? StatusMessageView).map { [$0] } ?? statusSlots(child)
+        }.filter { !$0.isHiddenOrHasHiddenAncestor }
+    }
+    /// CP-1262/CP-1263 (design § 3A): the notice sits outside the failure component. An observed
+    /// condition's slot holds its message alone, and a fault's slot is the only thing drawn.
+    @Test func observedFailureNoticeSitsOutsideItsConditionSlot() throws {
+        let observed: [GitFailure] =
+            [
+                .gitDirectoryOutside(gitDirectory: "/elsewhere/.git"),
+                .configNamesOutside(key: "core.excludesfile", path: "../空 白"),
+                .configNotLocated(key: "include.path", path: "~/空 白"),
+                .objectStoreNamesOutside(path: "../objects"),
+                .objectStoreNotLocated(path: "relative/objects"),
+                .submoduleElsewhere(name: "空 白", path: "elsewhere"),
+            ]
+            + [
+                GitCondition.probeFolderUnavailable, .probeGitDirectoryUnreadable,
+                .probeGitEntryNotDirectory, .probeGitFileUnreadable, .gitDirectoryMissing,
+                .gitDirectoryUnreadable, .notARepository, .gitmodulesUnreadable,
+            ].map { .condition($0) }
+        let faults: [GitItem] =
+            [
+                GitCondition.probeRepositoryReadFailed, .notARoot, .repositoryReadFailed,
+                .machineConfigNotSwitchedOff,
+            ].map { .failed(.condition($0)) } + [.stopped]
+        let view = GitView(
+            statusGlyphs: glyphs, tooltipRest: TooltipRestDouble().rest,
+            keyWindow: KeyWindowDouble().source)
+        let window = host(view)
+        for failure in observed {
+            view.show(repository(changed: true))
+            view.show(.failed(failure))
+            let slot = try #require(statusSlots(view).only, "\(failure)")
+            let notice = try #require(notices(view).only, "\(failure)")
+            #expect(
+                fields(slot).map(\.stringValue) == [GitSentences.failure(failure)], "\(failure)")
+            #expect(!notice.isDescendant(of: slot), "\(failure)")
+        }
+        for item in faults {
+            view.show(repository(changed: true))
+            view.show(item)
+            let slot = try #require(statusSlots(view).only, "\(item)")
+            #expect(fields(slot).map(\.stringValue) == [GitSentences.fault], "\(item)")
+            #expect(fields(view).map(\.stringValue) == [GitSentences.fault], "\(item)")
+        }
+        withExtendedLifetime(window) {}
+    }
     @Test func acceptedGitAnswerUpdatesBothSurfacesOnce() {
         let root = tree()
         let view = WorkbenchView(

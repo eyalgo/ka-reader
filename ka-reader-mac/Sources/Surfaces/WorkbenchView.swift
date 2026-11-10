@@ -116,7 +116,7 @@ package final class WorkbenchView: NSView {
     /// was raised.
     private var selectionActs = 0
 
-    /// Whether the Git view has been shown, and so whether `readGit` has been raised.
+    /// Whether `readGit` has been raised: once, when the intent is first wired for the opened folder.
     private var hasAskedGit = false
     private let gitReadPolicy: GitReadPolicy
 
