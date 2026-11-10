@@ -174,7 +174,8 @@ package final class RootItemsView: NSScrollView {
             clip.size.height = max(0, clip.height - reserved)
             contentView.frame = clip
         }
-        // A hidden outline can retain a column narrowed before the sidebar was sized.
+        // Keep names readable after a plain-tree listing update; the regression is
+        // GitBetaNoticeTests.plainTreeKeepsReadableNamesAfterAListingUpdate.
         // https://developer.apple.com/documentation/appkit/nstableview/sizelastcolumntofit()
         outlineView.sizeLastColumnToFit()
         rootMessageTop?.constant = rootMessageInset + reserved
