@@ -9,6 +9,8 @@ import XCTest
 /// the letter `GitSentences.letter(for:)` gives.
 @MainActor
 final class WorkbenchTreeMarkerTests: XCTestCase {
+    private let betaNotice =
+        "The Git view and the letters beside changed files show the Git state KA-Reader read when you opened the folder. They do not update while KA-Reader is open."
     private struct SelectRead {
         let path: String
         let answer: SelectFileAnswer
@@ -206,7 +208,8 @@ final class WorkbenchTreeMarkerTests: XCTestCase {
         XCTAssertEqual(
             strings(of: fixture.workbench.gitView),
             [
-                "main", "Staged", "2", "d.txt", "D", "moved.txt", "R", "Changes", "4", "d.txt", "U",
+                betaNotice, "main", "Staged", "2", "d.txt", "D", "moved.txt", "R", "Changes", "4",
+                "d.txt", "U",
                 "inner/", "U", "newdir/x.txt", "U", "sub", "M",
             ], "the Git view still shows d.txt D under Staged and U under Changes")
     }
@@ -230,12 +233,13 @@ final class WorkbenchTreeMarkerTests: XCTestCase {
             if let answer { fixture.log.gitAsks[0](answer) }
             choose(.files, in: fixture)
 
-            XCTAssertEqual(strings(of: fixture.tree), baseline, name)
+            let expected = baseline + (name == "git_directory_outside" ? [betaNotice] : [])
+            XCTAssertEqual(strings(of: fixture.tree), expected, name)
             XCTAssertTrue(try letters(in: fixture.tree).isEmpty, name)
             if name == "git_directory_outside" {
                 try selectInTree("b.txt", in: fixture)
                 XCTAssertEqual(fixture.log.selects.map(\.path), ["b.txt"], name)
-                XCTAssertEqual(strings(of: fixture.tree), baseline, name)
+                XCTAssertEqual(strings(of: fixture.tree), expected, name)
                 fixture.log.selects[0].answer(.text("hello", .plain))
                 XCTAssertEqual(fixture.workbench.readingPanel.pathLine.stringValue, "b.txt", name)
                 XCTAssertEqual(fixture.workbench.readingPanel.contentView.string, "hello", name)

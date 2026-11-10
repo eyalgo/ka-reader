@@ -116,6 +116,7 @@ package final class WorkbenchView: NSView {
 
     /// Whether the Git view has been shown, and so whether `readGit` has been raised.
     private var hasAskedGit = false
+    private let gitReadPolicy: GitReadPolicy
 
     /// The path of the file a Git row opened, while it is the open file; nil once a selection made
     /// in the tree replaces it.
@@ -125,13 +126,17 @@ package final class WorkbenchView: NSView {
     /// beside them, using the supplied empty-state image and the rail's two glyphs.
     package init(
         rootItemsView: RootItemsView, statusGlyphs: StatusGlyphs, railFolderGlyph: NSImage,
-        railGitGlyph: NSImage, keyWindow: KeyWindowSource = .live
+        railGitGlyph: NSImage, keyWindow: KeyWindowSource = .live,
+        gitReadPolicy: GitReadPolicy = .build
     ) {
+        self.gitReadPolicy = gitReadPolicy
         self.rootItemsView = rootItemsView
         rail = RailSwitchView(folderGlyph: railFolderGlyph, gitGlyph: railGitGlyph)
-        gitView = GitView(statusGlyphs: statusGlyphs, keyWindow: keyWindow)
+        gitView = GitView(
+            statusGlyphs: statusGlyphs, keyWindow: keyWindow, gitReadPolicy: gitReadPolicy)
         readingPanel = ReadingPanelView(statusGlyphs: statusGlyphs)
         super.init(frame: .zero)
+        rootItemsView.showGit(.pending, policy: gitReadPolicy)
         rootItemsView.fileSelected = { [weak self] entry in self?.selectFromTree(entry) }
         gitView.rowActivated = { [weak self] path in self?.selectFromGit(path) }
         rail.entryChosen = { [weak self] entry in self?.show(entry) }
@@ -210,7 +215,7 @@ package final class WorkbenchView: NSView {
             latch.fired = true
             self?.gitView.show(item)
             // The tree's markers come from this one item and from nothing else (CP-581).
-            self?.rootItemsView.showMarkers(TreeMarkers(item))
+            self?.rootItemsView.showGit(item, policy: self?.gitReadPolicy ?? .build)
         }
     }
 

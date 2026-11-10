@@ -57,6 +57,8 @@ package final class RootItemsView: NSScrollView {
     /// expanded, as the reader left them.
     private var collapsingByReader: String?
     private var markers = TreeMarkers.none
+    private var gitNotice: GitReadNotice?
+    private var rootMessageTop: NSLayoutConstraint?
     private let rootLine: NSTextField
     private let rootMessage: StatusMessageView
     private let tooltipRest: TooltipRest
@@ -140,6 +142,42 @@ package final class RootItemsView: NSScrollView {
             forRowIndexes: IndexSet(0..<outlineView.numberOfRows),
             columnIndexes: IndexSet(integer: 0))
         rowHover.refresh()
+    }
+
+    /// Both the notice and markers describe the same accepted observation.
+    package func showGit(_ item: GitItem, policy: GitReadPolicy = .build) {
+        if policy.showsNotice(for: item) {
+            if gitNotice == nil {
+                let notice = GitReadNotice()
+                addFloatingSubview(notice, for: .vertical)
+                gitNotice = notice
+            }
+        } else {
+            gitNotice?.removeFromSuperview()
+            gitNotice = nil
+        }
+        tile()
+        showMarkers(TreeMarkers(item))
+    }
+
+    // AppKit permits subclasses to lay out additional components in tile().
+    // https://developer.apple.com/documentation/appkit/nsscrollview/tile()
+    override package func tile() {
+        super.tile()
+        let reserved = gitNotice?.height(for: bounds.width) ?? 0
+        if let notice = gitNotice {
+            notice.frame = NSRect(
+                x: 0, y: isFlipped ? 0 : bounds.height - reserved,
+                width: bounds.width, height: reserved)
+            var clip = contentView.frame
+            if isFlipped { clip.origin.y += reserved }
+            clip.size.height = max(0, clip.height - reserved)
+            contentView.frame = clip
+        }
+        // A hidden outline can retain a column narrowed before the sidebar was sized.
+        // https://developer.apple.com/documentation/appkit/nstableview/sizelastcolumntofit()
+        outlineView.sizeLastColumnToFit()
+        rootMessageTop?.constant = rootMessageInset + reserved
     }
 
     /// The `path` of every row that draws the selection fill, top to bottom.
@@ -234,8 +272,11 @@ package final class RootItemsView: NSScrollView {
         // line stayed 4 points wide at the top-left). Pinned to the top-left, never the centre
         // (DESIGN RN-14; the-window-holds-its-layout CP-257).
         addFloatingSubview(rootMessage, for: .vertical)
+        let messageTop = rootMessage.topAnchor.constraint(
+            equalTo: topAnchor, constant: rootMessageInset)
+        rootMessageTop = messageTop
         NSLayoutConstraint.activate([
-            rootMessage.topAnchor.constraint(equalTo: topAnchor, constant: rootMessageInset),
+            messageTop,
             rootMessage.leadingAnchor.constraint(
                 equalTo: leadingAnchor, constant: rootMessageInset),
             rootMessage.trailingAnchor.constraint(

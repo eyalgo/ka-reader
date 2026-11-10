@@ -9,6 +9,8 @@ import XCTest
 /// read from `GitSentences`.
 @MainActor
 final class WorkbenchGitTests: XCTestCase {
+    private let betaNotice =
+        "The Git view and the letters beside changed files show the Git state KA-Reader read when you opened the folder. They do not update while KA-Reader is open."
     private struct SelectRead {
         let path: String
         let answer: SelectFileAnswer
@@ -236,13 +238,15 @@ final class WorkbenchGitTests: XCTestCase {
 
         fixture.log.gitAsks[0].answer(repository(changed: [gitEntry("b.txt")]))
         XCTAssertEqual(
-            strings(of: fixture.workbench.gitView), ["main", "Changes", "1", "b.txt", "M"])
+            strings(of: fixture.workbench.gitView),
+            [betaNotice, "main", "Changes", "1", "b.txt", "M"])
 
         choose(.files, in: fixture)
         choose(.git, in: fixture)
         XCTAssertEqual(fixture.log.gitAsks.count, 1, "a second switch to Git asks nothing")
         XCTAssertEqual(
-            strings(of: fixture.workbench.gitView), ["main", "Changes", "1", "b.txt", "M"],
+            strings(of: fixture.workbench.gitView),
+            [betaNotice, "main", "Changes", "1", "b.txt", "M"],
             "and draws the kept answer")
     }
 
@@ -471,7 +475,9 @@ final class WorkbenchGitTests: XCTestCase {
             choose(.git, in: fixture)
             fixture.log.gitAsks[0].answer(failure)
 
-            XCTAssertEqual(strings(of: fixture.workbench.gitView).count, 1, "\(failure)")
+            XCTAssertEqual(
+                strings(of: fixture.workbench.gitView).count,
+                GitReadPolicy.atOpen.showsNotice(for: failure) ? 2 : 1, "\(failure)")
             XCTAssertTrue(gitRows(fixture.workbench).isEmpty, "\(failure)")
             XCTAssertEqual(strings(of: fixture.workbench.rail), ["Files", "Git"], "\(failure)")
 
@@ -503,7 +509,7 @@ final class WorkbenchGitTests: XCTestCase {
         // it on its row.
         XCTAssertEqual(
             strings(of: fixture.workbench.rootItemsView),
-            ["b.txt", "M", "a.txt", "A", "A.txt", "D", "src"],
+            ["b.txt", "M", "a.txt", "A", "A.txt", "D", "src", betaNotice],
             "a.txt A, b.txt M, A.txt D, and nothing on src")
     }
 

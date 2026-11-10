@@ -521,7 +521,7 @@ final class GitViewHoverTests: XCTestCase {
         let onRow = try point(ofRow: "c00.txt", in: view)
         try PointerDelivery.move(to: try letterCentre(ofRow: "c00.txt", in: view), in: view)
         XCTAssertEqual(view.hoverPaths(), ["c00.txt"])
-        try scroll(view, to: 200)
+        try scroll(view, to: 400)
         let above = NSPoint(x: onRow.x, y: view.bounds.maxY + 12)
         XCTAssertNotNil(rowPath(at: above, in: view), "a row's frame lies above the view")
         let beside = NSPoint(x: view.bounds.maxX + 30, y: onRow.y)
