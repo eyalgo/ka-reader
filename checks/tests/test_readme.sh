@@ -19,8 +19,9 @@ WORDS=('Read-only first. Read-only second.' 'Network first. Network second.' 'Be
 LABELS=("Read-only — the product's defining promise" 'The network' 'Before 1.0.0' 'The support posture' 'Archiving' 'The accessibility posture, on the README below its first screen')
 fail() { printf '  %s\n' "$*" >&2; return 1; }
 equal() { [ "$1" = "$2" ] || fail "expected [$2], got [$1]"; }
-contains() { case "$1" in *"$2"*) return 0;; *) fail "missing [$2] in [$1]";; esac; }
+contains() { case "$1" in *"$2"*) return 0;; *) fail "missing [$2] in [${1:0:400}]";; esac; }
 fixture() {
+  local i tool
   [ -x "$CHECK" ] || { fail 'the executable checks/readme.sh is missing'; return 1; }
   scene="$(mktemp -d "$WORK/scene.XXXXXX")"
   tree="$scene/tree"; bin="$scene/bin"; scratch="$scene/scratch"
@@ -57,7 +58,7 @@ run_check() {
   out="$(cat "$scene/out")"; err="$(cat "$scene/err")"
   [ ! -f "$bin/audit" ] || fail "a forbidden command ran: $(cat "$bin/audit")"
 }
-pass() { run_check; equal "$status" 0 && equal "$out" '' && equal "$err" ''; }
+pass() { run_check; [ "$status" -eq 0 ] || { fail "$err"; return 1; }; equal "$status" 0 && equal "$out" '' && equal "$err" ''; }
 refuse() { run_check; equal "$status" 1 && equal "$out" '' && contains "$err" "$1"; }
 missing() { printf 'readme.sh: %s: missing standing sentence: %s' "$1" "$2"; }
 remove_word() {
@@ -75,7 +76,13 @@ snapshot() {
   (cd "$1" && find . -type f -exec shasum -a 256 {} \; | LC_ALL=C sort; find . -type l -exec readlink {} \; | LC_ALL=C sort)
 }
 
-test_complete_wordings_and_no_images_pass() { fixture && pass; }
+test_complete_wordings_and_no_images_pass() {
+  fixture || return 1
+  pass || return 1
+  awk '{ printf "%s\r\n", $0 }' "$tree/docs/CONTENT.md" > "$scene/crlf"
+  mv "$scene/crlf" "$tree/docs/CONTENT.md"
+  pass
+}
 test_emphasis_around_a_whole_wording_passes() {
   fixture || return 1
   printf '**%s**\n' "${WORDS[@]}" > "$tree/README.md"
@@ -173,8 +180,14 @@ test_unavailable_document_or_canonical_set_is_a_refusal() {
         empty) sed "${line}s/\*\*\".*\"\*\*/**\"\"**/" "$tree/docs/CONTENT.md" > "$scene/edited"; mv "$scene/edited" "$tree/docs/CONTENT.md";;
         malformed) sed "${line}s/\"\*\*/BROKEN/" "$tree/docs/CONTENT.md" > "$scene/edited"; mv "$scene/edited" "$tree/docs/CONTENT.md";;
       esac
-      refuse 'readme.sh: docs/CONTENT.md:' || return 1
-      contains "$err" "${LABELS[$row]}" || return 1
+      case "$kind" in
+        missing) expected="readme.sh: docs/CONTENT.md: required standing-sentence row is missing: ${LABELS[$row]}. Restore this row, then run checks/readme.sh from the product root.";;
+        duplicate) expected="readme.sh: docs/CONTENT.md: required standing-sentence row occurs more than once: ${LABELS[$row]}. Keep the canonical row once, then run checks/readme.sh from the product root.";;
+        empty) expected="readme.sh: docs/CONTENT.md: required standing-sentence row has no wording: ${LABELS[$row]}. Restore its complete wording, then run checks/readme.sh from the product root.";;
+        malformed) expected="readme.sh: docs/CONTENT.md: could not read the complete wording of required standing-sentence row: ${LABELS[$row]}. Check this row's quoted wording and table markup, then run checks/readme.sh from the product root.";;
+      esac
+      run_check || return 1
+      equal "$status" 1 && equal "$out" '' && equal "$err" "$expected" || return 1
     done
   done
 }
@@ -183,7 +196,12 @@ test_failed_inspection_cannot_become_a_pass() {
   for tool in grep awk git; do
     fixture || return 1
     wrap_failure "$tool" 'printf "partial matching bytes\n"; exit 17'
-    refuse 'readme.sh:' || return 1
+    case "$tool" in
+      grep) expected='README.md: could not complete the standing-sentence comparison';;
+      awk) expected='docs/CONTENT.md: could not complete the standing-sentence inspection';;
+      git) expected="could not read Git's tracked file list";;
+    esac
+    refuse "$expected" || return 1
   done
   fixture || return 1
   wrap_failure grep "\"$(command -v grep)\" \"\$@\"; exit 17"
@@ -204,13 +222,15 @@ test_present_tracked_local_images_pass_in_every_form() {
  src="images/shell.png?size=2#top"
  srcset="images/shell.png 1x, images/space%20name.png 2x">
 <picture><source srcset="images/shell.png 1x, images/caf%C3%A9.png 2x"><img src="images/a%23.png"></picture>
-<img src="images/a&amp;b.png">'
+<img src="images/a&amp;b.png">
+<svg><image href="images/shell.png" xlink:href="images/shell.png"></svg>
+<input type="image" src="images/shell.png">'
   pass
 }
 test_every_remote_primary_and_alternate_is_named() {
   local address form
   for address in http://images.example/a.png https://images.example/a.png //images.example/a.png HtTpS://images.example/a.png '%68ttps%3A%2F%2Fimages.example/a.png' 'https&#58;//images.example/a.png'; do
-    for form in inline full collapsed shortcut img srcset picture; do
+    for form in inline full collapsed shortcut img srcset picture svg input; do
       fixture || return 1
       case "$form" in
         inline) image "![a]($address)";;
@@ -221,6 +241,8 @@ test_every_remote_primary_and_alternate_is_named() {
         shortcut) image "![r]
 [r]: $address";;
         img) image "<IMG SRC='$address'>";;
+        svg) image "<svg><image href='$address' xlink:href='images/shell.png'></svg>";;
+        input) image "<input type='image' src='$address'>";;
         srcset) image "<img src='images/shell.png' srcset='images/shell.png 1x, $address 2x'>";;
         picture) image "<picture><source srcset='$address 1x'><img src='images/shell.png'></picture>";;
       esac
@@ -251,6 +273,9 @@ test_nonrepository_image_sources_are_refused() {
   ln -s shell.png "$tree/images/inside.png"
   printf 'images/inside.png\n' >> "$bin/tracked"
   image '![inside](images/inside.png)'; pass || return 1
+  sed '/images\/shell.png/d' "$bin/tracked" > "$scene/edited"; mv "$scene/edited" "$bin/tracked"
+  refuse 'images/inside.png' || return 1
+  printf 'images/shell.png\n' >> "$bin/tracked"
   sed '/images\/inside.png/d' "$bin/tracked" > "$scene/edited"; mv "$scene/edited" "$bin/tracked"
   refuse 'images/inside.png' || return 1
   fixture || return 1
@@ -258,6 +283,10 @@ test_nonrepository_image_sources_are_refused() {
   printf 'images/inside.png\n' >> "$bin/tracked"
   image '![inside](images/inside.png)'
   wrap_failure readlink 'exit 17'
+  refuse 'could not inspect image source' || return 1
+  fixture || return 1
+  image '![local](images/shell.png)'
+  wrap_failure awk 'case "$1" in -F/) exit 17;; esac'
   refuse 'could not inspect image source'
 }
 test_nondisplaying_examples_do_not_hide_later_images() {
@@ -274,6 +303,84 @@ test_nondisplaying_examples_do_not_hide_later_images() {
     refuse 'https://after.example/image.png' || return 1
     case "$err" in *'https://images.example/a'*) fail 'an excluded example was inspected'; return 1;; esac
   done
+}
+test_code_and_comment_boundaries_are_independent() {
+  local example
+  for example in '```html
+<!-- a comment example without its closing token
+```' '    <!-- an indented comment example' '`<!-- an inline comment example`' '<!--
+```
+-->'; do
+    fixture || return 1
+    image "$example"
+    image '![after](https://boundary.example/image.png)'
+    refuse 'https://boundary.example/image.png' || return 1
+  done
+  fixture || return 1
+  image '<img
+    src="images/shell.png"
+    srcset="https://indented.example/alternate.png 2x">'
+  refuse 'https://indented.example/alternate.png'
+}
+test_image_scan_failure_is_not_empty_success() {
+  fixture || return 1
+  wrap_failure awk 'case "$*" in *filtered_prose*) printf "partial scan\n"; exit 17;; esac'
+  refuse 'README.md: could not complete the image inspection'
+}
+test_empty_image_sources_cannot_disappear() {
+  local syntax
+  for syntax in '![]()' '<img src="">' '<img alt="no source">' '<img srcset="   ">'; do
+    fixture || return 1
+    image "$syntax"
+    refuse 'image source does not name a present tracked file' || return 1
+  done
+}
+test_entity_decoding_and_nested_destinations() {
+  fixture || return 1
+  printf image > "$tree/images/©.png"
+  printf image > "$tree/images/a(b).png"
+  printf 'images/©.png\nimages/a(b).png\n' >> "$bin/tracked"
+  image '![nested [alt]](images/a(b).png "title")
+![case][  THE  label ]
+[the label]: images/a(b).png
+<img src="images/&copy;.png">
+<img src="images/&#169;.png">'
+  pass || return 1
+  image '<img src="https&colon;&sol;&sol;entities.example/image.png">'
+  refuse 'https&colon;&sol;&sol;entities.example/image.png'
+}
+test_legacy_html_references_are_decoded_only_in_attributes() {
+  fixture || return 1
+  printf image > "$tree/images/©.png"
+  printf 'images/©.png\n' >> "$bin/tracked"
+  image '<img src="images/&copy.png">'
+  pass || return 1
+  image '![markdown](images/&copy.png)'
+  refuse 'images/&copy.png' || return 1
+  fixture || return 1
+  printf image > "$tree/images/&copycat.png"
+  printf 'images/&copycat.png\n' >> "$bin/tracked"
+  image '<img src="images/&copycat.png">'
+  pass
+}
+test_encoded_alternate_separators_do_not_hide_sources() {
+  fixture || return 1
+  image '<img src="images/shell.png" srcset="images/shell.png 1x&#44;&Tab;https&#58;//encoded.example/image.png 2x">'
+  refuse 'https&#58;//encoded.example/image.png'
+}
+test_reference_definitions_are_not_image_prose() {
+  fixture || return 1
+  image '![shown][local]
+[local]: images/shell.png "![title example](https://title.example/image.png)"'
+  pass
+}
+test_reference_destinations_can_follow_the_label_line() {
+  fixture || return 1
+  image '![shown][local]
+[local]:
+  <images/space name.png>
+  "a title"'
+  pass
 }
 test_usage_and_all_outcomes_leave_inputs_unchanged() {
   local outcome before after
@@ -312,8 +419,9 @@ test_readme_commands_have_no_write_or_environment_escape() {
   source_text="$(sed '/^[[:space:]]*#/d' "$CHECK")"
   forbidden="$(printf '%s\n' "$source_text" | grep -nE '(^|[[:space:];|])(curl|wget|ssh|scp|nc|touch|mktemp|mkdir|rm|mv|cp|tee|install|python3?|perl|ruby|eval)([[:space:];|]|$)|<<|system[[:space:]]*\(|ENVIRON|\$\{[A-Z_][A-Z_0-9]*[:-]' || true)"
   equal "$forbidden" '' || return 1
-  redirects="$(printf '%s\n' "$source_text" | sed 's@> */dev/null@@g' | grep -nE '>[[:space:]]*["$./]|>>' || true)"
-  equal "$redirects" ''
+  redirects="$(printf '%s\n' "$source_text" | sed 's@> */dev/null@@g' | grep -nE '>([[:space:]]+"?[$/.A-Za-z_]|"[$/.A-Za-z_]|[$/.])|>>' || true)"
+  equal "$redirects" '' || return 1
+  contains "$source_text" 'repository_file "$decoded" "$root" "$tracked"'
 }
 
 # The baseline is data, not a historical Git read. It is filled from the reviewed pre-change calls.
@@ -377,7 +485,6 @@ gate_shape() {
     $0 == "run_step '\''Strings check step suite'\'' '\''checks/tests/test_strings_step.sh'\''" { a=NR }
     $0 == direct { b=NR }
     $0 == suite { c=NR }
-    $0 == "run_step '\''Release workflow shape'\'' '\''.github/workflows/release.yml'\''" { unused=NR }
     /run_step '\''Release workflow shape'\'' / { d=NR }
     END { exit !(a && b==a+1 && c==b+1 && d==c+1) }
   ' || return 1
@@ -462,7 +569,7 @@ test_existing_gate_calls_keep_names_commands_and_order() {
   calls="$(grep '^run_step ' "$GATE" | grep -Fvx "$DIRECT" | grep -Fvx "$SUITE")"
   equal "$calls" "$BASE_CALLS"
 }
-CASES='test_complete_wordings_and_no_images_pass test_emphasis_around_a_whole_wording_passes test_canonical_wording_is_read_at_runtime test_each_missing_or_paraphrased_wording_is_named_whole test_partial_or_line_broken_wording_fails test_findings_follow_table_order_then_file_order test_unavailable_document_or_canonical_set_is_a_refusal test_failed_inspection_cannot_become_a_pass test_present_tracked_local_images_pass_in_every_form test_every_remote_primary_and_alternate_is_named test_nonrepository_image_sources_are_refused test_nondisplaying_examples_do_not_hide_later_images test_usage_and_all_outcomes_leave_inputs_unchanged test_wrong_arguments_read_nothing test_signals_never_end_with_success test_readme_commands_have_no_write_or_environment_escape test_gate_runs_real_check_and_entire_suite_at_defaults test_each_readme_step_is_fatal_and_stops_later_steps test_gate_pair_is_unconditional_unique_and_in_order test_existing_gate_calls_keep_names_commands_and_order'
+CASES='test_reference_definitions_are_not_image_prose test_reference_destinations_can_follow_the_label_line test_encoded_alternate_separators_do_not_hide_sources test_legacy_html_references_are_decoded_only_in_attributes test_image_scan_failure_is_not_empty_success test_empty_image_sources_cannot_disappear test_entity_decoding_and_nested_destinations test_code_and_comment_boundaries_are_independent test_complete_wordings_and_no_images_pass test_emphasis_around_a_whole_wording_passes test_canonical_wording_is_read_at_runtime test_each_missing_or_paraphrased_wording_is_named_whole test_partial_or_line_broken_wording_fails test_findings_follow_table_order_then_file_order test_unavailable_document_or_canonical_set_is_a_refusal test_failed_inspection_cannot_become_a_pass test_present_tracked_local_images_pass_in_every_form test_every_remote_primary_and_alternate_is_named test_nonrepository_image_sources_are_refused test_nondisplaying_examples_do_not_hide_later_images test_usage_and_all_outcomes_leave_inputs_unchanged test_wrong_arguments_read_nothing test_signals_never_end_with_success test_readme_commands_have_no_write_or_environment_escape test_gate_runs_real_check_and_entire_suite_at_defaults test_each_readme_step_is_fatal_and_stops_later_steps test_gate_pair_is_unconditional_unique_and_in_order test_existing_gate_calls_keep_names_commands_and_order'
 selected="${KA_READER_TEST_ONLY:-}"
 if [ -n "$selected" ]; then case " $CASES " in *" $selected "*) ;; *) fail "unknown case: $selected"; exit 1;; esac; fi
 failed=0; total=0
