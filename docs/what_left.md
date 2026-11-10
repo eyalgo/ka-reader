@@ -23,12 +23,6 @@ Each entry names one thing KA-Reader's Agari or PRD wants that its code did not 
 - **Wanted:** KA-Reader is at version 1.0.0 or later, with the semantic-versioning promise in force.
   **Source:** Agari § 上がり Agari — ka-reader's "done", **It stands on its own.**
   **Missing at:** `4a6ee6f10`
-- **Wanted:** In the beta, the Git view and the tree's changed-file markers say plainly that they show the Git state read when the folder was opened.
-  **Source:** PRD § Scope (In), **The first public release — a beta**
-  **Missing at:** `93ebbc205`
-- **Wanted:** In the beta, the README's known gaps say plainly that the Git view and the tree's changed-file markers show the Git state read when the folder was opened.
-  **Source:** PRD § Scope (In), **The first public release — a beta**
-  **Missing at:** `93ebbc205`
 - **Wanted:** The person chooses between the dark and light themes, and KA-Reader keeps that choice.
   **Source:** PRD § Scope (In), **The first public release — a beta**
   **Missing at:** `117760576`
