@@ -44,6 +44,7 @@ Each entry records a change to what a user of a fresh clone installs, runs, type
 
 ### Changed
 
+- **ka-reader** — The README opens with what KA-Reader does, the disk-image install route, choosing a folder in the Open panel and what the app will and will not touch. It states the support terms and other standing promises below that opening. `checks/readme.sh` checks the six required README wordings, the support wording in `SECURITY.md` and repository-only image sources; `checks/gate.sh` runs it and its suite as fatal steps. (`d274f373c`, `1ee6ba1b6`)
 - **ka-reader** — The launch steps refuse to run off a virtual machine. (`13e8d42e9`)
 - **ka-reader** — The bridge's C-string calls build under both Swift 6.3 and 6.4. (`24be58134`)
 - **ka-reader** — A Markdown file you open, one named `.md` or `.markdown`, no longer shows its text. The reading panel says *KA-Reader stopped while reading this file and can't tell why.* in its place. When an open Markdown file changes on disk, the window shows neither that change nor the changes to the file tree that arrive with it. (`89275360e`, `681135152`)
