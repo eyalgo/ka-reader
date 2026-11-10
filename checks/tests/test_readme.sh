@@ -304,6 +304,57 @@ test_nondisplaying_examples_do_not_hide_later_images() {
     case "$err" in *'https://images.example/a'*) fail 'an excluded example was inspected'; return 1;; esac
   done
 }
+test_indented_paragraph_images_are_still_prose() {
+  local prefix source
+  for prefix in '    ' "$TAB"; do
+    for source in '![shown](images/shell.png)' '![remote](https://paragraph.example/image.png)' '<img src="https://paragraph.example/image.png">'; do
+      fixture || return 1
+      image "An ordinary paragraph continues here.
+${prefix}${source}"
+      case "$source" in
+        *images/shell.png*) pass || return 1;;
+        *) refuse 'https://paragraph.example/image.png' || return 1;;
+      esac
+    done
+  done
+}
+test_list_indentation_does_not_hide_images() {
+  local opening indentation
+  for opening in '- A list item' '1. A list item' '- Outer item
+  - Inner item'; do
+    case "$opening" in *'Inner item'*) indentation='      ';; *) indentation='    ';; esac
+    fixture || return 1
+    image "$opening
+
+${indentation}![local](images/shell.png)"
+    pass || return 1
+    image "${indentation}![remote](https://list.example/image.png)"
+    refuse 'https://list.example/image.png' || return 1
+  done
+}
+test_indented_code_after_blocks_stays_excluded() {
+  local example
+  for example in '# A heading
+    ![code](https://code.example/image.png)' 'A paragraph
+
+    ![code](https://code.example/image.png)' '- An item
+
+      ![code](https://code.example/image.png)' '1. An item
+
+       ![code](https://code.example/image.png)' '---
+    ![code](https://code.example/image.png)' 'A heading
+=======
+    ![code](https://code.example/image.png)' '[reference]: images/shell.png
+    ![code](https://code.example/image.png)' '<!-- a comment -->
+    ![code](https://code.example/image.png)'; do
+    fixture || return 1
+    image "$example"
+    pass || return 1
+    image '![real](https://after.example/image.png)'
+    refuse 'https://after.example/image.png' || return 1
+    case "$err" in *'https://code.example/image.png'*) return 1;; esac
+  done
+}
 test_code_and_comment_boundaries_are_independent() {
   local example
   for example in '```html
@@ -571,6 +622,7 @@ test_existing_gate_calls_keep_names_commands_and_order() {
 }
 CASES='test_reference_definitions_are_not_image_prose test_reference_destinations_can_follow_the_label_line test_encoded_alternate_separators_do_not_hide_sources test_legacy_html_references_are_decoded_only_in_attributes test_image_scan_failure_is_not_empty_success test_empty_image_sources_cannot_disappear test_entity_decoding_and_nested_destinations test_code_and_comment_boundaries_are_independent test_complete_wordings_and_no_images_pass test_emphasis_around_a_whole_wording_passes test_canonical_wording_is_read_at_runtime test_each_missing_or_paraphrased_wording_is_named_whole test_partial_or_line_broken_wording_fails test_findings_follow_table_order_then_file_order test_unavailable_document_or_canonical_set_is_a_refusal test_failed_inspection_cannot_become_a_pass test_present_tracked_local_images_pass_in_every_form test_every_remote_primary_and_alternate_is_named test_nonrepository_image_sources_are_refused test_nondisplaying_examples_do_not_hide_later_images test_usage_and_all_outcomes_leave_inputs_unchanged test_wrong_arguments_read_nothing test_signals_never_end_with_success test_readme_commands_have_no_write_or_environment_escape test_gate_runs_real_check_and_entire_suite_at_defaults test_each_readme_step_is_fatal_and_stops_later_steps test_gate_pair_is_unconditional_unique_and_in_order test_existing_gate_calls_keep_names_commands_and_order'
 selected="${KA_READER_TEST_ONLY:-}"
+CASES="$CASES test_indented_paragraph_images_are_still_prose test_list_indentation_does_not_hide_images test_indented_code_after_blocks_stays_excluded"
 if [ -n "$selected" ]; then case " $CASES " in *" $selected "*) ;; *) fail "unknown case: $selected"; exit 1;; esac; fi
 failed=0; total=0
 for case_name in $CASES; do
