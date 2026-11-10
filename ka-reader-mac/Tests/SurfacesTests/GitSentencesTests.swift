@@ -123,7 +123,7 @@ final class GitSentencesTests: XCTestCase {
 
         XCTAssertEqual(
             GitSentences.failure(.gitDirectoryOutside(gitDirectory: path)),
-            "When you opened the folder, this repository's Git directory was at {path}, outside the folder you opened, so KA-Reader didn't read its Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
+            "When you opened the folder, this repository's Git directory was at /elsewhere/.git/worktrees/wt, outside the folder you opened, so KA-Reader didn't read its Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
         )
     }
 

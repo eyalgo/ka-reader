@@ -18,19 +18,19 @@ package nonisolated enum GitSentences {
     /// (`docs/CONTENT.md:L299-L300`).
     package static let clean = "Nothing has changed in this repository."
 
-    /// The unexplained fault (`docs/CONTENT.md:L288-L289`), placed character for character.
+    /// The complete beta statement from `docs/CONTENT.md` § Terminology, Standing sentences.
+    package static let readAtOpen =
+        "The Git view and the letters beside changed files show the Git state KA-Reader read when you opened the folder. They do not update while KA-Reader is open."
+
+    /// The beta fault from `docs/CONTENT.md` § Message patterns, Error — an unexplained fault.
     package static let fault =
-        "KA-Reader stopped while reading this repository's Git status and can't tell why. "
-        + "The file tree is unaffected; the Git view shows the status again if KA-Reader can read it."
+        "KA-Reader stopped while reading this repository's Git status and can't tell why. The file tree is unaffected. Start KA-Reader again to read the status again."
 
     private static let unreadableGitDirectory =
-        "KA-Reader can't read the Git directory in the folder you opened, so it can't show the "
-        + "folder's Git status. The file tree and the reading panel are unaffected."
+        "When you opened the folder, KA-Reader couldn't read its Git directory, so it couldn't show the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
 
     private static let gitmodulesUnreadable =
-        "KA-Reader couldn't read how a repository in the folder you opened names and places its "
-        + "submodules, so it doesn't read the folder's Git status. "
-        + "The file tree and the reading panel are unaffected."
+        "When you opened the folder, KA-Reader couldn't read how a repository in it names and places its submodules, so it didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
 
     /// The short status for a repository state, or nil for `normal`, which the lists decide.
     package static func statusSentence(for state: RepositoryState) -> String? {
@@ -52,34 +52,22 @@ package nonisolated enum GitSentences {
         switch failure {
         case .gitDirectoryOutside(let gitDirectory):
             return
-                "This repository's Git directory is at \(gitDirectory), outside the folder you "
-                + "opened, so KA-Reader doesn't read its Git status. "
-                + "The file tree and the reading panel are unaffected."
+                "When you opened the folder, this repository's Git directory was at \(gitDirectory), outside the folder you opened, so KA-Reader didn't read its Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
         case .configNamesOutside(let key, let path):
             return
-                "KA-Reader found \(key) set to \(path), outside the folder you opened, so it doesn't "
-                + "read the folder's Git status. "
-                + "The file tree and the reading panel are unaffected."
+                "When you opened the folder, KA-Reader found \(key) set to \(path), outside the folder you opened, so it didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
         case .configNotLocated(let key, let path):
             return
-                "KA-Reader found \(key) set to \(path) and doesn't work out where that path leads, "
-                + "so it doesn't read the folder's Git status. "
-                + "The file tree and the reading panel are unaffected."
+                "When you opened the folder, KA-Reader found \(key) set to \(path) and didn't work out where that path leads, so it didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
         case .objectStoreNamesOutside(let path):
             return
-                "KA-Reader found a Git object store that names \(path), outside the folder you "
-                + "opened, so KA-Reader doesn't read the folder's Git status. "
-                + "The file tree and the reading panel are unaffected."
+                "When you opened the folder, KA-Reader found a Git object store that names \(path), outside the folder you opened, so it didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
         case .objectStoreNotLocated(let path):
             return
-                "KA-Reader found a Git object store that names \(path). "
-                + "KA-Reader doesn't work out where that path leads, so it doesn't read the "
-                + "folder's Git status. The file tree and the reading panel are unaffected."
+                "When you opened the folder, KA-Reader found a Git object store that names \(path) but didn't work out where that path leads, so it didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
         case .submoduleElsewhere(let name, let path):
             return
-                "KA-Reader found that a .gitmodules gives the submodule at \(name) the path \(path), "
-                + "which leads somewhere else, so it doesn't read the folder's Git status. "
-                + "The file tree and the reading panel are unaffected."
+                "When you opened the folder, KA-Reader found that a .gitmodules gives the submodule at \(name) the path \(path), which leads somewhere else, so it didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
         case .condition(let condition):
             return sentence(for: condition)
         }
@@ -89,22 +77,18 @@ package nonisolated enum GitSentences {
         switch condition {
         case .probeFolderUnavailable:
             return
-                "KA-Reader couldn't look in the folder you opened to find out whether it's a repository."
+                "When you opened the folder, KA-Reader couldn't look in it to find out whether it's a repository. Start KA-Reader again to read it again."
         case .probeGitDirectoryUnreadable, .probeGitFileUnreadable, .gitDirectoryUnreadable:
             return unreadableGitDirectory
         case .probeGitEntryNotDirectory:
             return
-                "In the folder you opened, the Git directory is a link, or something that is "
-                + "neither a file nor a folder, so KA-Reader doesn't read the folder's Git status. "
-                + "The file tree and the reading panel are unaffected."
+                "When you opened the folder, the Git directory was a link, or something that was neither a file nor a folder, so KA-Reader didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
         case .gitDirectoryMissing:
             return
-                "There's nothing where this repository's Git directory points, so KA-Reader can't "
-                + "read its Git status. The file tree and the reading panel are unaffected."
+                "When you opened the folder, there was nothing where this repository's Git directory pointed, so KA-Reader couldn't read its Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
         case .notARepository:
             return
-                "KA-Reader looked in the Git directory in the folder you opened and found no "
-                + "repository there. The file tree and the reading panel are unaffected."
+                "When you opened the folder, KA-Reader looked in its Git directory and found no repository there. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
         case .gitmodulesUnreadable:
             return gitmodulesUnreadable
         case .probeRepositoryReadFailed, .notARoot, .repositoryReadFailed,
