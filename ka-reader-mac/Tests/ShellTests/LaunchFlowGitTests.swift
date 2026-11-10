@@ -385,9 +385,25 @@ struct GitBetaLaunchTests {
         reader.release(2)
         #expect(view.readingPanel.contentView.string == "before")
         let receiver = try #require(bridge.receivers.last ?? nil)
-        for (index, event) in [
-            "edit", "staging", "commit", "root disappeared", "condition cleared",
-        ].enumerated() {
+        let reports =
+            plain
+            ? ["repository created", "edit", "staging", "commit", "root disappeared"]
+            : ["edit", "staging", "commit", "root disappeared", "condition cleared"]
+        for (index, event) in reports.enumerated() {
+            switch event {
+            case "staging":
+                bridge.gitAnswer = Data(
+                    #"{"state":"observed","kind":"root","branch":{"kind":"branch","name":"main"},"repository_state":"normal","staged":[{"path":"a.txt","category":"modified"}],"changed":[]}"#
+                        .utf8)
+            case "commit", "condition cleared":
+                bridge.gitAnswer = Data(
+                    #"{"state":"observed","kind":"root","branch":{"kind":"branch","name":"main"},"repository_state":"normal","staged":[],"changed":[]}"#
+                        .utf8)
+            case "root disappeared":
+                bridge.gitAnswer = Data(#"{"state":"observed","kind":"plain"}"#.utf8)
+            default:
+                bridge.gitAnswer = repository
+            }
             let handle = UInt(900 + index)
             let payload = Data(
                 #"{"listings":[{"path":"","answer":{"state":"observed","entries":[{"name":"a.txt","path":"a.txt","kind":"file","state":"observed","language":"plain"},{"name":"new.txt","path":"new.txt","kind":"file","state":"observed","language":"plain"}]}}],"open_file":{"revision":\#(index + 1),"path":"a.txt","position":"line=0;x=0","answer":{"state":"text","content":"\#(event)","language":"plain"}}}"#
