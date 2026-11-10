@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.15.0 — wording suites ignore inherited case selection
 # Version: 1.14.0 — the beta catalogue command and its entire suite join the document checks
 # Version: 1.13.0 — the README wording/image check and its entire suite join the document checks
 # Version: 1.12.0 — the check that the notices file names every dependency, and its suite, join the
@@ -44,7 +45,12 @@ set -euo pipefail
 run_step() {
   local name="$1"
   local command="$2"
-  if ! bash -c "$command"; then
+  if ! (
+    case "$name" in
+      'README check suite'|'Git beta catalogue check suite') unset KA_READER_TEST_ONLY;;
+    esac
+    bash -c "$command"
+  ); then
     echo "gate.sh: step failed: $name" >&2
     exit 1
   fi

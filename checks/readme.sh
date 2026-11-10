@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.1.0 — conditional beta block in displayed README prose
 # Version: 1.0.1 — prose/code boundaries follow paragraphs and list containers
 # Version: 1.0.0 — local README wording and image-source inspection
 #
@@ -14,9 +15,15 @@
 set -euo pipefail
 
 reported=0
+beta_active=0
+beta_input=README.md
 trap 'status=$?; if [ "$status" -ne 0 ] && [ "$reported" -eq 0 ]; then printf "%s\n" "readme.sh: could not complete the local check. Check that the required documents and Git checkout are readable and the local text tools run, then run checks/readme.sh from the product root." >&2; exit 1; fi' EXIT
 interrupted() {
   reported=1
+  if [ "$beta_active" -eq 1 ]; then
+    printf 'The wording check was interrupted while inspecting %s. Run checks/readme.sh again from the KA-Reader folder.\n' "$beta_input" >&2
+    exit 1
+  fi
   printf 'readme.sh: interrupted by %s; the check did not complete. Run checks/readme.sh from the product root to check again.\n' "$1" >&2
   exit 1
 }
@@ -110,6 +117,34 @@ while IFS=$'\t' read -r identity wording; do
     esac
   done
 done < <(printf '%s\n' "$canonical")
+
+# The same declared-input grammar serves both wording checks; this command owns its messages.
+beta_active=1
+beta_input=checks/support/git-beta-inputs.sh
+helper="${0%/*}/support/git-beta-inputs.sh"
+if [ ! -r "$helper" ]; then
+  reported=1
+  printf "Couldn't read %s. Check that it can be read, then run checks/readme.sh again from the KA-Reader folder.\n" "$beta_input" >&2
+  exit 1
+fi
+. "$helper" 2> /dev/null
+refuse_input() {
+  reported=1
+  case "$beta_error" in
+    read) printf "Couldn't read %s. Check that it can be read, then run checks/readme.sh again from the KA-Reader folder.\n" "$beta_input" >&2;;
+    policy) printf "Couldn't read one Git read policy from %s. Check its declaration, then run checks/readme.sh again from the KA-Reader folder.\n" "$beta_input" >&2;;
+    canonical) printf "Couldn't read one complete beta statement from %s. Check its standing sentences, then run checks/readme.sh again from the KA-Reader folder.\n" "$beta_input" >&2;;
+    notice) printf "Couldn't read one complete Git notice from %s. Check its declaration, then run checks/readme.sh again from the KA-Reader folder.\n" "$beta_input" >&2;;
+    agreement) printf "The Git notice in %s doesn't match the complete beta statement. Correct the wording, then run checks/readme.sh again from the KA-Reader folder.\n" "$beta_input" >&2;;
+    *) printf "Couldn't finish inspecting %s. Check that every input can be read, then run checks/readme.sh again from the KA-Reader folder.\n" "$beta_input" >&2;;
+  esac
+  exit 1
+}
+beta_load_policy ka-reader-mac/Sources/Surfaces/GitReadPolicy.swift || refuse_input
+beta_load_statement docs/CONTENT.md "$beta_policy" || refuse_input
+beta_load_notice ka-reader-mac/Sources/Surfaces/GitSentences.swift || refuse_input
+beta_check_agreement || refuse_input
+beta_active=0
 
 # --- the local index, once; hexadecimal records preserve every filename byte ---
 index_status=0
@@ -267,7 +302,16 @@ function paragraph_boundary(s,paragraph) {
     (paragraph && s ~ /^(=+|-+)[ \t\r\n]*$/) ||
     s ~ /^\[[^]]+\]:/ || s ~ /^<!--/
 }
-function filtered_prose(s, result,i,j,end,line,indent,tail,marker,run,fence,fence_length,c,fragment,paragraph,depth,list_columns,base,boundary,prefix,marker_length,content_column) {
+# Literal HTML is not paragraph prose; image-source inspection still sees the same bytes.
+# https://spec.commonmark.org/0.31.2/#html-blocks
+function literal_html_end(s,start,opening_end, tag,rest) {
+  tag=tolower(substr(s,start+1,opening_end-start-1));sub(/[ \t\r\n\/>].*$/, "",tag)
+  if(tag!~/^(script|style|pre|code|textarea)$/)return 0
+  rest=tolower(substr(s,opening_end+1))
+  if(match(rest,"</" tag "[ \t\r\n]*>"))return opening_end+RSTART+RLENGTH-1
+  return length(s)
+}
+function filtered_prose(s, result,i,j,end,line,indent,tail,marker,run,fence,fence_length,c,fragment,paragraph,depth,list_columns,base,boundary,prefix,marker_length,content_column,literal_until) {
   i=1;result="";fence="";paragraph=0;depth=0
   while(i<=length(s)) {
     if(i==1 || substr(s,i-1,1)=="\n") {
@@ -309,6 +353,12 @@ function filtered_prose(s, result,i,j,end,line,indent,tail,marker,run,fence,fenc
         fence=marker;fence_length=run;paragraph=0;result=result "\n";i=end;continue
       }
       if(indent-base>=4&&!paragraph){result=result "\n";i=end;continue}
+      if(i>literal_until && tail ~ /^#+[ \t]/) {
+        match(tail,/^#+/);heading_level=RLENGTH
+        heading=substr(tail,heading_level+1);sub(/^[ \t]+/,"",heading);sub(/[ \t]+#+[ \t]*$/, "",heading);sub(/[ \t\r\n]+$/, "",heading)
+        if(gap_level && heading_level<=gap_level){if(beta_starts && !beta_ends)beta_bad=1;gap_level=0}
+        if(heading=="Known gaps")gap_level=heading_level
+      }
       paragraph=(!boundary && tail!~/^[\r\n]*$/)
     }
     c=substr(s,i,1)
@@ -319,12 +369,24 @@ function filtered_prose(s, result,i,j,end,line,indent,tail,marker,run,fence,fenc
     }
     if(substr(s,i,4)=="<!--") {
       j=index(substr(s,i+4),"-->");if(!j)return result
-      fragment=substr(s,i,j+6);gsub(/[^\n]/," ",fragment);result=result fragment;i+=j+6;continue
+      fragment=substr(s,i,j+6)
+      if(fragment=="<!-- git-read-at-open:start -->") {
+        beta_starts++;beta_begin=length(result)+length(fragment)+1
+        if(i<=literal_until || !gap_level || line!~/^[ \t]*<!-- git-read-at-open:start -->[ \t\r\n]*$/ || beta_ends)beta_bad=1
+      }
+      if(fragment=="<!-- git-read-at-open:end -->") {
+        beta_ends++;beta_finish=length(result)+1
+        if(i<=literal_until || !gap_level || line!~/^[ \t]*<!-- git-read-at-open:end -->[ \t\r\n]*$/ || beta_starts!=1)beta_bad=1
+      }
+      gsub(/[^\n]/," ",fragment);result=result fragment;i+=j+6;continue
     }
     # Keep a tag whole: indentation inside a multi-line attribute is not an indented code block.
     if(c=="<"&&substr(s,i)~/^<\/?[A-Za-z]/) {
       end=tag_end(s,i)
-      if(end){result=result substr(s,i,end-i+1);i=end+1;continue}
+      if(end){
+        if(i>literal_until)literal_until=literal_html_end(s,i,end)
+        result=result substr(s,i,end-i+1);i=end+1;continue
+      }
     }
     result=result c;i++
   }
@@ -467,6 +529,32 @@ function definitions(s, lines,n,i,line,start,end,id,offset,padding,newlines,fini
     definition_skip[line_start]=finish;consumed_until=finish
   }
 }
+function masked(s) {gsub(/[^\n]/," ",s);return s}
+function displayed(s, result,i,end,after,finish,closing_at,literal) {
+  result="";i=1
+  while(i<=length(s)) {
+    end=0
+    if(i in definition_skip)end=definition_skip[i]-1
+    else if(substr(s,i,1)=="<") {
+      end=tag_end(s,i)
+      if(end){literal=literal_html_end(s,i,end);if(literal)end=literal}
+    }
+    else if(substr(s,i,2)=="![") {
+      end=bracket_end(s,i+1)
+      if(end) {
+        after=end+1
+        if(substr(s,after,1)=="("){destination(s,after+1);if(destination_valid){finish=inline_end(s,destination_end);if(finish)end=finish}}
+        else if(substr(s,after,1)=="["){closing_at=bracket_end(s,after);if(closing_at)end=closing_at}
+      }
+    } else if(substr(s,i,1)=="]" && substr(s,i+1,1)=="(") {
+      destination(s,i+2);if(destination_valid){finish=inline_end(s,destination_end);if(finish)end=finish}
+    }
+    if(end>=i){result=result masked(substr(s,i,end-i+1));i=end+1}
+    else {result=result substr(s,i,1);i++}
+  }
+  return result
+}
+function occurrences(s,needle, n,p) {n=0;while(p=index(s,needle)){n++;s=substr(s,p+length(needle))}return n}
 function images(s, i,end,after,closing_at,label_text,id,finish,raw,c) {
   definitions(s)
   i=1
@@ -497,7 +585,15 @@ BEGIN {
 }
 { document=document $0 "\n" }
 END {
-  images(filtered_prose(document))
+  prose=filtered_prose(document)
+  images(prose)
+  shown=displayed(prose)
+  raw_starts=occurrences(document,"<!-- git-read-at-open:start -->")
+  raw_ends=occurrences(document,"<!-- git-read-at-open:end -->")
+  block_valid=(!beta_bad && beta_starts==1 && beta_ends==1 && raw_starts==1 && raw_ends==1 && beta_finish>=beta_begin)
+  print "P\t" as_hex(shown) "\t-"
+  print "B\t" (block_valid?1:0) "\t" as_hex(block_valid?substr(shown,beta_begin,beta_finish-beta_begin):"")
+  print "D\t" (raw_starts+raw_ends) "\t-"
   for(i=1;i<=uses;i++) {
     raw=original[i]
     if(kind[i]=="R") {
@@ -515,7 +611,13 @@ if [ "$image_status" -ne 0 ]; then
   printf '%s\n' 'readme.sh: README.md: could not complete the image inspection. Check that this file is readable and the local text tools run, then run checks/readme.sh from the product root.' >&2
   exit 1
 fi
+beta_prose_seen=0; beta_block_seen=0; beta_delimiters_seen=0
 while IFS=$'\t' read -r kind original_hex decoded_hex; do
+  case "$kind" in
+    P) beta_prose_seen=$((beta_prose_seen+1)); beta_prose=''; [ "$original_hex" = - ] || beta_prose="$(unhex "$original_hex")"; continue;;
+    B) beta_block_seen=$((beta_block_seen+1)); beta_block_valid="$original_hex"; beta_block=''; [ "$decoded_hex" = - ] || beta_block="$(unhex "$decoded_hex")"; continue;;
+    D) beta_delimiters_seen=$((beta_delimiters_seen+1)); beta_delimiters="$original_hex"; continue;;
+  esac
   [ -n "$kind" ] || continue
   original=''; decoded=''
   [ "$original_hex" = - ] || original="$(unhex "$original_hex")"
@@ -536,5 +638,38 @@ while IFS=$'\t' read -r kind original_hex decoded_hex; do
     *) printf 'readme.sh: README.md: could not inspect image source: %s. Check the referenced path and Git\047s tracked file list, then run checks/readme.sh from the product root.\n' "$original" >&2; findings=1;;
   esac
 done < <(printf '%s\n' "$image_records")
+beta_active=1
+beta_input=README.md
+if [ "$beta_prose_seen" -ne 1 ] || [ "$beta_block_seen" -ne 1 ] || [ "$beta_delimiters_seen" -ne 1 ]; then
+  beta_error=inspection; refuse_input
+fi
+if [ "$beta_policy" = atOpen ] && [ "$beta_block_valid" -ne 1 ]; then
+  reported=1
+  printf "Couldn't find one complete beta block in the known gaps in README.md. Check the block's boundaries, then run checks/readme.sh again from the KA-Reader folder.\n" >&2
+  exit 1
+fi
+if [ "$beta_policy" = atOpen ]; then
+  comparison_status=0
+  printf '%s\n' "$beta_block" | grep -F -- "$beta_wording" > /dev/null 2> /dev/null || comparison_status=$?
+  case "$comparison_status" in
+    0) ;;
+    1) reported=1; printf "The known gaps in README.md don't show the complete beta statement. Restore the whole wording there, then run checks/readme.sh again from the KA-Reader folder.\n" >&2; exit 1;;
+    *) beta_error=inspection; refuse_input;;
+  esac
+fi
+if [ "$beta_policy" = followed ]; then
+  if [ "$beta_delimiters" -ne 0 ]; then
+    reported=1
+    printf 'The beta block is still in README.md, but this build follows Git. Remove the whole beta block, then run checks/readme.sh again from the KA-Reader folder.\n' >&2
+    exit 1
+  fi
+  comparison_status=0
+  printf '%s\n' "$beta_prose" | grep -F -- "$beta_notice" > /dev/null 2> /dev/null || comparison_status=$?
+  case "$comparison_status" in
+    0) reported=1; printf 'The beta statement is still in README.md, but this build follows Git. Remove the beta statement, then run checks/readme.sh again from the KA-Reader folder.\n' >&2; exit 1;;
+    1) ;;
+    *) beta_error=inspection; refuse_input;;
+  esac
+fi
 reported=1
 exit "$findings"

@@ -599,9 +599,11 @@ gate_fixture() {
   done
 }
 run_gate() {
-  status=0
+  local before after
+  before="$(snapshot "$tree")"; status=0
   (cd "$tree" && PATH="$bin:$PATH" bash checks/gate.sh) > "$scene/out" 2> "$scene/err" || status=$?
   err="$(cat "$scene/err")"; trace="$(cat "$bin/gate-trace")"
+  after="$(snapshot "$tree")"; equal "$before" "$after"
 }
 test_gate_runs_real_check_and_entire_suite_at_defaults() {
   gate_fixture || return 1; run_gate
@@ -659,7 +661,7 @@ rewrite_beta() { plain_readme; append_beta "$1"; }
 test_beta_wording_is_whole_displayed_prose_inside_known_gaps() {
   local words
   fixture; pass || return 1
-  for words in 'Missing.' 'Beta first.' 'Beta second.' 'Altered first. Beta second.' 'Beta first.
+  for words in 'Missing.' 'Beta first.' 'Beta second.' 'Altered first. Beta second.' '<script>Beta first. Beta second.</script>' '<STYLE>Beta first. Beta second.</STYLE>' '<pre><code>Beta first. Beta second.</code></pre>' '<code>Beta first. Beta second.</code>' '<textarea>Beta first. Beta second.</textarea>' 'Beta first.
 Beta second.' '<!-- Beta first. Beta second. -->' '`Beta first. Beta second.`' '```
 Beta first. Beta second.
 ```' '<span title="Beta first. Beta second.">Hidden</span>' '[hidden]: local "Beta first. Beta second."'; do
@@ -688,6 +690,16 @@ test_beta_block_has_one_ordered_pair_inside_known_gaps() {
     mv "$scene/edited" "$tree/README.md"
     beta_refuse "Couldn't find one complete beta block" || return 1
   done
+  fixture; plain_readme
+  image '<script>
+## Known gaps
+<!-- git-read-at-open:start -->
+</script>
+Beta first. Beta second.
+<script>
+<!-- git-read-at-open:end -->
+</script>'
+  beta_refuse "Couldn't find one complete beta block" || return 1
   fixture; image 'Unrelated gap outside the bounded block.'; pass
 }
 test_followed_readme_withdraws_both_beta_paragraphs() {
@@ -744,15 +756,25 @@ test_beta_extension_preserves_old_six_rows_security_and_images() {
   fixture; : > "$tree/SECURITY.md"
   refuse "$(missing SECURITY.md "${WORDS[3]}")" || return 1
   fixture; image '![outside](https://remote.example/beta.png)'
-  refuse 'https://remote.example/beta.png'
+  refuse 'https://remote.example/beta.png' || return 1
+  for tag in code pre; do
+    fixture; image "<$tag><img src=\"https://raw-code.example/image.png\"></$tag>"
+    refuse 'https://raw-code.example/image.png' || return 1
+  done
 }
 test_new_readme_termination_paths_never_pass_incomplete_work() {
   local signal tool
   fixture; pass || return 1
   fixture; run_check unexpected; equal "$status" 2 || return 1
-  fixture; wrap_failure grep 'case "$*" in *Beta*) printf "matching bytes\n"; exit 17;; esac'
+  for mode in atOpen followed; do
+    fixture; policy "$mode"
+    [ "$mode" != followed ] || plain_readme
+    wrap_failure grep "case \"\$*\" in *Beta*) \"$(command -v grep)\" \"\$@\"; exit 17;; esac"
+    beta_refuse "Couldn't finish inspecting README.md" || return 1
+  done
+  fixture; wrap_failure awk 'case "$*" in *filtered_prose*) exit 0;; esac'
   beta_refuse "Couldn't finish inspecting README.md" || return 1
-  fixture; wrap_failure awk 'case "$*" in *beta_policy*) printf "partial\n"; exit 17;; esac'
+  fixture; wrap_failure awk 'case "$*" in *kind=policy*) printf "partial\n"; exit 17;; esac'
   run_check; equal "$status" 1 || return 1
   for signal in HUP INT TERM; do
     fixture; wrap_failure cat "case \"\$*\" in *GitReadPolicy.swift*) kill -$signal \"\$TEST_BETA_SUBJECT_PID\"; exit 17;; esac"
@@ -782,6 +804,11 @@ test_wording_gate_runs_real_inputs_and_entire_suites_despite_selector() {
   actual_suite_in_gate test_git_beta.sh test_complete_catalogue_and_runtime_canonical_wording_pass test_catalogue_gate_pair_is_unique_unconditional_and_fatal || return 1
   contains "$err" 'step failed: Git beta catalogue check suite' || return 1
   case "$trace" in *checks/release-shape.sh*) return 1;; esac
+  gate_fixture || return 1
+  printf '#!/usr/bin/env bash\nprintf "%%s" "${KA_READER_TEST_ONLY-unset}" > %q\n' "$bin/selector" > "$tree/checks/tests/test_strings_step.sh"
+  printf '#!/usr/bin/env bash\nprintf "%%s" "${KA_READER_TEST_ONLY-unset}" > %q\n' "$bin/selector-after" > "$tree/checks/release-shape.sh"
+  KA_READER_TEST_ONLY=parent-selection run_gate
+  equal "$status" 0 && equal "$(cat "$bin/selector")" parent-selection && equal "$(cat "$bin/selector-after")" parent-selection || return 1
   gate_fixture || return 1
   cp "$ROOT/checks/git-beta.sh" "$tree/checks/git-beta.sh"
   policy unknown
