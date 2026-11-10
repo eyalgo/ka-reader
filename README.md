@@ -1,29 +1,34 @@
 # KA-Reader
 
-**KA-Reader** is a lightweight, strictly **read-only** reader of
-folders, files and repositories: a stripped-down, VS Code-like tool that runs on your own
-machine, for browsing a folder's tree, reading its files, and — when the folder is a Git
-repository — seeing what has changed. Look, don't touch.
+KA-Reader is a local, read-only reader of folders, files and Git repositories.
 
-KA-Reader never changes the folder you point it at. It writes no file in it, and it runs no Git
-command that alters your repository's state.
+On macOS 26 or later, use this repository's [Releases page](https://github.com/eyalgo/ka-reader/releases) when a release is offered: download the disk image, open it, drag KA-Reader.app to Applications, then open KA-Reader. The app isn't notarized. If macOS blocks the first launch, open System Settings › Privacy & Security, scroll down and click Open Anyway, then click Open in the confirmation.
+
+In the Open panel, choose a folder of your own, then select a file in the file tree to read it.
+
+KA-Reader never changes the folder you point it at. It writes no file in it, and it runs no Git command that alters your repository's state.
+
+KA-Reader's own data is stored outside the folder you opened. Any file it writes goes there.
+
+KA-Reader sends no telemetry, and it makes no network call while it runs — downloading it uses the network; using it does not.
+
+## Promises and limits
+
+KA-Reader never changes the folder you point it at. It writes no file in it, and it runs no Git command that alters your repository's state.
+
+KA-Reader sends no telemetry, and it makes no network call while it runs — downloading it uses the network; using it does not.
+
+KA-Reader is before version 1.0.0. Until 1.0.0, anything in it may change: what it does, how it looks, and how you start it.
+
+Issues and questions are welcome and are read when there is time. There is no response time, no commitment to fix, and no promise that a fix arrives. Security reports have a private channel and are read on the same terms.
+
+If KA-Reader can no longer be maintained, this repository is archived on that day, so you can see it rather than guess.
+
+KA-Reader is used with a mouse. It has no keyboard navigation, and it makes no promise about screen readers or other assistive technology. Neither is planned: keyboard navigation is outside what KA-Reader is built to become.
 
 ## Status
 
-> **Status: specified, partly built.** You can choose a folder through the system's Open panel and see its entries listed, which came in with commit `1741429c5`.
-> You can open and close the folders in the file tree, which came in with commit `f46269a00`.
-> If you dismiss the Open panel, or the folder can't be opened, the window says so and offers *Browse…* and *Quit*, which came in with commit `2270920c8`.
-> You can select a file and read its text in the reading panel, which came in with commit `75cc7ba60`.
-> The reading panel highlights the code of a file in JavaScript, JSON, Python, shell, TOML or YAML, which came in with commit `6a3738a2d`.
-> You can switch between Files and Git, and the Git view shows the Git state of the folder you opened, which came in with commit `129586e43`.
->
-> KA-Reader does not yet follow the folder on its own, say plainly when the open file is gone, render Markdown by default, show a repository's diffs, show a repository's commit history or switch to another folder without restarting. It has no one way to get and start it, it is not public under the MIT licence and it is not at version 1.0.0 or later. The README does not yet open with what KA-Reader does, one install path, one example and what it will and won't touch, and it does not yet say that nothing is promised about issues, questions and security reports.
-> The product is specified in full — what it is (`docs/PRD.md`), what it does (`docs/SRS.md`, `docs/fdr.md`), how it looks and reads (`docs/UXD.md`, `docs/DESIGN.md`, `docs/CONTENT.md`), and how it is built (`docs/SDD.md`, `docs/adr/`, `docs/nfdr.md`). There is no release yet.
->
-> KA-Reader is before version 1.0.0. Until 1.0.0, anything in it may change: what it does, how it
-> looks, and how you start it.
->
-> The original proposal is kept at [`docs/proposal.md`](docs/proposal.md).
+You can choose a folder in the Open panel, browse its file tree and select a file to read. The reading panel renders Markdown. You can switch between Files and Git to see the Git state read from a repository.
 
 ## What it is
 
@@ -39,10 +44,6 @@ and shows nothing. The intentionally narrow v1:
 - Live refresh: a change on disk appears in the view with nothing for you to do.
 - Fast file switching in a familiar workbench-style shell.
 - Minimal chrome. The only input KA-Reader ever needs is which folder to view.
-
-KA-Reader is used with a mouse. It has no keyboard navigation, and it makes no promise about
-screen readers or other assistive technology. Neither is planned: keyboard navigation is outside
-what KA-Reader is built to become.
 
 ## Stack
 
@@ -63,8 +64,7 @@ on every build. The decisions and their reasons are in [`docs/adr/`](docs/adr/RE
 
 The order, slice by slice, is `docs/SDD.md` § 6.
 
-Not on the roadmap, and not coming later: sidebar search, pane resizing and keyboard navigation
-are outside what KA-Reader is built to become.
+Sidebar search and filtering, pane resizing and keyboard navigation are outside what KA-Reader is built to become.
 
 ## Built by KensaiApp
 

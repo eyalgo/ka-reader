@@ -1698,6 +1698,20 @@ import nothing forbidden and still read a path it was never granted.
   document's realization — RN-3; the beta's statement and its surfaces from SRS v14 – v15 and
   CONTENT v15, and the support posture's one wording confirmed on the owner's answer at
   `docs/trail/architecture/cycle-79.md` § 3.1 — RN-98)*
+  **Local README realization at `ka-reader@1ee6ba1b6a210a0408a6ced451ce55e67d65f6d7`:** `checks/readme.sh`
+  reads the six requested complete wordings at runtime from CONTENT's standing-sentence table,
+  requires all six in README and only support in SECURITY, and refuses displayed image references
+  unless their original and resolved paths are tracked regular files contained in the repository.
+  `checks/tests/test_readme.sh` holds whole-row matching, every missing/corrupt canonical row,
+  non-displaying prose, Markdown references, HTML primary and alternate sources, decoding,
+  containment, failed inspections, statuses, signals and read-only execution. The direct command
+  and entire suite are adjacent fatal gate steps (`checks/gate.sh:L143-L144`); § 9 owns their
+  complete guest-run reading. This is the local README/SECURITY and image subset only. The
+  beta wording and its catalogue/surface checks, release-note wordings, uncovered-case line,
+  rendered four-item reading and release inspection remain the obligations above; a local pass
+  supplies no downloaded-release proof. The absence reading at `b46d896` remains dated to that
+  commit, with `development-design` retaining the gate for the obligations this command does not
+  check.
 - **QC-71:** The public repository `docs/SRS.md` C-12 names receives the main line's own commit
   history from the private `ka-reader-dev` — never a fresh copy and never a cut tree — and receives
   a commit only once it has been checked for anything private. The check covers exactly the
@@ -2717,6 +2731,16 @@ answer at `docs/trail/architecture/cycle-51.md` § 3.2 — RN-69)*.
   run" — for the clause that only a pass is 0 — RN-95; `docs/UXD.md` UX-I15 for the promise the
   swallowed comparison can read as held — RN-96)*
 
+  **README command status reading at `ka-reader@1ee6ba1b6a210a0408a6ced451ce55e67d65f6d7`:** the invocation
+  contract in `checks/readme.sh:L7-L12` returns 0 only after all local checks pass, 1 for findings,
+  unavailable input, failed inspection and trapped HUP/INT/TERM, and 2 with usage on stderr for
+  any argument (`:L15-L28`). `test_usage_and_all_outcomes_leave_inputs_unchanged`,
+  `test_wrong_arguments_read_nothing`, `test_failed_inspection_cannot_become_a_pass` and
+  `test_signals_never_end_with_success` in `checks/tests/test_readme.sh` exercise these outcomes,
+  including failures during captured inspection. Its complete suite passed in the guest run
+  recorded in § 9. This adds no status and does not discharge QC-70's separately stated
+  offline-page comparison obligation.
+
 ## 9. Test strategy
 
 **Refresh proof follows the three slices in SDD § 6.** QC-66's tree scene (`follow-the-tree`,
@@ -2897,6 +2921,19 @@ left with `ka-reader-ui` at `ka-reader@0aca57e` (RN-22; RN-25).
   enumerates `checks/tests/*.sh` and matches each path to an exact whole-command `run_step` line;
   it executes no suite *(re-measured at v89 from twenty-two, on the owner's seat's answer at
   `docs/trail/architecture/cycle-80.md` § 3.2 — RN-99)*.
+  **Additional measurement at `ka-reader@1ee6ba1b6a210a0408a6ced451ce55e67d65f6d7`:** twenty-four top-level
+  shell suites are present under `checks/tests/*.sh`. The additional suite is
+  `checks/tests/test_readme.sh`, the entire command of *README check suite*
+  (`checks/gate.sh:L144`), immediately after *README check* (`:L143`) and after the existing
+  strings block, before *Release workflow shape* (`:L150`). Each earlier suite remains the
+  whole command of its existing fatal step, in the same relative order; the new suite's
+  `test_existing_gate_calls_keep_names_commands_and_order` compares the exact pre-change calls,
+  and unchanged `test_vm_refusal.sh` holds membership, order and fatal structure.
+  The first complete card run containing this suite was issued through the gate tool in the
+  macOS guest on 2026-11-10: exit 0, all 28 README-suite cases passed, both new steps completed
+  in order, and the run ended at `own state holds`. This is the suite's *How a suite joins*
+  reading, not a hosted Actions or downloaded-release result. The twenty-three-suite inventory
+  above remains a reading at `06e4a34`.
   **Dated reading retained from v88:** twenty-two suites at
   `ka-reader@2d7c4f9bda2a76fa65a943c1ee9f47f28e857354`, each the whole command of one `run_step`
   line of `checks/gate.sh` (1.11.0): `test_secret_scan.sh`
@@ -3380,7 +3417,7 @@ is stated once, in § 8 *(added at v56, on the owner's answer at `docs/trail/arc
 | QC-40 | writer regressions; own-state retention; separate container-log size and relaunch proof | `cargo test --locked -p ka-reader-bridge`; `cargo test --locked -p ka-reader-core` (layer 1). Layer-5 proof owed by `follow-the-folder` (SDD § 6 S-8), not the tree or open-file slice; until its assertions run, review at `development-design`, for the reason in QC-40. No existing own-state check, tree-scene pass or writer-test result discharges that proof. | the change; the built bundle for layer 5 | `development-implementation` for writer and retention tests; `development-design` for the outstanding layer-5 obligation |
 | QC-41 | third-party notices: `LICENSE` and the notices in the tagged source and inside the bundle, byte-identical; each component's licence and copyright lines | `checks/notices.sh` (suite `test_notices.sh`) for the names and the crates' copyright lines; `checks/bundle.sh` (suite `test_bundle.sh`) and `checks/tests/test_release_pack.sh` for the bundle's copies | the tree | CI build; release; release inspection for what the check does not read, as QC-41 names it |
 | QC-42 | private reporting; SECURITY.md | `gh api repos/eyalgo/ka-reader/private-vulnerability-reporting` | the release | release |
-| QC-44 | standing sentences verbatim, the beta's Git-view statement included | `checks/readme.sh`; `grep -rF` of the beta's wording over `ka-reader-mac/Sources/Surfaces` — neither in the tree at `ka-reader@b46d896` | the release; the tree | release; `development-design` reading the entry until each lands |
+| QC-44 | standing sentences verbatim, the beta's Git-view statement included; local README image references | `checks/readme.sh` and `checks/tests/test_readme.sh` for the bounded local README/SECURITY and repository-image subset measured in QC-44; the entry retains the beta/catalogue, release-notes and release-inspection obligations | the local tree for the implemented subset; the release and surfaces for the remaining obligations | CI build and change through the gate for the local subset; release; `development-design` reading QC-44 for each obligation outside that subset |
 | QC-71 | the public history: the commits the public repository receives carry no secret; it holds `main` alone; its root commit is the checked one; its `main` refuses a force push and a deletion; each release keeps the previous one's history whole | `checks/secret-scan.sh gitleaks git` (suite `test_secret_scan.sh`), the gate's *Secret scan* step, at the commit to be sent and through `release.yml`'s *Test gate* at the tag; `git ls-remote --heads --tags` on the public repository; `git rev-list --max-parents=0 HEAD` on a fresh clone of it; `gh api repos/<owner>/<repository>/branches/main/protection`, or the ruleset form; `git merge-base --is-ancestor <previous release's tag> HEAD`, from the second release | the change; the release | `development-implementation` (the secrets half at the commit to be sent); release |
 | QC-46 | latency figures, beginning with complete refresh | `checks/latency.sh` — three figures per metric on the named scale fixtures; owed by `follow-the-folder` (SDD § 6 S-8), with interim review for the missing script as QC-46 states | the tree | every CI build from the first complete-refresh build; `development-design` until measured |
 | QC-47 | per-item degradation and recovery; the failed re-read of an expanded folder | `cargo test --locked -p ka-reader-core --test watch`, the failed re-read's two cases included; `swift test --package-path ka-reader-mac` (layer 4); the tree cases run under QC-66 without full churn | the change | `development-implementation` |
