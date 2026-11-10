@@ -1,3 +1,4 @@
+import Testing
 import XCTest
 
 @testable import Surfaces
@@ -43,8 +44,7 @@ final class GitSentencesTests: XCTestCase {
 
     func test_theFaultEqualsContentMd() {
         let fault =
-            "KA-Reader stopped while reading this repository's Git status and can't tell why. "
-            + "The file tree is unaffected; the Git view shows the status again if KA-Reader can read it."
+            "KA-Reader stopped while reading this repository's Git status and can't tell why. The file tree is unaffected. Start KA-Reader again to read the status again."
 
         XCTAssertEqual(GitSentences.fault, fault)
     }
@@ -123,31 +123,25 @@ final class GitSentencesTests: XCTestCase {
 
         XCTAssertEqual(
             GitSentences.failure(.gitDirectoryOutside(gitDirectory: path)),
-            "This repository's Git directory is at /elsewhere/.git/worktrees/wt, outside the "
-                + "folder you opened, so KA-Reader doesn't read its Git status. "
-                + "The file tree and the reading panel are unaffected.")
+            "When you opened the folder, this repository's Git directory was at {path}, outside the folder you opened, so KA-Reader didn't read its Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
+        )
     }
 
     func test_theTenConditionsTheContentStepClassedTakeTheirOwnSentenceOrTheFault() {
         let unreadable =
-            "KA-Reader can't read the Git directory in the folder you opened, so it can't show the "
-            + "folder's Git status. The file tree and the reading panel are unaffected."
+            "When you opened the folder, KA-Reader couldn't read its Git directory, so it couldn't show the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
         let expected: [GitCondition: String] = [
             .probeFolderUnavailable:
-                "KA-Reader couldn't look in the folder you opened to find out whether it's a repository.",
+                "When you opened the folder, KA-Reader couldn't look in it to find out whether it's a repository. Start KA-Reader again to read it again.",
             .probeGitDirectoryUnreadable: unreadable,
             .probeGitFileUnreadable: unreadable,
             .gitDirectoryUnreadable: unreadable,
             .probeGitEntryNotDirectory:
-                "In the folder you opened, the Git directory is a link, or something that is "
-                + "neither a file nor a folder, so KA-Reader doesn't read the folder's Git status. "
-                + "The file tree and the reading panel are unaffected.",
+                "When you opened the folder, the Git directory was a link, or something that was neither a file nor a folder, so KA-Reader didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again.",
             .gitDirectoryMissing:
-                "There's nothing where this repository's Git directory points, so KA-Reader can't "
-                + "read its Git status. The file tree and the reading panel are unaffected.",
+                "When you opened the folder, there was nothing where this repository's Git directory pointed, so KA-Reader couldn't read its Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again.",
             .notARepository:
-                "KA-Reader looked in the Git directory in the folder you opened and found no "
-                + "repository there. The file tree and the reading panel are unaffected.",
+                "When you opened the folder, KA-Reader looked in its Git directory and found no repository there. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again.",
             .probeRepositoryReadFailed: GitSentences.fault,
             .notARoot: GitSentences.fault,
             .repositoryReadFailed: GitSentences.fault,
@@ -166,17 +160,15 @@ final class GitSentencesTests: XCTestCase {
     /// `change_text.md`'s string for a repository config that names a path outside the folder: the
     /// key and the path, each unchanged and unquoted, between the words around them.
     private func configSentence(key: String, path: String) -> String {
-        "KA-Reader found \(key) set to \(path), outside the folder you opened, so it doesn't read the "
-            + "folder's Git status. The file tree and the reading panel are unaffected."
+        "When you opened the folder, KA-Reader found \(key) set to \(path), outside the folder you opened, so it didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
     }
 
     func test_theConfigNamesOutsideCaseDrawsChangeTextsSentenceCharacterForCharacter() {
         XCTAssertEqual(
             GitSentences.failure(
                 .configNamesOutside(key: "core.excludesfile", path: "/Users/you/shared/ignore")),
-            "KA-Reader found core.excludesfile set to /Users/you/shared/ignore, outside the folder you "
-                + "opened, so it doesn't read the folder's Git status. "
-                + "The file tree and the reading panel are unaffected.")
+            "When you opened the folder, KA-Reader found core.excludesfile set to /Users/you/shared/ignore, outside the folder you opened, so it didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
+        )
     }
 
     func test_theConfigSentencePlacesTheKeyAndThePathUnchangedAndUnquoted() {
@@ -203,9 +195,7 @@ final class GitSentencesTests: XCTestCase {
     /// `change_text.md`'s message for a config key set to a value KA-Reader does not locate: the key
     /// and the path, each unchanged and unquoted, between the words around them.
     private func notLocatedMessage(key: String, path: String) -> String {
-        "KA-Reader found \(key) set to \(path) and doesn't work out where that path leads, so it "
-            + "doesn't read the folder's Git status. "
-            + "The file tree and the reading panel are unaffected."
+        "When you opened the folder, KA-Reader found \(key) set to \(path) and didn't work out where that path leads, so it didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
     }
 
     func test_theConfigNotLocatedCaseDrawsChangeTextsMessageCharacterForCharacter() {
@@ -224,9 +214,8 @@ final class GitSentencesTests: XCTestCase {
         }
         XCTAssertEqual(
             GitSentences.failure(.configNotLocated(key: "core.excludesfile", path: "ignore-rel")),
-            "KA-Reader found core.excludesfile set to ignore-rel and doesn't work out where that "
-                + "path leads, so it doesn't read the folder's Git status. "
-                + "The file tree and the reading panel are unaffected.")
+            "When you opened the folder, KA-Reader found core.excludesfile set to ignore-rel and didn't work out where that path leads, so it didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
+        )
     }
 
     func test_theConfigNotLocatedMessageNeverSaysOutsideOrAForbiddenWord() {
@@ -272,17 +261,14 @@ final class GitSentencesTests: XCTestCase {
     /// `change_text.md`'s string for an object store that names a location outside the folder: the
     /// value, unchanged and unquoted, between the words around it.
     private func alternatesSentence(path: String) -> String {
-        "KA-Reader found a Git object store that names \(path), outside the folder you opened, so "
-            + "KA-Reader doesn't read the folder's Git status. "
-            + "The file tree and the reading panel are unaffected."
+        "When you opened the folder, KA-Reader found a Git object store that names \(path), outside the folder you opened, so it didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
     }
 
     func test_theAlternatesFailureReadsAsChangeTextWritesIt() {
         XCTAssertEqual(
             GitSentences.failure(.objectStoreNamesOutside(path: "/Users/you/src/app/.git/objects")),
-            "KA-Reader found a Git object store that names /Users/you/src/app/.git/objects, outside "
-                + "the folder you opened, so KA-Reader doesn't read the folder's Git status. "
-                + "The file tree and the reading panel are unaffected.")
+            "When you opened the folder, KA-Reader found a Git object store that names /Users/you/src/app/.git/objects, outside the folder you opened, so it didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
+        )
 
         for path in [
             "/Users/you/src/app/.git/objects", "../../../elsewhere/objects", "relative/objects",
@@ -315,17 +301,14 @@ final class GitSentencesTests: XCTestCase {
     /// unchanged and unquoted, between the words around it. Three sentences, because a joined clause
     /// would make the object store the subject of "doesn't work out".
     private func objectStoreNotLocatedMessage(path: String) -> String {
-        "KA-Reader found a Git object store that names \(path). "
-            + "KA-Reader doesn't work out where that path leads, so it doesn't read the folder's "
-            + "Git status. The file tree and the reading panel are unaffected."
+        "When you opened the folder, KA-Reader found a Git object store that names \(path) but didn't work out where that path leads, so it didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
     }
 
     func test_theObjectStoreNotLocatedMessageReadsAsChangeTextWritesIt() {
         XCTAssertEqual(
             GitSentences.failure(.objectStoreNotLocated(path: "relative/objects")),
-            "KA-Reader found a Git object store that names relative/objects. "
-                + "KA-Reader doesn't work out where that path leads, so it doesn't read the "
-                + "folder's Git status. The file tree and the reading panel are unaffected.")
+            "When you opened the folder, KA-Reader found a Git object store that names relative/objects but didn't work out where that path leads, so it didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
+        )
 
         // A value beginning `/` still draws this message (CP-707): the case, not the path, decides.
         for path in ["relative/objects", " /abs/objects", "~/objects", "/x"] {
@@ -371,16 +354,12 @@ final class GitSentencesTests: XCTestCase {
     /// `change_text.md`'s message for a section whose path leads somewhere else: the name and the
     /// path, each unchanged and unquoted, between the words around them.
     private func submoduleElsewhereMessage(name: String, path: String) -> String {
-        "KA-Reader found that a .gitmodules gives the submodule at \(name) the path \(path), which "
-            + "leads somewhere else, so it doesn't read the folder's Git status. "
-            + "The file tree and the reading panel are unaffected."
+        "When you opened the folder, KA-Reader found that a .gitmodules gives the submodule at \(name) the path \(path), which leads somewhere else, so it didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
     }
 
     /// `change_text.md`'s message for a `.gitmodules` KA-Reader couldn't read. It names no file.
     private let gitmodulesUnreadableMessage =
-        "KA-Reader couldn't read how a repository in the folder you opened names and places its "
-        + "submodules, so it doesn't read the folder's Git status. "
-        + "The file tree and the reading panel are unaffected."
+        "When you opened the folder, KA-Reader couldn't read how a repository in it names and places its submodules, so it didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
 
     private let forbiddenInTheGitmodulesMessages = [
         "outside", "invalid", "unsupported", "illegal", "malformed", "refused", "rejected", "!",
@@ -401,9 +380,8 @@ final class GitSentencesTests: XCTestCase {
     func test_submoduleElsewhereMessageIsChangeTextsWithNameAndPathUnquotedAndUnchanged() {
         XCTAssertEqual(
             GitSentences.failure(.submoduleElsewhere(name: "submodule", path: "evil")),
-            "KA-Reader found that a .gitmodules gives the submodule at submodule the path evil, "
-                + "which leads somewhere else, so it doesn't read the folder's Git status. "
-                + "The file tree and the reading panel are unaffected.")
+            "When you opened the folder, KA-Reader found that a .gitmodules gives the submodule at submodule the path evil, which leads somewhere else, so it didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
+        )
 
         let cases = [
             (name: "submodule", path: "evil"), (name: "vendor/lib", path: "nothing-here"),
@@ -524,5 +502,98 @@ final class GitSentencesTests: XCTestCase {
             GitSentences.letterTooltip(name: "n", category: .inConflict), "n \u{2014} conflict")
         XCTAssertNotEqual(
             GitSentences.word(for: .untracked), GitSentences.word(for: .inConflict))
+    }
+}
+
+struct GitBetaCatalogueTests {
+    @Test func betaNoticeAndFaultAreWholeCatalogueValues() {
+        #expect(
+            GitSentences.readAtOpen
+                == "The Git view and the letters beside changed files show the Git state KA-Reader read when you opened the folder. They do not update while KA-Reader is open."
+        )
+        #expect(
+            GitSentences.fault
+                == "KA-Reader stopped while reading this repository's Git status and can't tell why. The file tree is unaffected. Start KA-Reader again to read the status again."
+        )
+    }
+
+    @Test func allLaterReadFailuresDescribeOpenAndRestart() {
+        let cases: [(GitFailure, String)] = [
+            (
+                .gitDirectoryOutside(gitDirectory: "空 白;λ/with.punctuation"),
+                "When you opened the folder, this repository's Git directory was at 空 白;λ/with.punctuation, outside the folder you opened, so KA-Reader didn't read its Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
+            ),
+            (
+                .configNamesOutside(key: "submodule.空 白.path", path: "空 白;λ/with.punctuation"),
+                "When you opened the folder, KA-Reader found submodule.空 白.path set to 空 白;λ/with.punctuation, outside the folder you opened, so it didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
+            ),
+            (
+                .configNotLocated(key: "submodule.空 白.path", path: "空 白;λ/with.punctuation"),
+                "When you opened the folder, KA-Reader found submodule.空 白.path set to 空 白;λ/with.punctuation and didn't work out where that path leads, so it didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
+            ),
+            (
+                .objectStoreNamesOutside(path: "空 白;λ/with.punctuation"),
+                "When you opened the folder, KA-Reader found a Git object store that names 空 白;λ/with.punctuation, outside the folder you opened, so it didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
+            ),
+            (
+                .objectStoreNotLocated(path: "空 白;λ/with.punctuation"),
+                "When you opened the folder, KA-Reader found a Git object store that names 空 白;λ/with.punctuation but didn't work out where that path leads, so it didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
+            ),
+            (
+                .submoduleElsewhere(name: "名前; punctuation", path: "空 白;λ/with.punctuation"),
+                "When you opened the folder, KA-Reader found that a .gitmodules gives the submodule at 名前; punctuation the path 空 白;λ/with.punctuation, which leads somewhere else, so it didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
+            ),
+            (
+                .condition(.probeFolderUnavailable),
+                "When you opened the folder, KA-Reader couldn't look in it to find out whether it's a repository. Start KA-Reader again to read it again."
+            ),
+            (
+                .condition(.probeGitDirectoryUnreadable),
+                "When you opened the folder, KA-Reader couldn't read its Git directory, so it couldn't show the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
+            ),
+            (
+                .condition(.probeGitEntryNotDirectory),
+                "When you opened the folder, the Git directory was a link, or something that was neither a file nor a folder, so KA-Reader didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
+            ),
+            (
+                .condition(.probeGitFileUnreadable),
+                "When you opened the folder, KA-Reader couldn't read its Git directory, so it couldn't show the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
+            ),
+            (
+                .condition(.probeRepositoryReadFailed),
+                "KA-Reader stopped while reading this repository's Git status and can't tell why. The file tree is unaffected. Start KA-Reader again to read the status again."
+            ),
+            (
+                .condition(.notARoot),
+                "KA-Reader stopped while reading this repository's Git status and can't tell why. The file tree is unaffected. Start KA-Reader again to read the status again."
+            ),
+            (
+                .condition(.gitDirectoryMissing),
+                "When you opened the folder, there was nothing where this repository's Git directory pointed, so KA-Reader couldn't read its Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
+            ),
+            (
+                .condition(.gitDirectoryUnreadable),
+                "When you opened the folder, KA-Reader couldn't read its Git directory, so it couldn't show the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
+            ),
+            (
+                .condition(.notARepository),
+                "When you opened the folder, KA-Reader looked in its Git directory and found no repository there. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
+            ),
+            (
+                .condition(.repositoryReadFailed),
+                "KA-Reader stopped while reading this repository's Git status and can't tell why. The file tree is unaffected. Start KA-Reader again to read the status again."
+            ),
+            (
+                .condition(.machineConfigNotSwitchedOff),
+                "KA-Reader stopped while reading this repository's Git status and can't tell why. The file tree is unaffected. Start KA-Reader again to read the status again."
+            ),
+            (
+                .condition(.gitmodulesUnreadable),
+                "When you opened the folder, KA-Reader couldn't read how a repository in it names and places its submodules, so it didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
+            ),
+        ]
+        for (failure, expected) in cases {
+            #expect(GitSentences.failure(failure) == expected)
+        }
     }
 }

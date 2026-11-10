@@ -22,8 +22,7 @@ final class LaunchFlowGitTests: LaunchWindowTestCase {
             + #""changed":[{"path":"a.txt","category":"modified"}]}"#).utf8)
 
     private static let faultSentence =
-        "KA-Reader stopped while reading this repository's Git status and can't tell why. "
-        + "The file tree is unaffected; the Git view shows the status again if KA-Reader can read it."
+        "KA-Reader stopped while reading this repository's Git status and can't tell why. The file tree is unaffected. Start KA-Reader again to read the status again."
 
     private func launch(git: Data?) -> WindowLaunch {
         let launch = makeLaunch(answers: [Self.chosenFolder])
@@ -104,9 +103,7 @@ final class LaunchFlowGitTests: LaunchWindowTestCase {
         XCTAssertEqual(
             drawn,
             [
-                "KA-Reader found core.excludesfile set to ignore-rel and doesn't work out where that "
-                    + "path leads, so it doesn't read the folder's Git status. "
-                    + "The file tree and the reading panel are unaffected."
+                "When you opened the folder, KA-Reader found core.excludesfile set to ignore-rel and didn't work out where that path leads, so it didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
             ])
         XCTAssertTrue(drawn[0].contains("core.excludesfile") && drawn[0].contains("ignore-rel"))
         XCTAssertEqual(drawn[0].lowercased().components(separatedBy: "outside").count - 1, 0)
@@ -122,9 +119,7 @@ final class LaunchFlowGitTests: LaunchWindowTestCase {
         XCTAssertEqual(
             strings(in: outsideWorkbench),
             [
-                "KA-Reader found core.excludesfile set to ignore-rel, outside the folder you opened, "
-                    + "so it doesn't read the folder's Git status. "
-                    + "The file tree and the reading panel are unaffected."
+                "When you opened the folder, KA-Reader found core.excludesfile set to ignore-rel, outside the folder you opened, so it didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
             ])
     }
 
@@ -143,9 +138,7 @@ final class LaunchFlowGitTests: LaunchWindowTestCase {
         XCTAssertEqual(
             drawn,
             [
-                "KA-Reader found a Git object store that names relative/objects. "
-                    + "KA-Reader doesn't work out where that path leads, so it doesn't read the "
-                    + "folder's Git status. The file tree and the reading panel are unaffected."
+                "When you opened the folder, KA-Reader found a Git object store that names relative/objects but didn't work out where that path leads, so it didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
             ])
         XCTAssertTrue(drawn[0].contains("relative/objects"))
         XCTAssertEqual(drawn[0].lowercased().components(separatedBy: "outside").count - 1, 0)
@@ -161,9 +154,7 @@ final class LaunchFlowGitTests: LaunchWindowTestCase {
         XCTAssertEqual(
             strings(in: outsideWorkbench),
             [
-                "KA-Reader found a Git object store that names relative/objects, outside the folder "
-                    + "you opened, so KA-Reader doesn't read the folder's Git status. "
-                    + "The file tree and the reading panel are unaffected."
+                "When you opened the folder, KA-Reader found a Git object store that names relative/objects, outside the folder you opened, so it didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
             ])
     }
 
@@ -183,9 +174,7 @@ final class LaunchFlowGitTests: LaunchWindowTestCase {
         XCTAssertEqual(
             drawn,
             [
-                "KA-Reader found that a .gitmodules gives the submodule at submodule the path evil, "
-                    + "which leads somewhere else, so it doesn't read the folder's Git status. "
-                    + "The file tree and the reading panel are unaffected."
+                "When you opened the folder, KA-Reader found that a .gitmodules gives the submodule at submodule the path evil, which leads somewhere else, so it didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
             ])
         XCTAssertEqual(drawn[0].lowercased().components(separatedBy: "outside").count - 1, 0)
     }
