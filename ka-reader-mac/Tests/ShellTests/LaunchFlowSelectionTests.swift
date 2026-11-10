@@ -107,17 +107,20 @@ final class LaunchFlowSelectionTests: LaunchWindowTestCase {
         let holding = HoldingReadRunner()
         let launch = launch(reader: holding)
         holding.release(0)
+        // The folder's one Git read starts with the folder (read 1); settle it before selecting.
+        holding.release(1)
         let workbench = try workbench(of: launch)
         launch.bridge.selectAnswers = ["a.txt": text("from a"), "b.txt": text("from b")]
 
         try click("a.txt", in: workbench)
         try click("b.txt", in: workbench)
-        XCTAssertEqual(holding.heldReads, 3, "the folder open and the two select acts are held")
-        try release(1, of: holding)
+        XCTAssertEqual(
+            holding.heldReads, 4, "the folder open, the Git read and the two select acts are held")
         try release(2, of: holding)
-        XCTAssertEqual(holding.heldReads, 5, "each select act's delivery sends its own open")
-        try release(4, of: holding)
         try release(3, of: holding)
+        XCTAssertEqual(holding.heldReads, 6, "each select act's delivery sends its own open")
+        try release(5, of: holding)
+        try release(4, of: holding)
 
         XCTAssertEqual(shownPath(workbench), "b.txt")
         XCTAssertEqual(workbench.readingPanel.contentView.string, "from b")
@@ -149,20 +152,23 @@ final class LaunchFlowSelectionTests: LaunchWindowTestCase {
         let holding = HoldingReadRunner()
         let launch = launch(reader: holding)
         holding.release(0)
+        // The folder's one Git read starts with the folder (read 1); settle it before selecting.
+        holding.release(1)
         let workbench = try workbench(of: launch)
         launch.bridge.selectAnswers = ["a.txt": text("from a")]
 
         try click("a.txt", in: workbench)
 
-        XCTAssertEqual(holding.heldReads, 2, "the folder open and the select act are held")
+        XCTAssertEqual(
+            holding.heldReads, 3, "the folder open, the Git read and the select act are held")
         XCTAssertEqual(
             visibleStrings(beneath: workbench.readingPanel), ["Reading this file."])
-        try release(1, of: holding)
-        XCTAssertEqual(holding.heldReads, 3, "the open follows the select act")
+        try release(2, of: holding)
+        XCTAssertEqual(holding.heldReads, 4, "the open follows the select act")
         XCTAssertEqual(
             visibleStrings(beneath: workbench.readingPanel), ["Reading this file."],
             "the pending sentence stands until the open is answered")
-        try release(2, of: holding)
+        try release(3, of: holding)
         XCTAssertEqual(shownPath(workbench), "a.txt")
         XCTAssertEqual(workbench.readingPanel.contentView.string, "from a")
     }

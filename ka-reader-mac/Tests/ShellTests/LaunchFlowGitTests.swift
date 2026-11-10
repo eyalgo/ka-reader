@@ -294,17 +294,20 @@ final class LaunchFlowGitTests: LaunchWindowTestCase {
         presenter.onPresent = { content in
             if content is WorkbenchView { delivered.fulfill() }
         }
+        // The folder's one Git read starts with the folder, so its delivery is awaited from the
+        // start; the bridge records the buffer freed before the item crosses back.
+        let gitDelivered = expectation(description: "the Git item was delivered")
+        gitDelivered.assertForOverFulfill = false
+        runner.onDelivery = {
+            if !bridge.ranOnMain("free:git").isEmpty { gitDelivered.fulfill() }
+        }
         let flow = LaunchFlow(
             panel: FakePanel(answers: [Self.chosenFolder], log: log), bridge: bridge,
             glyphs: FakeGlyphSource(), presenter: presenter, reader: runner, terminate: {})
         flow.run()
-        await fulfillment(of: [delivered], timeout: 10)
+        await fulfillment(of: [delivered, gitDelivered], timeout: 10)
         let workbench = try XCTUnwrap(presenter.contents.last as? WorkbenchView)
-
-        let gitDelivered = expectation(description: "the Git item was delivered")
-        runner.onDelivery = { gitDelivered.fulfill() }
         workbench.rail.entryChosen?(.git)
-        await fulfillment(of: [gitDelivered], timeout: 10)
 
         XCTAssertEqual(bridge.ranOnMain("read_git"), [false])
         XCTAssertEqual(bridge.ranOnMain("free:git"), [false])

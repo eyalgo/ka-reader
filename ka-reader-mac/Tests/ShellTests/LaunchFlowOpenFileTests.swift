@@ -199,13 +199,14 @@ private func liveReceiver(of launch: Launch) throws -> ModelChangesReceiver {
     @Test func whileAReadIsHeldAnExpansionAndASecondSelectionReachTheBridge() throws {
         let launch = launch(holding: .reader)
         launch.reader.release(0)  // the folder open, which the reader also runs
+        launch.reader.release(1)  // the folder's one Git read, which starts with the folder
         let workbench = try workbench(of: launch)
         let tree = workbench.rootItemsView
         let before = launch.bridge.selectCalls.count
         let topLeft = BridgePayload.encodePosition(.topLeft)
 
         try click("a.txt", in: workbench)
-        #expect(launch.reader.heldReads == 2, "a.txt's open is held on the reader")
+        #expect(launch.reader.heldReads == 3, "a.txt's open is held on the reader")
         let src = try #require(
             (0..<tree.outlineView.numberOfRows).first { tree.entry(atRow: $0)?.name == "src" })
         tree.outlineView.expandItem(tree.outlineView.item(atRow: src))
@@ -225,13 +226,13 @@ private func liveReceiver(of launch: Launch) throws -> ModelChangesReceiver {
 
         // The pending sentence reads the same for any file, so it is b.txt's only if a.txt's answer
         // cannot replace it and b.txt's answer can.
-        try #require(launch.reader.heldReads == 3, "b.txt's open is held on the reader too")
-        launch.reader.release(1)
+        try #require(launch.reader.heldReads == 4, "b.txt's open is held on the reader too")
+        launch.reader.release(2)
         workbench.layoutSubtreeIfNeeded()
         #expect(
             textElements(beneath: workbench.readingPanel).map(\.stringValue)
                 == ["Reading this file."], "a.txt's late answer leaves b.txt's pending state")
-        launch.reader.release(2)
+        launch.reader.release(3)
         #expect(workbench.readingPanel.pathLine.stringValue == "b.txt")
         #expect(workbench.readingPanel.contentView.string == "one\ntwo\n")
     }

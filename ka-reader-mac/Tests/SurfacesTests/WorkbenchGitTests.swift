@@ -181,7 +181,8 @@ final class WorkbenchGitTests: XCTestCase {
         XCTAssertEqual(fixture.workbench.rail.active, .files)
         XCTAssertTrue(treeIsShown(fixture.workbench))
         XCTAssertFalse(gitIsShown(fixture.workbench))
-        XCTAssertTrue(fixture.log.gitAsks.isEmpty, "nothing is asked until Git is shown")
+        XCTAssertEqual(
+            fixture.log.gitAsks.count, 1, "the initial Git read starts with the opened folder")
     }
 
     func test_gitGitFilesShowsTheViewThenNothingChangesThenTheTree() {

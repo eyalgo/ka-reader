@@ -246,8 +246,8 @@ final class WorkbenchTreeMarkerTests: XCTestCase {
             }
         }
 
-        // (i) A repository with changes, Git never shown: the answer is held ready, so any ask the
-        // workbench made outside the Git view's first showing would mark the tree.
+        // (i) A repository with changes, Git never shown: the answer is held ready, so any later
+        // ask, or any answer drawn on the tree outside the Git view, would mark the tree.
         let neverShown = makeFixture()
         let readyAnswer = firstExample
         neverShown.workbench.readGit = { [log = neverShown.log] answer in
@@ -257,7 +257,8 @@ final class WorkbenchTreeMarkerTests: XCTestCase {
         let baseline = strings(of: neverShown.tree)
         choose(.files, in: neverShown)
         try selectInTree("b.txt", in: neverShown)
-        XCTAssertTrue(neverShown.log.gitAsks.isEmpty, "Git is never shown, so it is never asked")
+        XCTAssertEqual(
+            neverShown.log.gitAsks.count, 1, "the one open-time ask, and no ask for a selection")
         XCTAssertEqual(strings(of: neverShown.tree), baseline)
         XCTAssertTrue(try letters(in: neverShown.tree).isEmpty)
     }
