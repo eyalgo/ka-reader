@@ -37,7 +37,7 @@ None.
 - **If a document has to be written:** `CONTENT.md`, through `product-content`; any needed
   instance-fence change belongs to the Content Manager through `experience-voice` and that
   document's companion mechanism.
-- **Answer:** <the owner fills this in>
+- **Answer:** Preserve the stronger network sentence verbatim: "KA-Reader sends no telemetry, and it makes no network call while it runs — downloading it uses the network; using it does not." The owner explicitly chose that sentence instead of the instance sentence (`docs/trail/content/cycle-1.md:L46-L66`), and the no-call requirement remains `docs/PRD.md:L457-L466` and `docs/SRS.md:L351-L357`. The literal-wording conflict belongs to the instance fence, not to a product-only reinterpretation. Its proposed stronger-case inheritance rule is now carried by `<the instance>/system/experience/voice_restrictions_open_issues.md` item 2.1, committed as `kensaiapp-opensource@0a6db8eab3dbbcd3038d8bbac98f54e72fb77bca`. That item is unanswered: do not describe the fence as already changed or the inheritance as settled. The product fold retains the stronger standing sentence and records the pending instance decision; it adds no operational network exception. Reasoning: `docs/trail/content/self_answer-14.md`.
 
 **How it closes.** `product-content` folds this item on its next run, retaining the stronger
 product promise and routing any instance-level question to its own owner.
