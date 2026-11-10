@@ -11,7 +11,8 @@ struct GitBetaNoticeTests {
     private var glyphs: StatusGlyphs { StatusGlyphs(empty: glyph, failure: glyph) }
     private func tree(_ listing: RootListing = .observed([])) -> RootItemsView {
         let view = RootItemsView(
-            folderGlyph: glyph, fileGlyph: glyph, fileCodeGlyph: glyph, statusGlyphs: glyphs)
+            folderGlyph: glyph, fileGlyph: glyph, fileCodeGlyph: glyph, statusGlyphs: glyphs,
+            tooltipRest: TooltipRestDouble().rest, keyWindow: KeyWindowDouble().source)
         view.show(listing)
         return view
     }
@@ -43,7 +44,9 @@ struct GitBetaNoticeTests {
     @Test func repositoryNoticeIsWholeBesideStatus() {
         for state in RepositoryState.allCases {
             for changed in [false, true] {
-                let view = GitView(statusGlyphs: glyphs)
+                let view = GitView(
+                    statusGlyphs: glyphs, tooltipRest: TooltipRestDouble().rest,
+                    keyWindow: KeyWindowDouble().source)
                 let window = host(view)
                 view.show(repository(state, changed: changed))
                 #expect(notices(view).count == 1)
@@ -109,7 +112,9 @@ struct GitBetaNoticeTests {
             ].map { .failed(.condition($0)) }
         for starting in [repository(changed: true), .failed(.condition(.gitDirectoryMissing))] {
             for replacement in faults {
-                let git = GitView(statusGlyphs: glyphs)
+                let git = GitView(
+                    statusGlyphs: glyphs, tooltipRest: TooltipRestDouble().rest,
+                    keyWindow: KeyWindowDouble().source)
                 let root = tree(
                     .observed([
                         Entry(name: "空 白.txt", path: "空 白.txt", kind: .file, state: .observed)
@@ -136,7 +141,9 @@ struct GitBetaNoticeTests {
         }
     }
     @Test func observedFailureAndFaultHaveDifferentScopes() {
-        let view = GitView(statusGlyphs: glyphs)
+        let view = GitView(
+            statusGlyphs: glyphs, tooltipRest: TooltipRestDouble().rest,
+            keyWindow: KeyWindowDouble().source)
         let window = host(view)
         for condition in GitCondition.allCases {
             view.show(repository(changed: true))
@@ -152,7 +159,8 @@ struct GitBetaNoticeTests {
     @Test func acceptedGitAnswerUpdatesBothSurfacesOnce() {
         let root = tree()
         let view = WorkbenchView(
-            rootItemsView: root, statusGlyphs: glyphs, railFolderGlyph: glyph, railGitGlyph: glyph)
+            rootItemsView: root, statusGlyphs: glyphs, railFolderGlyph: glyph, railGitGlyph: glyph,
+            keyWindow: KeyWindowDouble().source)
         let window = host(view, width: 800)
         var asks = 0
         var sink: GitAnswer?
@@ -178,7 +186,9 @@ struct GitBetaNoticeTests {
     }
     @Test func bothSentencesFitTheActualSidebar() throws {
         for item in [repository(), .failed(.configNotLocated(key: "include.path", path: "空 白"))] {
-            let git = GitView(statusGlyphs: glyphs)
+            let git = GitView(
+                statusGlyphs: glyphs, tooltipRest: TooltipRestDouble().rest,
+                keyWindow: KeyWindowDouble().source)
             let window = host(git)
             git.show(item)
             git.layoutSubtreeIfNeeded()
@@ -260,7 +270,8 @@ struct GitBetaNoticeTests {
         let root = tree(
             .observed([Entry(name: "a.txt", path: "a.txt", kind: .file, state: .observed)]))
         let view = WorkbenchView(
-            rootItemsView: root, statusGlyphs: glyphs, railFolderGlyph: glyph, railGitGlyph: glyph)
+            rootItemsView: root, statusGlyphs: glyphs, railFolderGlyph: glyph, railGitGlyph: glyph,
+            keyWindow: KeyWindowDouble().source)
         let window = host(view, width: 800)
         view.readGit = { $0(.plain) }
         view.rail.entryChosen?(.git)
@@ -289,7 +300,8 @@ struct GitBetaNoticeTests {
         let root = tree()
         root.showGit(repository())
         let view = WorkbenchView(
-            rootItemsView: root, statusGlyphs: glyphs, railFolderGlyph: glyph, railGitGlyph: glyph)
+            rootItemsView: root, statusGlyphs: glyphs, railFolderGlyph: glyph, railGitGlyph: glyph,
+            keyWindow: KeyWindowDouble().source)
         let window = host(view, width: 800)
         #expect(notices(root).isEmpty)
         #expect(fields(view.gitView).isEmpty)
@@ -297,7 +309,9 @@ struct GitBetaNoticeTests {
     }
     @Test func followedPolicySuppressesBothActualViews() {
         let root = tree()
-        let git = GitView(statusGlyphs: glyphs, gitReadPolicy: .followed)
+        let git = GitView(
+            statusGlyphs: glyphs, tooltipRest: TooltipRestDouble().rest,
+            keyWindow: KeyWindowDouble().source, gitReadPolicy: .followed)
         let windows = [host(root), host(git)]
         for item in [
             repository(), .failed(.condition(.gitDirectoryMissing)), .plain,
@@ -310,7 +324,7 @@ struct GitBetaNoticeTests {
         }
         let workbench = WorkbenchView(
             rootItemsView: root, statusGlyphs: glyphs, railFolderGlyph: glyph, railGitGlyph: glyph,
-            gitReadPolicy: .followed)
+            keyWindow: KeyWindowDouble().source, gitReadPolicy: .followed)
         let window = host(workbench, width: 800)
         var asks = 0
         workbench.readGit = {
