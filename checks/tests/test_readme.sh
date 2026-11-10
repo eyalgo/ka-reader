@@ -291,7 +291,12 @@ test_nonrepository_image_sources_are_refused() {
 }
 test_nondisplaying_examples_do_not_hide_later_images() {
   local example
-  for example in '[ordinary](https://images.example/a)' '`![code](https://images.example/a)`' '``![code](https://images.example/a)``' '```
+  for example in '[ordinary](https://images.example/a)' '`![code](https://images.example/a)`' '``![code](https://images.example/a)``' '```![code](https://images.example/a)```' '- ```![code](https://images.example/a)```' '- ```
+  ![code](https://images.example/a)
+  ```' '- ```
+  ![code](https://images.example/a)' '- Outer
+  - ~~~
+    ![code](https://images.example/a)' '```
 ![code](https://images.example/a)
 ```' '~~~markdown
 ![code](https://images.example/a)
@@ -305,23 +310,28 @@ test_nondisplaying_examples_do_not_hide_later_images() {
   done
 }
 test_indented_paragraph_images_are_still_prose() {
-  local prefix source
-  for prefix in '    ' "$TAB"; do
-    for source in '![shown](images/shell.png)' '![remote](https://paragraph.example/image.png)' '<img src="https://paragraph.example/image.png">'; do
-      fixture || return 1
-      image "An ordinary paragraph continues here.
+  local opening prefix source
+  for opening in 'An ordinary paragraph continues here.' 'A paragraph
+    ===' 'A paragraph
+    # still prose'; do
+    for prefix in '    ' "$TAB"; do
+      for source in '![shown](images/shell.png)' '![remote](https://paragraph.example/image.png)' '<img src="https://paragraph.example/image.png">'; do
+        fixture || return 1
+        image "$opening
 ${prefix}${source}"
-      case "$source" in
-        *images/shell.png*) pass || return 1;;
-        *) refuse 'https://paragraph.example/image.png' || return 1;;
-      esac
+        case "$source" in
+          *images/shell.png*) pass || return 1;;
+          *) refuse 'https://paragraph.example/image.png' || return 1;;
+        esac
+      done
     done
   done
 }
 test_list_indentation_does_not_hide_images() {
   local opening indentation
   for opening in '- A list item' '1. A list item' '- Outer item
-  - Inner item'; do
+  - Inner item' '- - Inner item' '- A list item
+lazy continuation'; do
     case "$opening" in *'Inner item'*) indentation='      ';; *) indentation='    ';; esac
     fixture || return 1
     image "$opening
@@ -346,7 +356,10 @@ test_indented_code_after_blocks_stays_excluded() {
 =======
     ![code](https://code.example/image.png)' '[reference]: images/shell.png
     ![code](https://code.example/image.png)' '<!-- a comment -->
-    ![code](https://code.example/image.png)'; do
+    ![code](https://code.example/image.png)' '-     example
+      ![code](https://code.example/image.png)' '1234567890. A paragraph
+
+            ![code](https://code.example/image.png)'; do
     fixture || return 1
     image "$example"
     pass || return 1

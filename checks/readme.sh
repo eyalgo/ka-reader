@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.0.1 — prose/code boundaries follow paragraphs and list containers
 # Version: 1.0.0 — local README wording and image-source inspection
 #
 # WHY THIS EXISTS
@@ -255,20 +256,60 @@ function code_span_end(s,start, n,m,j) {
   }
   return 0
 }
-function filtered_prose(s, result,i,j,end,line,indent,tail,marker,run,fence,fence_length,c,fragment) {
-  i=1;result="";fence=""
+function indentation_columns(s,column, offset) {
+  for(offset=1;offset<=length(s);offset++)
+    column+=(substr(s,offset,1)=="\t" ? 4-column%4 : 1)
+  return column
+}
+function paragraph_boundary(s,paragraph) {
+  return s ~ /^#{1,6}([ \t\r\n]|$)/ ||
+    s ~ /^((\*[ \t]*){3,}|(-[ \t]*){3,}|(_[ \t]*){3,})[\r\n]*$/ ||
+    (paragraph && s ~ /^(=+|-+)[ \t\r\n]*$/) ||
+    s ~ /^\[[^]]+\]:/ || s ~ /^<!--/
+}
+function filtered_prose(s, result,i,j,end,line,indent,tail,marker,run,fence,fence_length,c,fragment,paragraph,depth,list_columns,base,boundary,prefix,marker_length,content_column) {
+  i=1;result="";fence="";paragraph=0;depth=0
   while(i<=length(s)) {
     if(i==1 || substr(s,i-1,1)=="\n") {
       j=index(substr(s,i),"\n");end=(j?i+j:i+length(s))
-      line=substr(s,i,end-i);match(line,/^ */);indent=RLENGTH
-      tail=substr(line,indent+1);marker=substr(tail,1,1);run=0
+      line=substr(s,i,end-i);match(line,/^[ \t]*/);prefix=RLENGTH
+      indent=indentation_columns(substr(line,1,prefix),0)
+      tail=substr(line,prefix+1);base=(depth ? list_columns[depth] : 0)
+      marker=substr(tail,1,1);run=0
       if(marker=="`"||marker=="~")while(substr(tail,run+1,1)==marker)run++
       if(fence) {
-        if(indent<=3&&marker==fence&&run>=fence_length&&substr(tail,run+1)~/^[ \t\r\n]*$/)fence=""
-        result=result "\n";i=end;continue
+        # An unclosed fence ends with its list container (CommonMark § 4.5).
+        if(depth && indent<base && tail!~/^[\r\n]*$/)fence=""
+        else {
+          if(indent-base<=3&&marker==fence&&run>=fence_length&&substr(tail,run+1)~/^[ \t\r\n]*$/)fence=""
+          result=result "\n";i=end;continue
+        }
       }
-      if(indent<=3&&run>=3){fence=marker;fence_length=run;result=result "\n";i=end;continue}
-      if(indent>=4||line~/^\t/){result=result "\n";i=end;continue}
+      if(tail~/^[\r\n]*$/){paragraph=0;result=result "\n";i=end;continue}
+      boundary=(indent-base<=3 && paragraph_boundary(tail,paragraph))
+      # Code cannot interrupt a paragraph, and list indentation is container-relative:
+      # https://spec.commonmark.org/0.31.2/#indented-code-blocks and #list-items.
+      while(depth && indent<list_columns[depth]) {
+        if(paragraph && !boundary && run<3 && tail!~/^([-+*]|[0-9]{1,9}[.)])[ \t]+/)break
+        depth--
+      }
+      base=(depth ? list_columns[depth] : 0)
+      while(!boundary && indent>=base && indent-base<=3 && match(tail,/^([-+*]|[0-9]{1,9}[.)])[ \t]+/)) {
+        prefix=RLENGTH
+        match(tail,/^([-+*]|[0-9]{1,9}[.)])/);marker_length=RLENGTH
+        content_column=indentation_columns(substr(tail,1,prefix),indent)
+        # Five or more padding columns leave code indentation inside the list item.
+        list_columns[++depth]=(content_column-indent-marker_length>4 ? indent+marker_length+1 : content_column)
+        tail=substr(tail,prefix+1);indent=content_column;base=list_columns[depth]
+        paragraph=0;boundary=(indent-base<=3 && paragraph_boundary(tail,paragraph))
+        marker=substr(tail,1,1);run=0
+        if(marker=="`"||marker=="~")while(substr(tail,run+1,1)==marker)run++
+      }
+      if(indent-base<=3&&run>=3&&(marker!="`"||substr(tail,run+1)!~/`/)) {
+        fence=marker;fence_length=run;paragraph=0;result=result "\n";i=end;continue
+      }
+      if(indent-base>=4&&!paragraph){result=result "\n";i=end;continue}
+      paragraph=(!boundary && tail!~/^[\r\n]*$/)
     }
     c=substr(s,i,1)
     if(c=="\\"){result=result substr(s,i,2);i+=2;continue}
