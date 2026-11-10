@@ -45,7 +45,7 @@ wrap() {
 run_check() {
   local before after
   before="$(snapshot "$tree")"; status=0
-  (cd "$tree" && PATH="$bin:$PATH" "$CHECK" "$@") > "$scene/out" 2> "$scene/err" || status=$?
+  (cd "$tree" && PATH="$bin:$PATH" bash -c 'export TEST_BETA_SUBJECT_PID=$$; exec "$@"' subject "$CHECK" "$@") > "$scene/out" 2> "$scene/err" || status=$?
   out="$(cat "$scene/out")"; err="$(cat "$scene/err")"
   after="$(snapshot "$tree")"
   equal "$before" "$after" || return 1
@@ -63,6 +63,7 @@ test_complete_catalogue_and_runtime_canonical_wording_pass() {
   printf '%s\n' 'package enum GitSentences {' '    package static let readAtOpen =' "        \"$WORDING\"" '}' > "$tree/$CATALOGUE"
   pass || return 1
   content 'Changed at runtime. Still whole.'
+  printf '// Changed at runtime. Still whole.\n' > "$tree/$SURFACES/Unrelated.swift"
   refuse "doesn't match the complete beta statement" || return 1
   catalogue 'Changed at runtime. Still whole.'; pass
 }
@@ -92,7 +93,7 @@ static let build = .followed
   fixture; wrap cat "case \"\$*\" in *GitReadPolicy.swift*) exit 17;; esac"
   refuse "Couldn't read $POLICY." || return 1
   fixture
-  printf '%s\n' 'enum Other { static let build = .followed }' '/* outer /* nested */ static let build = .followed */' >> "$tree/$POLICY"
+  printf '%s\n' 'enum Other { static let build = .followed }' '/* outer /* nested */ static let build = .followed */' 'let rawExample = #"enum GitReadPolicy { static let build = .followed }"#' 'let multilineExample = """' 'enum GitReadPolicy { static let build = .followed }' '"""' >> "$tree/$POLICY"
   pass
 }
 test_required_beta_row_is_unique_complete_and_readable() {
@@ -117,6 +118,13 @@ test_required_beta_row_is_unique_complete_and_readable() {
   pass || return 1
   content "$WORDING"; pass || return 1
   content 'Different whole statement.'; refuse "doesn't match" || return 1
+  for mutation in docs/CONTENT.md "$CATALOGUE"; do
+    fixture; policy followed; rm "$tree/$mutation"
+    refuse "Couldn't read $mutation." || return 1
+    fixture; policy followed
+    wrap cat "case \"\$*\" in *'$mutation'*) exit 17;; esac"
+    refuse "Couldn't read $mutation." || return 1
+  done
   for mutation in empty malformed duplicate; do
     fixture; policy followed
     case "$mutation" in
@@ -190,9 +198,9 @@ test_catalogue_statuses_signals_and_inputs_are_preserved() {
   run_check wrong another || return 1
   equal "$status" 2 && equal "$out" '' && equal "$err" 'Usage: checks/git-beta.sh' || return 1
   for signal in HUP INT TERM; do
-    fixture; wrap cat "kill -$signal \"\$PPID\"; exit 17"
+    fixture; wrap cat "kill -$signal \"\$TEST_BETA_SUBJECT_PID\"; exit 17"
     run_check || return 1
-    equal "$status" 1 && equal "$out" '' && contains "$err" 'The wording check was interrupted while inspecting' && contains "$err" 'Run checks/git-beta.sh again from the KA-Reader folder.' || return 1
+    equal "$status" 1 && equal "$out" '' && contains "$err" 'The wording check was interrupted while inspecting' && contains "$err" 'Run checks/git-beta.sh again from the KA-Reader folder.' || { fail "signal case: $signal"; return 1; }
   done
 }
 
@@ -232,9 +240,13 @@ gate_fixture() {
   done
 }
 run_gate() {
+  local before after
+  before="$(snapshot "$tree")"
   status=0
   (cd "$tree" && PATH="$bin:$PATH" bash checks/gate.sh) > "$scene/out" 2> "$scene/err" || status=$?
   out="$(cat "$scene/out")"; err="$(cat "$scene/err")"; trace="$(cat "$bin/gate-trace")"
+  after="$(snapshot "$tree")"
+  equal "$before" "$after"
 }
 test_catalogue_gate_pair_is_unique_unconditional_and_fatal() {
   gate_fixture || return 1; run_gate

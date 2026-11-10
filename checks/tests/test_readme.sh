@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.1.0 — gate ordering includes the beta catalogue pair
 # Version: 1.0.0 — the README check's disposable entry-point and gate proofs
 #
 # WHY THIS EXISTS
@@ -524,6 +525,8 @@ run_step '"'"'Offline page suite'"'"' '"'"'checks/tests/test_offline_page.sh'"'"
 run_step '"'"'Strings check'"'"' '"'"'checks/strings.sh'"'"'
 run_step '"'"'Strings check suite'"'"' '"'"'checks/tests/test_strings.sh'"'"'
 run_step '"'"'Strings check step suite'"'"' '"'"'checks/tests/test_strings_step.sh'"'"'
+run_step '"'"'Git beta catalogue check'"'"' '"'"'checks/git-beta.sh'"'"'
+run_step '"'"'Git beta catalogue check suite'"'"' '"'"'checks/tests/test_git_beta.sh'"'"'
 run_step '"'"'Release workflow shape'"'"' '"'"'checks/release-shape.sh .github/workflows/release.yml'"'"'
 run_step '"'"'Release workflow shape suite'"'"' '"'"'checks/tests/test_release_shape.sh'"'"'
 run_step '"'"'Release version suite'"'"' '"'"'checks/tests/test_release_version.sh'"'"'
@@ -550,12 +553,13 @@ gate_shape() {
     $0 == direct { b=NR }
     $0 == suite { c=NR }
     /run_step '\''Release workflow shape'\'' / { d=NR }
-    END { exit !(a && b==a+1 && c==b+1 && d==c+1) }
+    END { exit !(a && b==a+1 && c==b+1 && d==c+3) }
   ' || return 1
   # A bypass still has exact call lines, so structure alone cannot certify it.
   ! printf '%s\n' "$text" | grep -E '^(if |fi$|false|exit 0)' > /dev/null
 }
 gate_fixture() {
+  gate_shape "$GATE" || return 1
   fixture || return 1
   mkdir -p "$tree/checks/tests" "$tree/ka-reader-mac"
   cp "$GATE" "$tree/checks/gate.sh"
