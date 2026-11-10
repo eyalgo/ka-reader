@@ -30,6 +30,16 @@ KA-Reader is used with a mouse. It has no keyboard navigation, and it makes no p
 
 You can choose a folder in the Open panel, browse its file tree and select a file to read. The reading panel renders Markdown. You can switch between Files and Git to see the Git state read from a repository.
 
+## Known gaps
+
+<!-- git-read-at-open:start -->
+
+The Git view and the letters beside changed files show the Git state KA-Reader read when you opened the folder. They do not update while KA-Reader is open.
+
+If a repository is created at the root of the folder you opened while KA-Reader is open, KA-Reader doesn't show its Git state until you start KA-Reader again.
+
+<!-- git-read-at-open:end -->
+
 ## What it is
 
 A tool optimized for **inspection rather than authoring** — select files, browse the
