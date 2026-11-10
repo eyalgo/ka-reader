@@ -18,7 +18,7 @@ private enum GitViewLayout {
 /// presentations and nothing else. *Pending* is the reading sentence. *Plain* is nothing at all.
 /// *Repository* is the branch element, the short status where one is drawn, and each non-empty list
 /// under its heading and count, its rows in `GitRowOrder`'s order. *Failed* and *stopped* are each
-/// one failure message.
+/// one failure message. An observed failure also has the read-at-open notice outside that slot.
 ///
 /// A click anywhere on a row raises `rowActivated` with its path, and the clicked row is drawn as
 /// selected: the selection fill and the bar. A status letter raises a tooltip when the pointer rests on it, and nothing else in the view
@@ -33,6 +33,7 @@ package final class GitView: NSView {
         var path: String { entry.path }
     }
 
+    private let gitReadPolicy: GitReadPolicy
     private let statusGlyphs: StatusGlyphs
     private let tooltipRest: TooltipRest
     private let keyWindow: KeyWindowSource
@@ -61,8 +62,9 @@ package final class GitView: NSView {
 
     package init(
         statusGlyphs: StatusGlyphs, tooltipRest: TooltipRest = .live,
-        keyWindow: KeyWindowSource = .live
+        keyWindow: KeyWindowSource = .live, gitReadPolicy: GitReadPolicy = .build
     ) {
+        self.gitReadPolicy = gitReadPolicy
         self.statusGlyphs = statusGlyphs
         self.tooltipRest = tooltipRest
         self.keyWindow = keyWindow
@@ -142,6 +144,7 @@ package final class GitView: NSView {
         }
         rows = []
         selectedIndex = nil
+        if gitReadPolicy.showsNotice(for: item) { pin(GitReadNotice()) }
         switch item {
         case .pending:
             add(message: GitSentences.pending, glyph: statusGlyphs.empty)
@@ -319,4 +322,57 @@ package final class GitView: NSView {
 /// A document view whose origin is its top-left, so a list reads from the top of its scroll view.
 private final class FlippedView: NSView {
     override var isFlipped: Bool { true }
+}
+
+/// Whole catalogue notice, outside failure components and selectable rows.
+/// DESIGN: ui 13, inkMuted, line height 1.4, spacing.xl inset.
+@MainActor
+final class GitReadNotice: NSView {
+    let label = NSTextField(wrappingLabelWithString: GitSentences.readAtOpen)
+    private var measuredHeight: NSLayoutConstraint?
+
+    init() {
+        super.init(frame: .zero)
+        label.isSelectable = false
+        label.font = .systemFont(ofSize: 13)
+        label.textColor = CodeColors.inkMuted
+        let paragraph = NSMutableParagraphStyle()
+        paragraph.minimumLineHeight = 18.2
+        paragraph.maximumLineHeight = 18.2
+        label.attributedStringValue = NSAttributedString(
+            string: GitSentences.readAtOpen,
+            attributes: [
+                .font: NSFont.systemFont(ofSize: 13), .foregroundColor: CodeColors.inkMuted,
+                .paragraphStyle: paragraph,
+            ])
+        label.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(label)
+        NSLayoutConstraint.activate([
+            label.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 24),
+            label.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -24),
+            label.topAnchor.constraint(equalTo: topAnchor, constant: 24),
+            label.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -24),
+        ])
+        let height = heightAnchor.constraint(equalToConstant: height(for: 260))
+        height.isActive = true
+        measuredHeight = height
+    }
+
+    // AppKit measures the actual wrapped cell, rather than estimating line count.
+    // https://developer.apple.com/documentation/appkit/nscell/cellsize(forbounds:)
+    func height(for width: CGFloat) -> CGFloat {
+        ceil(
+            label.cell?.cellSize(
+                forBounds: NSRect(
+                    x: 0, y: 0, width: max(1, width - 48), height: .greatestFiniteMagnitude)
+            ).height ?? 0) + 48
+    }
+
+    override func layout() {
+        measuredHeight?.constant = height(for: bounds.width)
+        super.layout()
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) { preconditionFailure("GitReadNotice is built in code only") }
 }

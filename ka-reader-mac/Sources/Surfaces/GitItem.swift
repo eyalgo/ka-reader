@@ -95,6 +95,26 @@ package nonisolated enum GitFailure: Equatable, Sendable {
     /// not observed, so the case says nothing of outside.
     case submoduleElsewhere(name: String, path: String)
     case condition(GitCondition)
+
+    /// Whether the answer names an observed condition rather than an unexplained read failure.
+    package var hasObservedCondition: Bool {
+        switch self {
+        case .gitDirectoryOutside, .configNamesOutside, .configNotLocated,
+            .objectStoreNamesOutside, .objectStoreNotLocated, .submoduleElsewhere:
+            return true
+        case .condition(let condition):
+            switch condition {
+            case .probeRepositoryReadFailed, .notARoot, .repositoryReadFailed,
+                .machineConfigNotSwitchedOff:
+                return false
+            case .probeFolderUnavailable, .probeGitDirectoryUnreadable,
+                .probeGitEntryNotDirectory, .probeGitFileUnreadable, .gitDirectoryMissing,
+                .gitDirectoryUnreadable, .notARepository, .gitmodulesUnreadable:
+                return true
+            }
+        }
+    }
+
 }
 
 /// The twelve conditions a failed answer names without a path, each raw value the wire's own string.

@@ -7,13 +7,14 @@ import XCTest
 /// string literal here and never read from `GitSentences`.
 @MainActor
 final class GitViewTests: XCTestCase {
+    private let betaNotice =
+        "The Git view and the letters beside changed files show the Git state KA-Reader read when you opened the folder. They do not update while KA-Reader is open."
     private let emptyGlyph = NSImage(size: NSSize(width: 3, height: 3))
     private let failureGlyph = NSImage(size: NSSize(width: 4, height: 4))
 
     private let clean = "Nothing has changed in this repository."
     private let fault =
-        "KA-Reader stopped while reading this repository's Git status and can't tell why. "
-        + "The file tree is unaffected; the Git view shows the status again if KA-Reader can read it."
+        "KA-Reader stopped while reading this repository's Git status and can't tell why. The file tree is unaffected. Start KA-Reader again to read the status again."
 
     private struct Fixture {
         let view: GitView
@@ -136,7 +137,7 @@ final class GitViewTests: XCTestCase {
     func test_aNormalRepositoryWithEmptyListsDrawsTheBranchAndTheCleanSentenceAndNoHeading() {
         let fixture = makeView(showing: repository())
 
-        XCTAssertEqual(strings(fixture.view), ["main", clean])
+        XCTAssertEqual(strings(fixture.view), [betaNotice, "main", clean])
         XCTAssertTrue(rowViews(fixture.view).isEmpty)
     }
 
@@ -153,7 +154,8 @@ final class GitViewTests: XCTestCase {
         XCTAssertEqual(
             strings(fixture.view),
             [
-                "main", "Staged", "2", "READ.md", "R", "src/new.txt", "A", "Changes", "4",
+                betaNotice, "main", "Staged", "2", "READ.md", "R", "src/new.txt", "A", "Changes",
+                "4",
                 "A.txt", "D", "b.txt", "M", "c.txt", "C", "tmp.log", "U",
             ])
     }
@@ -177,8 +179,9 @@ final class GitViewTests: XCTestCase {
         let stagedOnly = makeView(showing: repository(staged: [entry("a.txt", .added)]))
 
         XCTAssertEqual(
-            strings(changedOnly.view), ["main", "Changes", "2", "a.txt", "M", "b.txt", "A"])
-        XCTAssertEqual(strings(stagedOnly.view), ["main", "Staged", "1", "a.txt", "A"])
+            strings(changedOnly.view),
+            [betaNotice, "main", "Changes", "2", "a.txt", "M", "b.txt", "A"])
+        XCTAssertEqual(strings(stagedOnly.view), [betaNotice, "main", "Staged", "1", "a.txt", "A"])
     }
 
     func test_eachOfTheSevenNonNormalStatesDrawsItsOwnSentenceAndNeverTheCleanOne() {
@@ -197,7 +200,7 @@ final class GitViewTests: XCTestCase {
             let branch: GitBranch = state == .rebase ? .detached(commit: commit) : .named("main")
             let drawn = strings(makeView(showing: repository(branch: branch, state: state)).view)
 
-            XCTAssertEqual(drawn, [state == .rebase ? commit : "main", sentence])
+            XCTAssertEqual(drawn, [betaNotice, state == .rebase ? commit : "main", sentence])
             XCTAssertFalse(drawn.contains(clean))
         }
         XCTAssertEqual(sentences.count, 7)
@@ -210,7 +213,8 @@ final class GitViewTests: XCTestCase {
         XCTAssertEqual(
             strings(fixture.view),
             [
-                "main", "A merge is in progress in this repository.", "Changes", "1", "a.txt",
+                betaNotice, "main", "A merge is in progress in this repository.", "Changes", "1",
+                "a.txt",
                 "C",
             ])
     }
@@ -222,9 +226,8 @@ final class GitViewTests: XCTestCase {
         XCTAssertEqual(
             strings(fixture.view),
             [
-                "This repository's Git directory is at /elsewhere/.git/worktrees/wt, outside the "
-                    + "folder you opened, so KA-Reader doesn't read its Git status. "
-                    + "The file tree and the reading panel are unaffected."
+                betaNotice,
+                "When you opened the folder, this repository's Git directory was at /elsewhere/.git/worktrees/wt, outside the folder you opened, so KA-Reader didn't read its Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again.",
             ])
         XCTAssertTrue(shown(descendants(of: fixture.view)).allSatisfy { !($0 is NSButton) })
         XCTAssertEqual(visibleImageViews(fixture.view).map(\.image), [failureGlyph])
@@ -237,9 +240,8 @@ final class GitViewTests: XCTestCase {
         XCTAssertEqual(
             strings(fixture.view),
             [
-                "KA-Reader found a Git object store that names ../../../elsewhere/objects, outside "
-                    + "the folder you opened, so KA-Reader doesn't read the folder's Git status. "
-                    + "The file tree and the reading panel are unaffected."
+                betaNotice,
+                "When you opened the folder, KA-Reader found a Git object store that names ../../../elsewhere/objects, outside the folder you opened, so it didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again.",
             ])
         XCTAssertNotEqual(strings(fixture.view), [GitSentences.pending])
         XCTAssertTrue(rowViews(fixture.view).isEmpty)
@@ -253,9 +255,8 @@ final class GitViewTests: XCTestCase {
         XCTAssertEqual(
             strings(fixture.view),
             [
-                "KA-Reader found a Git object store that names relative/objects. "
-                    + "KA-Reader doesn't work out where that path leads, so it doesn't read the "
-                    + "folder's Git status. The file tree and the reading panel are unaffected."
+                betaNotice,
+                "When you opened the folder, KA-Reader found a Git object store that names relative/objects but didn't work out where that path leads, so it didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again.",
             ])
         XCTAssertNotEqual(strings(fixture.view), [GitSentences.pending])
         XCTAssertTrue(rowViews(fixture.view).isEmpty)
@@ -270,9 +271,8 @@ final class GitViewTests: XCTestCase {
         XCTAssertEqual(
             strings(fixture.view),
             [
-                "KA-Reader found core.excludesfile set to ignore-rel and doesn't work out where that "
-                    + "path leads, so it doesn't read the folder's Git status. "
-                    + "The file tree and the reading panel are unaffected."
+                betaNotice,
+                "When you opened the folder, KA-Reader found core.excludesfile set to ignore-rel and didn't work out where that path leads, so it didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again.",
             ])
         XCTAssertNotEqual(strings(fixture.view), [GitSentences.pending])
         XCTAssertTrue(rowViews(fixture.view).isEmpty)
@@ -287,9 +287,8 @@ final class GitViewTests: XCTestCase {
         XCTAssertEqual(
             strings(fixture.view),
             [
-                "KA-Reader found that a .gitmodules gives the submodule at submodule the path evil, "
-                    + "which leads somewhere else, so it doesn't read the folder's Git status. "
-                    + "The file tree and the reading panel are unaffected."
+                betaNotice,
+                "When you opened the folder, KA-Reader found that a .gitmodules gives the submodule at submodule the path evil, which leads somewhere else, so it didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again.",
             ])
         XCTAssertTrue(rowViews(fixture.view).isEmpty)
         XCTAssertTrue(shown(descendants(of: fixture.view)).allSatisfy { !($0 is NSButton) })
@@ -302,9 +301,8 @@ final class GitViewTests: XCTestCase {
         XCTAssertEqual(
             strings(fixture.view),
             [
-                "KA-Reader couldn't read how a repository in the folder you opened names and places "
-                    + "its submodules, so it doesn't read the folder's Git status. "
-                    + "The file tree and the reading panel are unaffected."
+                betaNotice,
+                "When you opened the folder, KA-Reader couldn't read how a repository in it names and places its submodules, so it didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again.",
             ])
         XCTAssertTrue(rowViews(fixture.view).isEmpty)
         XCTAssertTrue(shown(descendants(of: fixture.view)).allSatisfy { !($0 is NSButton) })
@@ -346,7 +344,9 @@ final class GitViewTests: XCTestCase {
         for item in failures {
             let fixture = makeView(showing: item)
 
-            XCTAssertEqual(strings(fixture.view).count, 1, "\(item)")
+            XCTAssertEqual(
+                strings(fixture.view).count, GitReadPolicy.atOpen.showsNotice(for: item) ? 2 : 1,
+                "\(item)")
             XCTAssertTrue(rowViews(fixture.view).isEmpty, "\(item)")
         }
     }

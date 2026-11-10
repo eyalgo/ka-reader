@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Version: 1.15.0 — wording suites ignore inherited case selection
+# Version: 1.14.0 — the beta catalogue command and its entire suite join the document checks
 # Version: 1.13.0 — the README wording/image check and its entire suite join the document checks
 # Version: 1.12.0 — the check that the notices file names every dependency, and its suite, join the
 #   list, after the no-network suite
@@ -43,7 +45,12 @@ set -euo pipefail
 run_step() {
   local name="$1"
   local command="$2"
-  if ! bash -c "$command"; then
+  if ! (
+    case "$name" in
+      'README check suite'|'Git beta catalogue check suite') unset KA_READER_TEST_ONLY;;
+    esac
+    bash -c "$command"
+  ); then
     echo "gate.sh: step failed: $name" >&2
     exit 1
   fi
@@ -142,6 +149,8 @@ run_step 'Strings check step suite' 'checks/tests/test_strings_step.sh'
 # together is a grouping preference; neither step supplies a build dependency for the release block.
 run_step 'README check' 'checks/readme.sh'
 run_step 'README check suite' 'checks/tests/test_readme.sh'
+run_step 'Git beta catalogue check' 'checks/git-beta.sh'
+run_step 'Git beta catalogue check suite' 'checks/tests/test_git_beta.sh'
 # The release block: the shape check of .github/workflows/release.yml and the suites of the four
 # release scripts it names. The block reads the bundle "Build KA-Reader.app" wrote, so it comes
 # after that step. It launches nothing and leaves the bundle as it is, so it comes before "Launch

@@ -73,10 +73,12 @@ package final class WorkbenchView: NSView {
     /// and no answer ever comes. Only the latest selection's sink draws anything (CP-278).
     package var selectFile: SelectFileIntent?
 
-    /// Set by the view's owner, and called on the main actor exactly once per workbench, on the
-    /// first showing of the Git view, with a sink for the Git item. The first answer the sink
-    /// receives is drawn and kept: a later switch to Git draws it again and asks nothing.
-    package var readGit: GitReadIntent?
+    /// Set by the view's owner for the opened folder. Wiring the intent starts the workbench's
+    /// one Git read on the main actor, before a sidebar switch. The first answer is drawn and
+    /// kept; later switches and replacement intents ask nothing.
+    package var readGit: GitReadIntent? {
+        didSet { askForGitOnce() }
+    }
 
     /// Set by the view's owner, and called on the main actor with the latest selection's path each
     /// time the reader scrolls the open file.
@@ -114,8 +116,9 @@ package final class WorkbenchView: NSView {
     /// was raised.
     private var selectionActs = 0
 
-    /// Whether the Git view has been shown, and so whether `readGit` has been raised.
+    /// Whether `readGit` has been raised: once, when the intent is first wired for the opened folder.
     private var hasAskedGit = false
+    private let gitReadPolicy: GitReadPolicy
 
     /// The path of the file a Git row opened, while it is the open file; nil once a selection made
     /// in the tree replaces it.
@@ -125,13 +128,17 @@ package final class WorkbenchView: NSView {
     /// beside them, using the supplied empty-state image and the rail's two glyphs.
     package init(
         rootItemsView: RootItemsView, statusGlyphs: StatusGlyphs, railFolderGlyph: NSImage,
-        railGitGlyph: NSImage, keyWindow: KeyWindowSource = .live
+        railGitGlyph: NSImage, keyWindow: KeyWindowSource = .live,
+        gitReadPolicy: GitReadPolicy = .build
     ) {
+        self.gitReadPolicy = gitReadPolicy
         self.rootItemsView = rootItemsView
         rail = RailSwitchView(folderGlyph: railFolderGlyph, gitGlyph: railGitGlyph)
-        gitView = GitView(statusGlyphs: statusGlyphs, keyWindow: keyWindow)
+        gitView = GitView(
+            statusGlyphs: statusGlyphs, keyWindow: keyWindow, gitReadPolicy: gitReadPolicy)
         readingPanel = ReadingPanelView(statusGlyphs: statusGlyphs)
         super.init(frame: .zero)
+        rootItemsView.showGit(.pending, policy: gitReadPolicy)
         rootItemsView.fileSelected = { [weak self] entry in self?.selectFromTree(entry) }
         gitView.rowActivated = { [weak self] path in self?.selectFromGit(path) }
         rail.entryChosen = { [weak self] entry in self?.show(entry) }
@@ -184,9 +191,9 @@ package final class WorkbenchView: NSView {
         ])
     }
 
-    /// Shows one sidebar view and hides the other, and touches nothing else. Showing Git for the
-    /// first time asks the owner for the Git item. Showing Files after a Git row opened a file shows
-    /// that file in the tree as left, with no selection event, no folder opened and no scroll.
+    /// Shows one sidebar view and hides the other. Switching never starts a second Git read.
+    /// Showing Files after a Git row opened a file shows that file in the tree as left, with no
+    /// selection event, no folder opened and no scroll.
     private func show(_ entry: RailEntry) {
         rail.active = entry
         switch entry {
@@ -202,15 +209,15 @@ package final class WorkbenchView: NSView {
     }
 
     private func askForGitOnce() {
-        guard !hasAskedGit else { return }
+        guard !hasAskedGit, let readGit else { return }
         hasAskedGit = true
         let latch = SelectionLatch()
-        readGit? { [weak self] item in
+        readGit { [weak self] item in
             guard !latch.fired else { return }
             latch.fired = true
             self?.gitView.show(item)
             // The tree's markers come from this one item and from nothing else (CP-581).
-            self?.rootItemsView.showMarkers(TreeMarkers(item))
+            self?.rootItemsView.showGit(item, policy: self?.gitReadPolicy ?? .build)
         }
     }
 

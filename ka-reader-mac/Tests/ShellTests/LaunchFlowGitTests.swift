@@ -1,6 +1,7 @@
 import AppKit
 import Shell
 import Surfaces
+import Testing
 import XCTest
 
 /// The Git view through `LaunchFlow` into the product's window: the fifth bridge call, the
@@ -8,6 +9,8 @@ import XCTest
 /// shell's half of CP-553 and CP-561).
 @MainActor
 final class LaunchFlowGitTests: LaunchWindowTestCase {
+    private let betaNotice =
+        "The Git view and the letters beside changed files show the Git state KA-Reader read when you opened the folder. They do not update while KA-Reader is open."
     private static let chosenFolder = URL(
         fileURLWithPath: "/Users/someone/notes", isDirectory: true)
 
@@ -22,8 +25,7 @@ final class LaunchFlowGitTests: LaunchWindowTestCase {
             + #""changed":[{"path":"a.txt","category":"modified"}]}"#).utf8)
 
     private static let faultSentence =
-        "KA-Reader stopped while reading this repository's Git status and can't tell why. "
-        + "The file tree is unaffected; the Git view shows the status again if KA-Reader can read it."
+        "KA-Reader stopped while reading this repository's Git status and can't tell why. The file tree is unaffected. Start KA-Reader again to read the status again."
 
     private func launch(git: Data?) -> WindowLaunch {
         let launch = makeLaunch(answers: [Self.chosenFolder])
@@ -104,12 +106,11 @@ final class LaunchFlowGitTests: LaunchWindowTestCase {
         XCTAssertEqual(
             drawn,
             [
-                "KA-Reader found core.excludesfile set to ignore-rel and doesn't work out where that "
-                    + "path leads, so it doesn't read the folder's Git status. "
-                    + "The file tree and the reading panel are unaffected."
+                betaNotice,
+                "When you opened the folder, KA-Reader found core.excludesfile set to ignore-rel and didn't work out where that path leads, so it didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again.",
             ])
-        XCTAssertTrue(drawn[0].contains("core.excludesfile") && drawn[0].contains("ignore-rel"))
-        XCTAssertEqual(drawn[0].lowercased().components(separatedBy: "outside").count - 1, 0)
+        XCTAssertTrue(drawn[1].contains("core.excludesfile") && drawn[1].contains("ignore-rel"))
+        XCTAssertEqual(drawn[1].lowercased().components(separatedBy: "outside").count - 1, 0)
 
         let outside = Data(
             (#"{"state":"failed","condition":"config_names_outside","#
@@ -122,9 +123,8 @@ final class LaunchFlowGitTests: LaunchWindowTestCase {
         XCTAssertEqual(
             strings(in: outsideWorkbench),
             [
-                "KA-Reader found core.excludesfile set to ignore-rel, outside the folder you opened, "
-                    + "so it doesn't read the folder's Git status. "
-                    + "The file tree and the reading panel are unaffected."
+                betaNotice,
+                "When you opened the folder, KA-Reader found core.excludesfile set to ignore-rel, outside the folder you opened, so it didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again.",
             ])
     }
 
@@ -143,12 +143,11 @@ final class LaunchFlowGitTests: LaunchWindowTestCase {
         XCTAssertEqual(
             drawn,
             [
-                "KA-Reader found a Git object store that names relative/objects. "
-                    + "KA-Reader doesn't work out where that path leads, so it doesn't read the "
-                    + "folder's Git status. The file tree and the reading panel are unaffected."
+                betaNotice,
+                "When you opened the folder, KA-Reader found a Git object store that names relative/objects but didn't work out where that path leads, so it didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again.",
             ])
-        XCTAssertTrue(drawn[0].contains("relative/objects"))
-        XCTAssertEqual(drawn[0].lowercased().components(separatedBy: "outside").count - 1, 0)
+        XCTAssertTrue(drawn[1].contains("relative/objects"))
+        XCTAssertEqual(drawn[1].lowercased().components(separatedBy: "outside").count - 1, 0)
 
         let outside = Data(
             (#"{"state":"failed","condition":"object_store_names_outside","#
@@ -161,9 +160,8 @@ final class LaunchFlowGitTests: LaunchWindowTestCase {
         XCTAssertEqual(
             strings(in: outsideWorkbench),
             [
-                "KA-Reader found a Git object store that names relative/objects, outside the folder "
-                    + "you opened, so KA-Reader doesn't read the folder's Git status. "
-                    + "The file tree and the reading panel are unaffected."
+                betaNotice,
+                "When you opened the folder, KA-Reader found a Git object store that names relative/objects, outside the folder you opened, so it didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again.",
             ])
     }
 
@@ -183,11 +181,10 @@ final class LaunchFlowGitTests: LaunchWindowTestCase {
         XCTAssertEqual(
             drawn,
             [
-                "KA-Reader found that a .gitmodules gives the submodule at submodule the path evil, "
-                    + "which leads somewhere else, so it doesn't read the folder's Git status. "
-                    + "The file tree and the reading panel are unaffected."
+                betaNotice,
+                "When you opened the folder, KA-Reader found that a .gitmodules gives the submodule at submodule the path evil, which leads somewhere else, so it didn't read the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again.",
             ])
-        XCTAssertEqual(drawn[0].lowercased().components(separatedBy: "outside").count - 1, 0)
+        XCTAssertEqual(drawn[1].lowercased().components(separatedBy: "outside").count - 1, 0)
     }
 
     /// CP-726: an answer short of a member is not drawn as a message; it draws the fault sentence.
@@ -297,17 +294,20 @@ final class LaunchFlowGitTests: LaunchWindowTestCase {
         presenter.onPresent = { content in
             if content is WorkbenchView { delivered.fulfill() }
         }
+        // The folder's one Git read starts with the folder, so its delivery is awaited from the
+        // start; the bridge records the buffer freed before the item crosses back.
+        let gitDelivered = expectation(description: "the Git item was delivered")
+        gitDelivered.assertForOverFulfill = false
+        runner.onDelivery = {
+            if !bridge.ranOnMain("free:git").isEmpty { gitDelivered.fulfill() }
+        }
         let flow = LaunchFlow(
             panel: FakePanel(answers: [Self.chosenFolder], log: log), bridge: bridge,
             glyphs: FakeGlyphSource(), presenter: presenter, reader: runner, terminate: {})
         flow.run()
-        await fulfillment(of: [delivered], timeout: 10)
+        await fulfillment(of: [delivered, gitDelivered], timeout: 10)
         let workbench = try XCTUnwrap(presenter.contents.last as? WorkbenchView)
-
-        let gitDelivered = expectation(description: "the Git item was delivered")
-        runner.onDelivery = { gitDelivered.fulfill() }
         workbench.rail.entryChosen?(.git)
-        await fulfillment(of: [gitDelivered], timeout: 10)
 
         XCTAssertEqual(bridge.ranOnMain("read_git"), [false])
         XCTAssertEqual(bridge.ranOnMain("free:git"), [false])
@@ -332,5 +332,122 @@ final class LaunchFlowGitTests: LaunchWindowTestCase {
         for call in ["open_folder", "list_tree", "select_file", "read_git"] {
             XCTAssertTrue(logged.contains(call), "no \(call) in \(logged)")
         }
+    }
+}
+
+@MainActor
+struct GitBetaLaunchTests {
+    private let notice =
+        "The Git view and the letters beside changed files show the Git state KA-Reader read when you opened the folder. They do not update while KA-Reader is open."
+    private let repository = Data(
+        #"{"state":"observed","kind":"root","branch":{"kind":"branch","name":"main"},"repository_state":"normal","staged":[],"changed":[{"path":"a.txt","category":"modified"}]}"#
+            .utf8)
+    private func text(_ view: NSView) -> [String] {
+        view.subviews.flatMap { child in
+            (child as? NSTextField).map { [$0.stringValue] } ?? text(child)
+        }
+    }
+    private func exercise(_ answer: Data, expectsNotice: Bool, plain: Bool = false) async throws {
+        createTheSharedApplication()
+        let log = EventLog()
+        let bridge = RecordingBridge(log: log)
+        bridge.listAnswer = Data(
+            #"{"state":"observed","entries":[{"name":"a.txt","path":"a.txt","kind":"file","state":"observed","language":"plain"}]}"#
+                .utf8)
+        bridge.gitAnswer = answer
+        bridge.selectAnswers = [
+            "a.txt": Data(#"{"state":"text","content":"before","language":"plain"}"#.utf8)
+        ]
+        let presenter = FakeWindowPresenter()
+        let reader = HoldingReadRunner()
+        let main = HeldMainDelivery()
+        let flow = LaunchFlow(
+            panel: FakePanel(answers: [URL(fileURLWithPath: "/notes")], log: log), bridge: bridge,
+            glyphs: FakeGlyphSource(), presenter: presenter, reader: reader,
+            treeActs: InlineReadRunner(), main: main, terminate: {})
+        flow.run()
+        reader.release(0)
+        let view = try #require(presenter.contents.last as? WorkbenchView)
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 900, height: 500), styleMask: [.borderless],
+            backing: .buffered, defer: true)
+        window.contentView = view
+        view.layoutSubtreeIfNeeded()
+        view.rail.entryChosen?(.git)
+        reader.release(1)
+        view.layoutSubtreeIfNeeded()
+        let gitBefore = text(view.gitView)
+        #expect(gitBefore.filter { $0 == notice }.count == (expectsNotice ? 1 : 0))
+        #expect(gitBefore.isEmpty == plain)
+        #expect(!gitBefore.contains { $0.contains("INTERNAL-DO-NOT-DRAW") })
+        if !expectsNotice && !plain { #expect(gitBefore == [GitSentences.fault]) }
+        view.rail.entryChosen?(.files)
+        #expect(text(view.rootItemsView).filter { $0 == notice }.count == (expectsNotice ? 1 : 0))
+        view.rootItemsView.outlineView.selectRowIndexes(
+            IndexSet(integer: 0), byExtendingSelection: false)
+        reader.release(2)
+        #expect(view.readingPanel.contentView.string == "before")
+        let receiver = try #require(bridge.receivers.last ?? nil)
+        let reports =
+            plain
+            ? ["repository created", "edit", "staging", "commit", "root disappeared"]
+            : ["edit", "staging", "commit", "root disappeared", "condition cleared"]
+        for (index, event) in reports.enumerated() {
+            switch event {
+            case "staging":
+                bridge.gitAnswer = Data(
+                    #"{"state":"observed","kind":"root","branch":{"kind":"branch","name":"main"},"repository_state":"normal","staged":[{"path":"a.txt","category":"modified"}],"changed":[]}"#
+                        .utf8)
+            case "commit", "condition cleared":
+                bridge.gitAnswer = Data(
+                    #"{"state":"observed","kind":"root","branch":{"kind":"branch","name":"main"},"repository_state":"normal","staged":[],"changed":[]}"#
+                        .utf8)
+            case "root disappeared":
+                bridge.gitAnswer = Data(#"{"state":"observed","kind":"plain"}"#.utf8)
+            default:
+                bridge.gitAnswer = repository
+            }
+            let handle = UInt(900 + index)
+            let payload = Data(
+                #"{"listings":[{"path":"","answer":{"state":"observed","entries":[{"name":"a.txt","path":"a.txt","kind":"file","state":"observed","language":"plain"},{"name":"new.txt","path":"new.txt","kind":"file","state":"observed","language":"plain"}]}}],"open_file":{"revision":\#(index + 1),"path":"a.txt","position":"line=0;x=0","answer":{"state":"text","content":"\#(event)","language":"plain"}}}"#
+                    .utf8)
+            await withCheckedContinuation { done in
+                DispatchQueue.global().async {
+                    receiver.take(BridgeBuffer(payload: payload, handle: handle))
+                    done.resume()
+                }
+            }
+            main.releaseAll()
+            view.layoutSubtreeIfNeeded()
+            #expect(view.rootItemsView.outlineView.numberOfRows == 2)
+            #expect(view.readingPanel.contentView.string == event)
+            #expect(
+                text(view.rootItemsView).filter { $0 == notice }.count == (expectsNotice ? 1 : 0))
+            #expect(text(view.rootItemsView).contains("M") == (answer == repository))
+            view.rail.entryChosen?(.git)
+            #expect(text(view.gitView) == gitBefore)
+            view.rail.entryChosen?(.files)
+            #expect(bridge.gitReadCount == 1)
+            #expect(bridge.freed.filter { $0 == handle }.count == 1)
+        }
+        for buffer in bridge.handedOut { #expect(bridge.freed.filter { $0 == buffer }.count == 1) }
+        #expect(bridge.freed.count == bridge.handedOut.count + 5)
+        withExtendedLifetime((window, flow)) {}
+    }
+    @Test func diskChangesDoNotRelabelGitWhileFileAndTreeAdvance() async throws {
+        try await exercise(repository, expectsNotice: true)
+        try await exercise(
+            Data(#"{"state":"failed","condition":"git_directory_missing"}"#.utf8),
+            expectsNotice: true)
+    }
+    @Test func repositoryCreatedAfterPlainAnswerStaysPlain() async throws {
+        try await exercise(
+            Data(#"{"state":"observed","kind":"plain"}"#.utf8), expectsNotice: false, plain: true)
+    }
+    @Test func diagnosticBearingAnswersDrawFaultAloneAndKeepRoutes() async throws {
+        try await exercise(
+            Data(
+                #"{"state":"failed","condition":"git_directory_missing","diagnostic":"INTERNAL-DO-NOT-DRAW"}"#
+                    .utf8), expectsNotice: false)
     }
 }

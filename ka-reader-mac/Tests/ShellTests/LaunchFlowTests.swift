@@ -15,7 +15,7 @@ private let emptyDocsAnswer = Data(#"{"state":"observed","entries":[]}"#.utf8)
 @MainActor
 final class LaunchFlowTests: XCTestCase {
     private let chosenFolder = URL(fileURLWithPath: "/Users/someone/notes", isDirectory: true)
-    private let namedBridgeCalls: Set<String> = ["open_folder", "list_tree", "free"]
+    private let namedBridgeCalls: Set<String> = ["open_folder", "list_tree", "read_git", "free"]
     private let browseTitle = "Browse…"
     private let quitTitle = "Quit"
 
@@ -255,7 +255,7 @@ final class LaunchFlowTests: XCTestCase {
 
         let workbench = try workbench(in: presenter)
         XCTAssertEqual(
-            log.events.filter { $0 != "free" }, ["panel", "open_folder", "list_tree"])
+            log.events.filter { $0 != "free" }, ["panel", "open_folder", "list_tree", "read_git"])
         XCTAssertEqual(bridge.openedLocations, [chosenFolder])
         XCTAssertEqual(bridge.listedPaths, [""])
         XCTAssertTrue(flow.folderOpened)
@@ -317,7 +317,9 @@ final class LaunchFlowTests: XCTestCase {
         XCTAssertEqual(bridge.ranOnMain("free:"), [false])
         XCTAssertEqual(bridge.ranOnMain("free:docs"), [false, false])
         XCTAssertEqual(bridge.ranOnMain("free:docs/guides"), [false])
-        XCTAssertEqual(runner.deliveriesOnMain, [true, true, true, true, true])
+        XCTAssertEqual(
+            runner.deliveriesOnMain, [true, true, true, true, true, true],
+            "the open-time Git read is one more delivery")
         XCTAssertTrue(presenter.presentationsOnMain.allSatisfy { $0 })
         XCTAssertEqual(try labels(in: root), ["docs", "guides", "a.md"])
     }

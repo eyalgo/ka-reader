@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Version: 1.2.0 — conditional beta prose and entire wording suites
+# Version: 1.1.0 — gate ordering includes the beta catalogue pair
 # Version: 1.0.0 — the README check's disposable entry-point and gate proofs
 #
 # WHY THIS EXISTS
@@ -17,6 +19,14 @@ trap 'rm -rf "$WORK"' EXIT
 TAB=$'\t'
 WORDS=('Read-only first. Read-only second.' 'Network first. Network second.' 'Before first. Before second.' 'Support first. Support second. Support third.' 'Archiving first. Archiving second.' 'Accessibility first. Accessibility second. Accessibility third.')
 LABELS=("Read-only — the product's defining promise" 'The network' 'Before 1.0.0' 'The support posture' 'Archiving' 'The accessibility posture, on the README below its first screen')
+BETA_WORDS='Beta first. Beta second.'
+BETA_LABEL="The beta's Git view"
+POLICY='ka-reader-mac/Sources/Surfaces/GitReadPolicy.swift'
+CATALOGUE='ka-reader-mac/Sources/Surfaces/GitSentences.swift'
+policy() { printf 'package enum GitReadPolicy { static let build = .%s }\n' "$1" > "$tree/$POLICY"; }
+catalogue() { printf 'package enum GitSentences { static let readAtOpen = "%s" }\n' "$1" > "$tree/$CATALOGUE"; }
+append_beta() { printf '\n## Known gaps\n\n<!-- git-read-at-open:start -->\n\n%s\n\nRoot-created-after-open fixture paragraph.\n\n<!-- git-read-at-open:end -->\n' "${1:-$BETA_WORDS}" >> "$tree/README.md"; }
+plain_readme() { printf '%s\n' "${WORDS[@]}" > "$tree/README.md"; }
 fail() { printf '  %s\n' "$*" >&2; return 1; }
 equal() { [ "$1" = "$2" ] || fail "expected [$2], got [$1]"; }
 contains() { case "$1" in *"$2"*) return 0;; *) fail "missing [$2] in [${1:0:400}]";; esac; }
@@ -25,12 +35,14 @@ fixture() {
   [ -x "$CHECK" ] || { fail 'the executable checks/readme.sh is missing'; return 1; }
   scene="$(mktemp -d "$WORK/scene.XXXXXX")"
   tree="$scene/tree"; bin="$scene/bin"; scratch="$scene/scratch"
-  mkdir -p "$tree/docs" "$tree/images" "$bin" "$scratch"
+  mkdir -p "$tree/docs" "$tree/images" "$tree/ka-reader-mac/Sources/Surfaces" "$bin" "$scratch"
+  policy atOpen; catalogue "$BETA_WORDS"
   printf '### Standing sentences\n\n| What it states | The wording |\n|---|---|\n' > "$tree/docs/CONTENT.md"
   for ((i=0; i<6; i++)); do
     printf '| %s (`source`) | **"%s"** Retirement annotation. |\n' "${LABELS[$i]}" "${WORDS[$i]}" >> "$tree/docs/CONTENT.md"
   done
-  printf '%s\n' "${WORDS[@]}" > "$tree/README.md"
+  printf '| %s | **"%s"** |\n' "$BETA_LABEL" "$BETA_WORDS" >> "$tree/docs/CONTENT.md"
+  plain_readme; append_beta
   printf '%s\n' "${WORDS[3]}" > "$tree/SECURITY.md"
   printf 'README.md\nSECURITY.md\ndocs/CONTENT.md\nimages/shell.png\nimages/space name.png\nimages/café.png\nimages/a#.png\nimages/a&b.png\n' > "$bin/tracked"
   printf 'image fixture\n' > "$tree/images/shell.png"
@@ -53,9 +65,11 @@ GIT
   done
 }
 run_check() {
-  status=0
-  (cd "$tree" && PATH="$bin:$PATH" TMPDIR="$scratch" "$CHECK" "$@") > "$scene/out" 2> "$scene/err" || status=$?
+  local before after
+  before="$(snapshot "$tree")"; status=0
+  (cd "$tree" && PATH="$bin:$PATH" TMPDIR="$scratch" bash -c 'export TEST_BETA_SUBJECT_PID=$$; exec "$@"' subject "$CHECK" "$@") > "$scene/out" 2> "$scene/err" || status=$?
   out="$(cat "$scene/out")"; err="$(cat "$scene/err")"
+  after="$(snapshot "$tree")"; equal "$before" "$after" || return 1
   [ ! -f "$bin/audit" ] || fail "a forbidden command ran: $(cat "$bin/audit")"
 }
 pass() { run_check; [ "$status" -eq 0 ] || { fail "$err"; return 1; }; equal "$status" 0 && equal "$out" '' && equal "$err" ''; }
@@ -85,7 +99,7 @@ test_complete_wordings_and_no_images_pass() {
 }
 test_emphasis_around_a_whole_wording_passes() {
   fixture || return 1
-  printf '**%s**\n' "${WORDS[@]}" > "$tree/README.md"
+  printf '**%s**\n' "${WORDS[@]}" > "$tree/README.md"; append_beta
   pass
 }
 test_canonical_wording_is_read_at_runtime() {
@@ -134,7 +148,7 @@ test_partial_or_line_broken_wording_fails() {
 }
 test_findings_follow_table_order_then_file_order() {
   fixture || return 1
-  printf '%s\n' "${WORDS[0]}" "${WORDS[2]}" "${WORDS[3]}" "${WORDS[5]}" > "$tree/README.md"
+  printf '%s\n' "${WORDS[0]}" "${WORDS[2]}" "${WORDS[3]}" "${WORDS[5]}" > "$tree/README.md"; append_beta
   : > "$tree/SECURITY.md"
   run_check || return 1
   expected="$(missing README.md "${WORDS[1]}")
@@ -142,11 +156,12 @@ $(missing SECURITY.md "${WORDS[3]}")
 $(missing README.md "${WORDS[4]}")"
   equal "$status" 1 && equal "$err" "$expected" || return 1
   fixture || return 1
-  : > "$tree/README.md"; : > "$tree/SECURITY.md"
-  { head -4 "$tree/docs/CONTENT.md"; tail -6 "$tree/docs/CONTENT.md" | sort -r; } > "$scene/reordered"
+  : > "$tree/README.md"; append_beta; : > "$tree/SECURITY.md"
+  { head -4 "$tree/docs/CONTENT.md"; tail -7 "$tree/docs/CONTENT.md" | sort -r; } > "$scene/reordered"
   mv "$scene/reordered" "$tree/docs/CONTENT.md"
   expected=''
   while IFS= read -r line; do
+    case "$line" in "| $BETA_LABEL"*) continue;; esac
     case "$line" in '| '*\*\*\"*)
       wording="${line#*\*\*\"}"; wording="${wording%%\"\*\**}"
       expected="$expected$(missing README.md "$wording")
@@ -524,6 +539,8 @@ run_step '"'"'Offline page suite'"'"' '"'"'checks/tests/test_offline_page.sh'"'"
 run_step '"'"'Strings check'"'"' '"'"'checks/strings.sh'"'"'
 run_step '"'"'Strings check suite'"'"' '"'"'checks/tests/test_strings.sh'"'"'
 run_step '"'"'Strings check step suite'"'"' '"'"'checks/tests/test_strings_step.sh'"'"'
+run_step '"'"'Git beta catalogue check'"'"' '"'"'checks/git-beta.sh'"'"'
+run_step '"'"'Git beta catalogue check suite'"'"' '"'"'checks/tests/test_git_beta.sh'"'"'
 run_step '"'"'Release workflow shape'"'"' '"'"'checks/release-shape.sh .github/workflows/release.yml'"'"'
 run_step '"'"'Release workflow shape suite'"'"' '"'"'checks/tests/test_release_shape.sh'"'"'
 run_step '"'"'Release version suite'"'"' '"'"'checks/tests/test_release_version.sh'"'"'
@@ -550,16 +567,19 @@ gate_shape() {
     $0 == direct { b=NR }
     $0 == suite { c=NR }
     /run_step '\''Release workflow shape'\'' / { d=NR }
-    END { exit !(a && b==a+1 && c==b+1 && d==c+1) }
+    END { exit !(a && b==a+1 && c==b+1 && d==c+3) }
   ' || return 1
   # A bypass still has exact call lines, so structure alone cannot certify it.
   ! printf '%s\n' "$text" | grep -E '^(if |fi$|false|exit 0)' > /dev/null
 }
 gate_fixture() {
+  gate_shape "$GATE" || return 1
   fixture || return 1
   mkdir -p "$tree/checks/tests" "$tree/ka-reader-mac"
   cp "$GATE" "$tree/checks/gate.sh"
   cp "$CHECK" "$tree/checks/readme.sh"
+  mkdir -p "$tree/checks/support"
+  cp "$ROOT/checks/support/git-beta-inputs.sh" "$tree/checks/support/git-beta-inputs.sh"
   : > "$bin/gate-trace"
   # Literal script paths get disposable executables. Toolchain commands arrive through PATH.
   while IFS= read -r call; do
@@ -579,9 +599,11 @@ gate_fixture() {
   done
 }
 run_gate() {
-  status=0
+  local before after
+  before="$(snapshot "$tree")"; status=0
   (cd "$tree" && PATH="$bin:$PATH" bash checks/gate.sh) > "$scene/out" 2> "$scene/err" || status=$?
   err="$(cat "$scene/err")"; trace="$(cat "$bin/gate-trace")"
+  after="$(snapshot "$tree")"; equal "$before" "$after"
 }
 test_gate_runs_real_check_and_entire_suite_at_defaults() {
   gate_fixture || return 1; run_gate
@@ -634,6 +656,183 @@ test_existing_gate_calls_keep_names_commands_and_order() {
   equal "$calls" "$BASE_CALLS"
 }
 CASES='test_reference_definitions_are_not_image_prose test_reference_destinations_can_follow_the_label_line test_encoded_alternate_separators_do_not_hide_sources test_legacy_html_references_are_decoded_only_in_attributes test_image_scan_failure_is_not_empty_success test_empty_image_sources_cannot_disappear test_entity_decoding_and_nested_destinations test_code_and_comment_boundaries_are_independent test_complete_wordings_and_no_images_pass test_emphasis_around_a_whole_wording_passes test_canonical_wording_is_read_at_runtime test_each_missing_or_paraphrased_wording_is_named_whole test_partial_or_line_broken_wording_fails test_findings_follow_table_order_then_file_order test_unavailable_document_or_canonical_set_is_a_refusal test_failed_inspection_cannot_become_a_pass test_present_tracked_local_images_pass_in_every_form test_every_remote_primary_and_alternate_is_named test_nonrepository_image_sources_are_refused test_nondisplaying_examples_do_not_hide_later_images test_usage_and_all_outcomes_leave_inputs_unchanged test_wrong_arguments_read_nothing test_signals_never_end_with_success test_readme_commands_have_no_write_or_environment_escape test_gate_runs_real_check_and_entire_suite_at_defaults test_each_readme_step_is_fatal_and_stops_later_steps test_gate_pair_is_unconditional_unique_and_in_order test_existing_gate_calls_keep_names_commands_and_order'
+beta_refuse() { refuse "$1" && contains "$err" 'checks/readme.sh again from the KA-Reader folder.'; }
+rewrite_beta() { plain_readme; append_beta "$1"; }
+test_beta_wording_is_whole_displayed_prose_inside_known_gaps() {
+  local words
+  fixture; pass || return 1
+  for words in 'Missing.' 'Beta first.' 'Beta second.' 'Altered first. Beta second.' '<script>Beta first. Beta second.</script>' '<STYLE>Beta first. Beta second.</STYLE>' '<pre><code>Beta first. Beta second.</code></pre>' '<code>Beta first. Beta second.</code>' '<textarea>Beta first. Beta second.</textarea>' 'Beta first.
+Beta second.' '<!-- Beta first. Beta second. -->' '`Beta first. Beta second.`' '```
+Beta first. Beta second.
+```' '<span title="Beta first. Beta second.">Hidden</span>' '[hidden]: local "Beta first. Beta second."'; do
+    fixture; rewrite_beta "$words"
+    beta_refuse "don't show the complete beta statement" || return 1
+  done
+  fixture; rewrite_beta 'Missing.'; image "$BETA_WORDS"
+  beta_refuse "don't show the complete beta statement" || return 1
+  fixture; rewrite_beta "**$BETA_WORDS**"; pass
+}
+test_beta_block_has_one_ordered_pair_inside_known_gaps() {
+  local mutation
+  for mutation in no_start no_end reversed duplicate inline outside fenced; do
+    fixture
+    case "$mutation" in
+      no_start) sed '/<!-- git-read-at-open:start -->/d' "$tree/README.md";;
+      no_end) sed '/<!-- git-read-at-open:end -->/d' "$tree/README.md";;
+      reversed) sed -e 's/at-open:start/at-open:TEMP/' -e 's/at-open:end/at-open:start/' -e 's/at-open:TEMP/at-open:end/' "$tree/README.md";;
+      duplicate) cat "$tree/README.md"; printf '<!-- git-read-at-open:start -->\n';;
+      inline) sed 's/<!-- git-read-at-open:start -->/inline <!-- git-read-at-open:start -->/' "$tree/README.md";;
+      outside) sed 's/## Known gaps/## Other section/' "$tree/README.md";;
+      fenced) sed -e '/<!-- git-read-at-open:start -->/i\
+```' -e '/<!-- git-read-at-open:end -->/a\
+```' "$tree/README.md";;
+    esac > "$scene/edited"
+    mv "$scene/edited" "$tree/README.md"
+    beta_refuse "Couldn't find one complete beta block" || return 1
+  done
+  fixture; plain_readme
+  image '<script>
+## Known gaps
+<!-- git-read-at-open:start -->
+</script>
+Beta first. Beta second.
+<script>
+<!-- git-read-at-open:end -->
+</script>'
+  beta_refuse "Couldn't find one complete beta block" || return 1
+  fixture; image 'Unrelated gap outside the bounded block.'; pass
+}
+test_followed_readme_withdraws_both_beta_paragraphs() {
+  local mutation
+  fixture; policy followed; plain_readme
+  sed "/The beta.s Git view/d" "$tree/docs/CONTENT.md" > "$scene/edited"; mv "$scene/edited" "$tree/docs/CONTENT.md"
+  pass || return 1
+  for mutation in wording start end; do
+    fixture; policy followed; plain_readme
+    case "$mutation" in wording) image "$BETA_WORDS";; start) image '<!-- git-read-at-open:start -->';; end) image '<!-- git-read-at-open:end -->';; esac
+    case "$mutation" in wording) beta_refuse 'The beta statement is still in README.md';; *) beta_refuse 'The beta block is still in README.md';; esac || return 1
+  done
+  fixture; policy followed; plain_readme; append_beta
+  beta_refuse 'The beta block is still' || return 1
+  fixture; policy followed; plain_readme; catalogue 'Different.'
+  beta_refuse "doesn't match the complete beta statement"
+}
+test_readme_refuses_unavailable_or_ambiguous_beta_inputs() {
+  local source path mode tool mutation
+  for mode in atOpen followed; do
+    for path in "$POLICY" "$CATALOGUE" docs/CONTENT.md; do
+      fixture; policy "$mode"; rm "$tree/$path"; run_check
+      equal "$status" 1 && contains "$err" "$path" || return 1
+      fixture; policy "$mode"; wrap_failure cat "case \"\$*\" in *'$path'*) exit 17;; esac"; run_check
+      equal "$status" 1 && contains "$err" "$path" || return 1
+    done
+    for source in '' '// enum GitReadPolicy { static let build = .atOpen }' 'enum GitReadPolicy { static var build = .atOpen }' 'enum GitReadPolicy { static let build = .unknown }' 'enum GitReadPolicy { static let build = .atOpen; static let build = .followed }'; do
+      fixture; printf '%s\n' "$source" > "$tree/$POLICY"
+      beta_refuse 'one Git read policy' || return 1
+    done
+    for source in '' '// enum GitSentences { static let readAtOpen = "Beta first. Beta second." }' 'enum GitSentences { static let readAtOpen = "Beta first." + " Beta second." }' 'enum GitSentences { static let readAtOpen = "Beta first. Beta second."; static let readAtOpen = "Beta first. Beta second." }'; do
+      fixture; policy "$mode"; printf '%s\n' "$source" > "$tree/$CATALOGUE"
+      beta_refuse 'one complete Git notice' || return 1
+    done
+    for mutation in empty malformed duplicate; do
+      fixture; policy "$mode"
+      case "$mutation" in
+        empty) sed "s/Beta first. Beta second./   /" "$tree/docs/CONTENT.md";;
+        malformed) sed '/The beta.s Git view/s/"\*\*/BROKEN/' "$tree/docs/CONTENT.md";;
+        duplicate) cat "$tree/docs/CONTENT.md"; tail -1 "$tree/docs/CONTENT.md";;
+      esac > "$scene/edited"; mv "$scene/edited" "$tree/docs/CONTENT.md"
+      beta_refuse 'one complete beta statement' || return 1
+    done
+  done
+  fixture; sed '/The beta.s Git view/d' "$tree/docs/CONTENT.md" > "$scene/edited"; mv "$scene/edited" "$tree/docs/CONTENT.md"
+  beta_refuse 'one complete beta statement'
+}
+test_beta_extension_preserves_old_six_rows_security_and_images() {
+  fixture
+  for path in docs/CONTENT.md "$CATALOGUE" README.md; do
+    sed 's/Beta first/Runtime first/' "$tree/$path" > "$scene/edited"; mv "$scene/edited" "$tree/$path"
+  done
+  pass || return 1
+  fixture; : > "$tree/SECURITY.md"
+  refuse "$(missing SECURITY.md "${WORDS[3]}")" || return 1
+  fixture; image '![outside](https://remote.example/beta.png)'
+  refuse 'https://remote.example/beta.png' || return 1
+  for tag in code pre; do
+    fixture; image "<$tag><img src=\"https://raw-code.example/image.png\"></$tag>"
+    refuse 'https://raw-code.example/image.png' || return 1
+  done
+}
+test_new_readme_termination_paths_never_pass_incomplete_work() {
+  local signal tool
+  fixture; pass || return 1
+  fixture; run_check unexpected; equal "$status" 2 || return 1
+  for mode in atOpen followed; do
+    fixture; policy "$mode"
+    [ "$mode" != followed ] || plain_readme
+    wrap_failure grep "case \"\$*\" in *Beta*) \"$(command -v grep)\" \"\$@\"; exit 17;; esac"
+    beta_refuse "Couldn't finish inspecting README.md" || return 1
+  done
+  fixture; wrap_failure awk 'case "$*" in *filtered_prose*) exit 0;; esac'
+  beta_refuse "Couldn't finish inspecting README.md" || return 1
+  fixture; wrap_failure awk 'case "$*" in *kind=policy*) printf "partial\n"; exit 17;; esac'
+  run_check; equal "$status" 1 || return 1
+  for signal in HUP INT TERM; do
+    fixture; wrap_failure cat "case \"\$*\" in *GitReadPolicy.swift*) kill -$signal \"\$TEST_BETA_SUBJECT_PID\"; exit 17;; esac"
+    run_check || return 1
+    equal "$status" 1 && contains "$err" 'The wording check was interrupted while inspecting' && contains "$err" 'Run checks/readme.sh again from the KA-Reader folder.' || return 1
+  done
+}
+actual_suite_in_gate() {
+  local name="$1" selected_case="$2" failing_case="$3" child="$scene/child-$1"
+  mkdir -p "$child/checks/tests" "$child/checks/support"
+  cp "$ROOT/checks/tests/$name" "$child/checks/tests/$name"
+  cp "$CHECK" "$child/checks/readme.sh"
+  cp "$ROOT/checks/git-beta.sh" "$child/checks/git-beta.sh"
+  cp "$ROOT/checks/support/git-beta-inputs.sh" "$child/checks/support/git-beta-inputs.sh"
+  printf '#!/usr/bin/env bash\nexit 0\n' > "$child/checks/gate.sh"
+  cmp -s "$ROOT/checks/tests/$name" "$child/checks/tests/$name" || return 1
+  printf '#!/usr/bin/env bash\nexec %q "$@"\n' "$child/checks/tests/$name" > "$tree/checks/tests/$name"
+  KA_READER_TEST_ONLY="$selected_case" run_gate
+  equal "$status" 1 && contains "$(cat "$scene/out")" "ok   $selected_case" && contains "$(cat "$scene/out")" "FAIL $failing_case"
+}
+test_wording_gate_runs_real_inputs_and_entire_suites_despite_selector() {
+  gate_fixture || return 1
+  actual_suite_in_gate test_readme.sh test_complete_wordings_and_no_images_pass test_gate_pair_is_unconditional_unique_and_in_order || return 1
+  contains "$err" 'step failed: README check suite' || return 1
+  case "$trace" in *checks/release-shape.sh*) return 1;; esac
+  gate_fixture || return 1
+  actual_suite_in_gate test_git_beta.sh test_complete_catalogue_and_runtime_canonical_wording_pass test_catalogue_gate_pair_is_unique_unconditional_and_fatal || return 1
+  contains "$err" 'step failed: Git beta catalogue check suite' || return 1
+  case "$trace" in *checks/release-shape.sh*) return 1;; esac
+  gate_fixture || return 1
+  printf '#!/usr/bin/env bash\nprintf "%%s" "${KA_READER_TEST_ONLY-unset}" > %q\n' "$bin/selector" > "$tree/checks/tests/test_strings_step.sh"
+  printf '#!/usr/bin/env bash\nprintf "%%s" "${KA_READER_TEST_ONLY-unset}" > %q\n' "$bin/selector-after" > "$tree/checks/release-shape.sh"
+  KA_READER_TEST_ONLY=parent-selection run_gate
+  equal "$status" 0 && equal "$(cat "$bin/selector")" parent-selection && equal "$(cat "$bin/selector-after")" parent-selection || return 1
+  gate_fixture || return 1
+  cp "$ROOT/checks/git-beta.sh" "$tree/checks/git-beta.sh"
+  policy unknown
+  KA_READER_TEST_ONLY=test_complete_wordings_and_no_images_pass MODE=followed CONTENT=/elsewhere CATALOGUE=/elsewhere GIT_READ_POLICY=followed run_gate
+  equal "$status" 1 && contains "$err" 'step failed: README check' && contains "$err" 'one Git read policy'
+}
+test_each_extended_wording_gate_step_is_fatal() {
+  local step
+  for step in readme readme_suite catalogue catalogue_suite; do
+    gate_fixture || return 1
+    cp "$ROOT/checks/git-beta.sh" "$tree/checks/git-beta.sh"
+    case "$step" in
+      readme) remove_word README.md 1; expected='README check';;
+      readme_suite) printf '#!/usr/bin/env bash\nexit 17\n' > "$tree/checks/tests/test_readme.sh"; expected='README check suite';;
+      catalogue) catalogue 'Different.'; printf '#!/usr/bin/env bash\nexit 0\n' > "$tree/checks/readme.sh"; expected='Git beta catalogue check';;
+      catalogue_suite) printf '#!/usr/bin/env bash\nexit 17\n' > "$tree/checks/tests/test_git_beta.sh"; expected='Git beta catalogue check suite';;
+    esac
+    run_gate
+    equal "$status" 1 && contains "$err" "step failed: $expected" || return 1
+    case "$trace" in *checks/release-shape.sh*) return 1;; esac
+  done
+}
+CASES="$CASES test_beta_wording_is_whole_displayed_prose_inside_known_gaps test_beta_block_has_one_ordered_pair_inside_known_gaps test_followed_readme_withdraws_both_beta_paragraphs test_readme_refuses_unavailable_or_ambiguous_beta_inputs test_beta_extension_preserves_old_six_rows_security_and_images test_new_readme_termination_paths_never_pass_incomplete_work test_wording_gate_runs_real_inputs_and_entire_suites_despite_selector test_each_extended_wording_gate_step_is_fatal"
+
 selected="${KA_READER_TEST_ONLY:-}"
 CASES="$CASES test_indented_paragraph_images_are_still_prose test_list_indentation_does_not_hide_images test_indented_code_after_blocks_stays_excluded"
 if [ -n "$selected" ]; then case " $CASES " in *" $selected "*) ;; *) fail "unknown case: $selected"; exit 1;; esac; fi
