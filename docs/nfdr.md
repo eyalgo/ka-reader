@@ -2,7 +2,8 @@
 
 **Status:** Settled
 **Owner:** Principal Architect
-**Version:** 91 — Fold cycle-82 §§ 3.1–3.2, the close: QC-41's tail names `checks/notices.sh` 1.1.0 and its suite as holding the crates' copyright lines beside the names, re-pinned at `ka-reader@75fe66c`, and keeps release inspection for what the check does not read — the libraries' and the icon set's copyright lines, `NOTICE` files, the no-licence-file and no-copyright-line sentences, and each licence as declared — with `development-design` no longer that rule's gate; QC-71 moves to the two repositories: the check covers exactly the commits the public repository receives and never `ka-reader-dev`'s refs, its secrets half is QC-28's *Secret scan* as built with nothing widened, and it gains the public repository's one branch, its `main` refusing a force push and a deletion, and each release keeping the previous one's history whole; both § 10 rows and § 10's review-gate list follow. The companion is removed; Status is Settled — RN-101.
+**Version:** 92 — Fold cycle-83 §§ 3.1–3.2 and settle § 2.1 on the § 3.1 answer, the close: QC-44's tail names `checks/git-beta.sh` 1.0.0 and `checks/readme.sh` 1.1.0, with their suites, as holding the beta's wording at every change in both modes — the catalogue `grep` on a build that reads Git state at open, and the README's known gaps either way — re-pinned at `ka-reader@7a88215`, and keeps release inspection for the release-note wordings, the four items, the uncovered-case line, where and when each surface draws the statement, and every downloaded-release proof; QC-70 records `checks/git-beta.sh`'s statuses; § 9's suites bullet is re-measured at twenty-five suites with the twenty-three kept as a dated reading, and its Swift bullet states that the packet's `@testable import` rule binds, held by `development-design` until the test targets carry layer words; § 10's QC-44 row follows; and the four passages `ka-reader@5c1a640` wrote inside v91 with no version and no RN — QC-44's *Local README realization*, QC-70's *README command status reading*, § 9's *Additional measurement at `1ee6ba1`* and § 10's QC-44 row — are taken in as this revision's, kept as dated readings where re-pinned. The companion is removed; Status is Settled — RN-102.
+Version 91 — Fold cycle-82 §§ 3.1–3.2, the close: QC-41's tail names `checks/notices.sh` 1.1.0 and its suite as holding the crates' copyright lines beside the names, re-pinned at `ka-reader@75fe66c`, and keeps release inspection for what the check does not read — the libraries' and the icon set's copyright lines, `NOTICE` files, the no-licence-file and no-copyright-line sentences, and each licence as declared — with `development-design` no longer that rule's gate; QC-71 moves to the two repositories: the check covers exactly the commits the public repository receives and never `ka-reader-dev`'s refs, its secrets half is QC-28's *Secret scan* as built with nothing widened, and it gains the public repository's one branch, its `main` refusing a force push and a deletion, and each release keeping the previous one's history whole; both § 10 rows and § 10's review-gate list follow. The companion is removed; Status is Settled — RN-101.
 Version 90 — Fold cycle-81 § 3.1, the close: QC-41's tail names the check that now holds the bundle's copies — `checks/bundle.sh` and its suite, run by the gate's *Bundle probe* and *Bundle probe suite* steps at every change and, through the release workflow's *Test gate*, on the bundle its *Disk image* step packs — and the *Release image suite* step for the copy dragged off the image, with release inspection of the downloaded bundle kept; the copyright lines are the one rule still owed, held by `development-design` and release inspection until `checks/notices.sh` is extended; the statement's `assemble.sh` locators are re-pinned at `ka-reader@b503b6d`, with `06e4a34`'s kept as the dated reading; QC-41's § 10 row and § 10's review-gate list follow. The companion is removed; Status is Settled — RN-100.
 Version 89 — Fold cycle-80 §§ 3.1–3.5, the close: QC-41 states that every release carries `LICENSE` and `THIRD_PARTY_NOTICES.md` at the root of the tagged source and inside `KA-Reader.app` in the disk image, byte-identical to the tree's, and that each notice entry carries its component's copyright lines and any `NOTICE` file as well as its licence; its tail names the gate's *Notices check* and *Notices check suite* steps at every change and the release workflow's *Test gate* at a tag, and names the two rules owed to `checks/bundle.sh` and to an extended `checks/notices.sh`, held by `development-design` until they land; § 9's suites bullet is re-measured at twenty-three suites with the twenty-two kept as a dated reading; QC-70's dated reading is re-measured at `ka-reader@06e4a34` with `checks/notices.sh`'s statuses. The companion is removed; Status is Settled — RN-99.
 Version 88 — Fold cycle-79 § 3.1 and settle § 2.1 from upstream, the close: QC-42 binds what `SECURITY.md` promises and not its wording, which is QC-44's — `docs/CONTENT.md`'s support-posture row, whole — on the owner's answer; QC-44's list gains the beta's Git-view statement, the seventh standing sentence, on the Git view, the head of the tree and the README's known gaps of a release that reads Git state once, at open, and absent from the README of a release that follows it, with the README's uncovered-case line held at release inspection; QC-71, new, binds the public history: every ref the public remote will hold is scanned and read for anything private before the repository is made public, and it is published with that history. § 2.1 is settled from SRS v15, CONTENT v15, FDR v15 and SDD § 6 S-7, not by an answer. The companion is removed; Status is Settled — RN-98.
@@ -1690,9 +1691,25 @@ import nothing forbidden and still read a path it was never granted.
   the FDR's (R-192 – R-195), verified by inspection under `docs/SRS.md` AC-26, and this entry does
   not copy it. Release inspection holds the four items and the uncovered-case line
   (`docs/SRS.md` AC-14); for that line it is a review gate, because `docs/CONTENT.md` fixes no
-  wording for it and a `grep` needs one. At `ka-reader@b46d896` neither `checks/readme.sh` nor a
-  script running the catalogue `grep` is in the tree, so by the header's per-rule rule
-  `development-design` reading this entry is the gate for both until a change adds them
+  wording for it and a `grep` needs one. At `ka-reader@7a88215c584731b7a989f88851b9aa6f1c1a9cdc` (`checks/gate.sh`
+  1.15.0) two scripts hold the beta's wording at every change, in both modes. `checks/git-beta.sh`
+  1.0.0 reads `GitReadPolicy.build`; on a build that reads Git state at open it runs the catalogue
+  `grep -rF` above over `ka-reader-mac/Sources/Surfaces`, and in both modes it requires the notice
+  in `GitSentences.swift` to agree with CONTENT's beta row. `checks/readme.sh` 1.1.0 holds the
+  README half in both modes: on a read-at-open build the known gaps hold exactly one delimited beta
+  block carrying the whole wording, and on a build that follows Git state there is no block and the
+  wording appears nowhere in the displayed prose (`checks/readme.sh:L641-L675`), so the README's
+  `grep` is held at every change and not only at the release. Both read
+  `checks/support/git-beta-inputs.sh`. The gate runs *README check*, *README check suite*, *Git
+  beta catalogue check* and *Git beta catalogue check suite* as adjacent fatal steps
+  (`checks/gate.sh:L150-L153`). No script reads the release notes, so their wordings stay with
+  release inspection, as do the four items, the uncovered-case line, where and when each surface
+  draws the statement (FDR R-192 – R-195, SRS AC-26) and every downloaded-release proof; for a
+  change to any of them before the release, `development-design` reading this entry is the gate
+  *(re-pinned at v92 on the owner's seat's answer at `docs/trail/architecture/cycle-83.md` § 3.1 —
+  RN-102; through v91 this tail read that at `ka-reader@b46d896` neither `checks/readme.sh` nor a
+  script running the catalogue `grep` is in the tree, so `development-design` reading this entry
+  was the gate for both — true at that commit, RN-98)*
   *(traces to: SRS C-9, C-13, AC-14, FR-35, AC-26; FDR R-135 – R-139, R-142, R-192, R-197;
   CONTENT v15 § Terminology, *Standing sentences*, the beta's row; SDD § 6 S-7; the script is this
   document's realization — RN-3; the beta's statement and its surfaces from SRS v14 – v15 and
@@ -1705,13 +1722,14 @@ import nothing forbidden and still read a path it was never granted.
   `checks/tests/test_readme.sh` holds whole-row matching, every missing/corrupt canonical row,
   non-displaying prose, Markdown references, HTML primary and alternate sources, decoding,
   containment, failed inspections, statuses, signals and read-only execution. The direct command
-  and entire suite are adjacent fatal gate steps (`checks/gate.sh:L143-L144`); § 9 owns their
-  complete guest-run reading. This is the local README/SECURITY and image subset only. The
-  beta wording and its catalogue/surface checks, release-note wordings, uncovered-case line,
-  rendered four-item reading and release inspection remain the obligations above; a local pass
-  supplies no downloaded-release proof. The absence reading at `b46d896` remains dated to that
-  commit, with `development-design` retaining the gate for the obligations this command does not
-  check.
+  and entire suite are adjacent fatal gate steps (`checks/gate.sh:L143-L144` at `1ee6ba1`;
+  `:L150-L151` at `ka-reader@7a88215` — RN-102); § 9 owns their complete guest-run reading. At
+  `1ee6ba1` this was the local README/SECURITY and image subset only, and the beta wording and its
+  catalogue/surface checks, release-note wordings, uncovered-case line, rendered four-item reading
+  and release inspection remained the obligations above; from `ka-reader@7a88215` the beta wording
+  is held by the two checks the tail names, and the rest remain. A local pass supplies no
+  downloaded-release proof *(written at `ka-reader@5c1a640`, a `development-implementation` run,
+  inside v91 with no version and no RN; taken in at v92 as a dated reading — RN-102)*.
 - **QC-71:** The public repository `docs/SRS.md` C-12 names receives the main line's own commit
   history from the private `ka-reader-dev` — never a fresh copy and never a cut tree — and receives
   a commit only once it has been checked for anything private. The check covers exactly the
@@ -2739,7 +2757,17 @@ answer at `docs/trail/architecture/cycle-51.md` § 3.2 — RN-69)*.
   `test_signals_never_end_with_success` in `checks/tests/test_readme.sh` exercise these outcomes,
   including failures during captured inspection. Its complete suite passed in the guest run
   recorded in § 9. This adds no status and does not discharge QC-70's separately stated
-  offline-page comparison obligation.
+  offline-page comparison obligation *(written at `ka-reader@5c1a640`, a
+  `development-implementation` run, inside v91 with no version and no RN; taken in at v92 as a
+  dated reading — RN-102)*.
+
+  **Beta catalogue command status reading at `ka-reader@7a88215c584731b7a989f88851b9aa6f1c1a9cdc`:** `checks/git-beta.sh`
+  1.0.0 states its statuses in its header (`checks/git-beta.sh:L7`): 0 on a complete pass; 1 on a
+  finding, a failed inspection or a caught HUP/INT/TERM; and 2 with usage on stderr for any
+  argument (`:L18`). Every one is in this entry's set.
+  `test_catalogue_statuses_signals_and_inputs_are_preserved` in `checks/tests/test_git_beta.sh`
+  (`:L192`) holds them. This adds no status *(added at v92 on the owner's seat's answer at
+  `docs/trail/architecture/cycle-83.md` § 3.1 — RN-102)*.
 
 ## 9. Test strategy
 
@@ -2907,7 +2935,22 @@ left with `ka-reader-ui` at `ka-reader@0aca57e` (RN-22; RN-25).
   nowhere is ADR-0012's rule broken one level down: a gate that cannot go red has not run. A script
   that lands with a suite lands the suite as a step of `checks/gate.sh` in the same change, and the
   workflow runs it through `Test gate` *(through v57 "lands the suite's CI step in the same change" —
-  RN-69)*. Twenty-three top-level shell suites are in the tree at
+  RN-69)*. Twenty-five top-level shell suites are in the tree at
+  `ka-reader@7a88215c584731b7a989f88851b9aa6f1c1a9cdc`, each the whole command of one `run_step`
+  line of `checks/gate.sh` (1.15.0): `test_secret_scan.sh` (`checks/gate.sh:L69`),
+  `test_secret_scan_planted.sh` (`:L87`), `test_structure.sh` (`:L100`), `test_entry_points.sh`
+  (`:L102`), `test_bundle.sh` (`:L105`), `test_view.sh` (`:L107`), `test_renderer.sh` (`:L117`),
+  `test_read_only.sh` (`:L128`), `test_no_network.sh` (`:L130`), `test_notices.sh` (`:L138`),
+  `test_offline_page.sh` (`:L140`), `test_strings.sh` (`:L146`), `test_strings_step.sh` (`:L147`),
+  `test_readme.sh` (`:L151`), `test_git_beta.sh` (`:L153`), `test_release_shape.sh` (`:L160`),
+  `test_release_version.sh` (`:L161`), `test_release_pack.sh` (`:L162`), `test_release_sums.sh`
+  (`:L163`), `test_release_absent.sh` (`:L164`), `test_own_state.sh` (`:L165`),
+  `test_vm_refusal.sh` (`:L171`), `test_launch.sh` (`:L172`), `test_own_state_step.sh` (`:L173`)
+  and `test_tree_scene.sh` (`:L174`). The measurement enumerates `checks/tests/*.sh` and matches
+  each path to an exact whole-command `run_step` line; it executes no suite *(re-measured at v92
+  from twenty-four, on the owner's seat's answer at `docs/trail/architecture/cycle-83.md` § 3.1 —
+  RN-102)*.
+  **Dated reading retained from v89:** twenty-three suites at
   `ka-reader@06e4a34fca726badd0893dbb1cab08efc52a54ef`, each the whole command of one `run_step`
   line of `checks/gate.sh` (1.12.0): `test_secret_scan.sh` (`checks/gate.sh:L61`),
   `test_secret_scan_planted.sh` (`:L79`), `test_structure.sh` (`:L92`), `test_entry_points.sh`
@@ -2921,7 +2964,7 @@ left with `ka-reader-ui` at `ka-reader@0aca57e` (RN-22; RN-25).
   enumerates `checks/tests/*.sh` and matches each path to an exact whole-command `run_step` line;
   it executes no suite *(re-measured at v89 from twenty-two, on the owner's seat's answer at
   `docs/trail/architecture/cycle-80.md` § 3.2 — RN-99)*.
-  **Additional measurement at `ka-reader@1ee6ba1b6a210a0408a6ced451ce55e67d65f6d7`:** twenty-four top-level
+  **Dated reading retained from v91, additional measurement at `ka-reader@1ee6ba1b6a210a0408a6ced451ce55e67d65f6d7`:** twenty-four top-level
   shell suites are present under `checks/tests/*.sh`. The additional suite is
   `checks/tests/test_readme.sh`, the entire command of *README check suite*
   (`checks/gate.sh:L144`), immediately after *README check* (`:L143`) and after the existing
@@ -2933,7 +2976,9 @@ left with `ka-reader-ui` at `ka-reader@0aca57e` (RN-22; RN-25).
   macOS guest on 2026-11-10: exit 0, all 28 README-suite cases passed, both new steps completed
   in order, and the run ended at `own state holds`. This is the suite's *How a suite joins*
   reading, not a hosted Actions or downloaded-release result. The twenty-three-suite inventory
-  above remains a reading at `06e4a34`.
+  above remains a reading at `06e4a34` *(written at `ka-reader@5c1a640`, a
+  `development-implementation` run, inside v91 with no version and no RN; taken in at v92 as a
+  dated reading — RN-102)*.
   **Dated reading retained from v88:** twenty-two suites at
   `ka-reader@2d7c4f9bda2a76fa65a943c1ee9f47f28e857354`, each the whole command of one `run_step`
   line of `checks/gate.sh` (1.11.0): `test_secret_scan.sh`
@@ -3141,7 +3186,26 @@ left with `ka-reader-ui` at `ka-reader@0aca57e` (RN-22; RN-25).
   `ShellTests` (`ka-reader-mac/Package.swift:L39-L40` at `ka-reader@827aad4`) predate the packet and are
   owed it *(through v40 cited `:L34-L35` with no commit named, true at `ka-reader@a4ab8e6`; the lines
   moved five down when `ka-reader@827aad4` added the libgit2 link lines above them — RN-52)*, and which
-  layer word each takes is the delivery tier's placement under this table's rows. *Toolchain —
+  layer word each takes is the delivery tier's placement under this table's rows. *`@testable
+  import` — followed:* the packet's rule binds (`testing.md` § The rules that make that table work,
+  "`@testable import` is for layer 1 only"), and this document names no departure from it.
+  `@testable import` stands only in a layer-1 (`…UnitTests`) target; a file in a layer 2–4 target
+  uses a plain `import`, and where a case there reaches an `internal` declaration, it reaches it
+  through the `package` declaration production reaches it by, or the change raises the declaration
+  to `package` — which of the two, case by case, is the delivery tier's choice. Raising one to
+  `package` leaves the tool's public surface alone, because `ka-reader-mac` declares no
+  `products:` (`ka-reader-mac/Package.swift` at `ka-reader@7a88215`) and a `package` declaration
+  is visible to the package's own modules only (Swift Evolution SE-0386, re-read 2026-11-11); it
+  adds no target edge, so § 1's import graph and SM-4's rule stand. At `ka-reader@7a88215`, 34 of
+  the 54 files under `ka-reader-mac/Tests` carry `@testable import`; they predate the split and are
+  owed the rule by it, as the two targets are owed the packet's names, and on the owner's seat's
+  scratch build 16 of the 34 built with a plain import and nothing else changed. Until the targets
+  carry layer words, `development-design` reviews each moved or added test file against the rule —
+  a review gate, because while no target carries a layer word no script can tell which layer a
+  file is in. Once they do, a file outside a `…UnitTests` directory listed by
+  `grep -rl '@testable import' ka-reader-mac/Tests` is the violation, and that check is owed to the
+  delivery tier *(added at v92 on the owner's seat's answer at
+  `docs/trail/architecture/cycle-83.md` § 3.2 — RN-102)*. *Toolchain —
   measured on every build:* CI builds `ka-reader-mac` in two steps, assembly first —
   `.github/workflows/ci.yml:L31-L32` runs `ka-reader-mac/assemble.sh` in `Build KA-Reader.app`, and
   `:L34-L35` runs `swift test --package-path ka-reader-mac` in `Test gate`, both at
@@ -3417,7 +3481,7 @@ is stated once, in § 8 *(added at v56, on the owner's answer at `docs/trail/arc
 | QC-40 | writer regressions; own-state retention; separate container-log size and relaunch proof | `cargo test --locked -p ka-reader-bridge`; `cargo test --locked -p ka-reader-core` (layer 1). Layer-5 proof owed by `follow-the-folder` (SDD § 6 S-8), not the tree or open-file slice; until its assertions run, review at `development-design`, for the reason in QC-40. No existing own-state check, tree-scene pass or writer-test result discharges that proof. | the change; the built bundle for layer 5 | `development-implementation` for writer and retention tests; `development-design` for the outstanding layer-5 obligation |
 | QC-41 | third-party notices: `LICENSE` and the notices in the tagged source and inside the bundle, byte-identical; each component's licence and copyright lines | `checks/notices.sh` (suite `test_notices.sh`) for the names and the crates' copyright lines; `checks/bundle.sh` (suite `test_bundle.sh`) and `checks/tests/test_release_pack.sh` for the bundle's copies | the tree | CI build; release; release inspection for what the check does not read, as QC-41 names it |
 | QC-42 | private reporting; SECURITY.md | `gh api repos/eyalgo/ka-reader/private-vulnerability-reporting` | the release | release |
-| QC-44 | standing sentences verbatim, the beta's Git-view statement included; local README image references | `checks/readme.sh` and `checks/tests/test_readme.sh` for the bounded local README/SECURITY and repository-image subset measured in QC-44; the entry retains the beta/catalogue, release-notes and release-inspection obligations | the local tree for the implemented subset; the release and surfaces for the remaining obligations | CI build and change through the gate for the local subset; release; `development-design` reading QC-44 for each obligation outside that subset |
+| QC-44 | standing sentences verbatim, the beta's Git-view statement included; local README image references | `checks/readme.sh` (suite `checks/tests/test_readme.sh`) for the README and `SECURITY.md` wordings, the README's beta block in both modes, and repository-image references; `checks/git-beta.sh` (suite `checks/tests/test_git_beta.sh`) for the beta's wording in the message catalogue and its agreement with CONTENT's row; the entry retains the release-note wordings and the release-inspection obligations | the local tree for the two checks; the release and surfaces for the remaining obligations | the change, through the gate (`checks/gate.sh:L150-L153` at `ka-reader@7a88215`); release; `development-design` reading QC-44 for each obligation outside the two checks |
 | QC-71 | the public history: the commits the public repository receives carry no secret; it holds `main` alone; its root commit is the checked one; its `main` refuses a force push and a deletion; each release keeps the previous one's history whole | `checks/secret-scan.sh gitleaks git` (suite `test_secret_scan.sh`), the gate's *Secret scan* step, at the commit to be sent and through `release.yml`'s *Test gate* at the tag; `git ls-remote --heads --tags` on the public repository; `git rev-list --max-parents=0 HEAD` on a fresh clone of it; `gh api repos/<owner>/<repository>/branches/main/protection`, or the ruleset form; `git merge-base --is-ancestor <previous release's tag> HEAD`, from the second release | the change; the release | `development-implementation` (the secrets half at the commit to be sent); release |
 | QC-46 | latency figures, beginning with complete refresh | `checks/latency.sh` — three figures per metric on the named scale fixtures; owed by `follow-the-folder` (SDD § 6 S-8), with interim review for the missing script as QC-46 states | the tree | every CI build from the first complete-refresh build; `development-design` until measured |
 | QC-47 | per-item degradation and recovery; the failed re-read of an expanded folder | `cargo test --locked -p ka-reader-core --test watch`, the failed re-read's two cases included; `swift test --package-path ka-reader-mac` (layer 4); the tree cases run under QC-66 without full churn | the change | `development-implementation` |
@@ -9082,3 +9146,70 @@ of the trait-collaborator line, and the read seam until it is built), QC-13 (the
   QC-41's place in the review-gate list. The inputs' status lines read as in the header, so the
   `Inputs read:` line stands. `docs/trail/architecture/cycle-82.md` holds the answered companion
   whole. Nothing is left open, so the companion is removed and `Status:` stays Settled.
+- **RN-102:** *(v92 — the cycle-83 fold, §§ 3.1–3.2, § 2.1 settled on the § 3.1 answer, and the
+  close)* The owner's seat's committed answers at `docs/trail/architecture/cycle-83.md` §§ 3.1–3.2
+  authorize every change here; their reasoning is `docs/trail/architecture/self_answer-86.md`. No
+  `product-architecture` run wrote that companion: the PM opened it on 2026-11-10 and raised two
+  items, read at `ka-reader@7a88215`, and a `companion-self-answer` run raised § 2.1 on 2026-11-11
+  while answering § 3.1.
+
+  **§ 3.1 → QC-44's tail, QC-70, § 9's suites bullet and § 10's QC-44 row.** Taken with the
+  answer's four additions. QC-44's tail names `checks/git-beta.sh` 1.0.0 and `checks/readme.sh`
+  1.1.0 as holding the beta's wording at every change, both modes, through four adjacent fatal gate
+  steps at `checks/gate.sh:L150-L153`, and keeps release inspection for what neither script reads;
+  the `b46d896` absence sentence becomes a dated reading. QC-70 gains the beta script's status
+  reading. § 9's suites bullet is re-measured at twenty-five, the twenty-three at `06e4a34` kept as
+  a dated reading. § 10's QC-44 row names both checks.
+
+  **§ 3.2 → § 9's Swift bullet.** Taken as written. The packet's `@testable import` rule binds,
+  with no departure; a layer 2–4 case reaches an `internal` declaration through `package`, the
+  delivery tier choosing case by case; `development-design` reviewing each moved or added test file
+  is the gate until the targets carry layer words, and the `grep` that holds it after is owed to
+  the delivery tier. The review gate is argued in the clause itself: no script can tell a file's
+  layer while no target carries a layer word.
+
+  **§ 2.1 → provenance for four passages, settled on the § 3.1 answer.** § 2.1's own slot carried
+  no answer. It is settled here because the owner's seat's committed answer to § 3.1 decides it:
+  that answer names the four passages' content — the README check re-pinned with its `1ee6ba1`
+  reading kept dated, the twenty-four suites kept as a dated reading, the beta script's statuses
+  recorded "as the README script's were", and the § 10 row — and closes by stating that those
+  passages were written outside an architecture revision and that § 2.1 asks this fold to record
+  it. An owner's answer outranks every document, and the provenance rule in the header counts it as
+  an authorization, as RN-98 counted settled upstream sentences. What is recorded: `ka-reader@5c1a640`,
+  a `development-implementation` run on 2026-11-10, added QC-44's *Local README realization*,
+  QC-70's *README command status reading*, § 9's *Additional measurement at `1ee6ba1`* and the
+  § 10 QC-44 row inside v91, with no version, no RN and no trace. This revision takes all four in
+  as its own. The three still true as measured are kept as measured and dated, each with a trace to
+  this note; where a sentence had become false at `7a88215` — the realization's "the beta wording …
+  remain the obligations above" — it is turned into a reading at `1ee6ba1`, and the row is
+  re-stated. No obligation changes from the provenance half. The commit's text also edited the SDD,
+  which took it in at v86 (RN-172), so the two records now agree that the text is settled.
+
+  **Beyond the answers' words.** Two things, each named here. (1) § 9's twenty-five-suite inventory
+  lists every suite with its `run_step` line, as v89 did, rather than only the count the answer
+  gives; the lines were measured by this run. (2) The Swift clause cites SE-0386 as the owner's seat
+  re-read it on 2026-11-11 (`self_answer-86.md` § Header) and does not carry the per-file list of
+  the eighteen files that need `@testable` today; that list is a reading for the split, not a
+  constraint, and it stays in the trail.
+
+  **Read by this run.** At `ka-reader@8b13ddf`, whose tree outside `docs/` is `7a88215`'s
+  (`git diff --stat 7a88215 HEAD -- . ':!docs'` prints nothing): `checks/gate.sh:L2` (`# Version:
+  1.15.0`), `:L150-L153`, and each of the twenty-five `checks/tests/test_*.sh` matched to exactly
+  one whole-command `run_step` line; `checks/git-beta.sh:L2` (`1.0.0`), `:L7`, `:L16`, `:L18`,
+  `:L38-L54`; `checks/readme.sh:L2` (`1.1.0`), `:L641-L675`;
+  `checks/support/git-beta-inputs.sh:L2` (`1.0.0`); `checks/tests/test_git_beta.sh:L192`, `:L297`
+  (ten cases); `ka-reader-mac/Package.swift`, which declares no `products:`; 54 Swift files under
+  `ka-reader-mac/Tests`, 34 listed by `grep -rl '@testable import'`; `git show 5c1a640 --
+  docs/nfdr.md`. The Swift packet's `testing.md` is read at v1.2.0. No product test ran: nothing
+  under `crates/`, `checks/` or `ka-reader-mac/` is changed by this fold, and the owner's seat ran
+  both scripts and both suites on a clean clone at `7a88215` (`self_answer-86.md` § 3.1).
+
+  **Limits.** No ADR is written or restatused, so the index is unchanged: a check landing for an
+  obligation already bound is not a decision, and following a packet rule as written involves no
+  trade-off this product made, so neither clears the three gates. No `QC` is added, renumbered or
+  reused; QC-44 and QC-70, § 9's suites bullet and its Swift bullet are the entries edited, and
+  § 10 re-states QC-44's row. The review-gate list under § 10 is unchanged: QC-44's uncovered-case
+  line is still there, and QC-70's "a new script's statuses" is discharged for this script by the
+  reading, not removed. The inputs' status lines read as in the header, so the `Inputs read:` line
+  stands. `docs/trail/architecture/cycle-83.md` holds the answered companion whole. Nothing is left
+  open, so the companion is removed and `Status:` stays Settled.
