@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.3.1 — E12's entry names both rules the spec assigns it, CP-1306 and CP-1309
 # Version: 1.3.0 — the in-window disk changes E9 - E13: each waits for Enter, then changes its copy from outside
 # Version: 1.2.0 — the failure states E5 - E8: E5, E6, E7 and one E8 id per distinct observed sentence
 # Version: 1.1.0 — the repository states E1 - E4: E1, the E2 members, E3, E4; E4 after a repository
@@ -368,7 +369,8 @@ rules_of() {
     E5|E8-*) echo "CP-1307 CP-1310" ;;
     E6|E7) echo "CP-1308" ;;
     E9|E13) echo "CP-1309 CP-1310" ;;
-    E10|E11|E12) echo "CP-1309" ;;
+    E10|E11) echo "CP-1309" ;;
+    E12) echo "CP-1306 CP-1309" ;;
     *) die "no rules for state $1" ;;
   esac
 }
