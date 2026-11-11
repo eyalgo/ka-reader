@@ -25,7 +25,7 @@ final class LaunchFlowGitTests: LaunchWindowTestCase {
             + #""changed":[{"path":"a.txt","category":"modified"}]}"#).utf8)
 
     private static let faultSentence =
-        "KA-Reader stopped while reading this repository's Git status and can't tell why. The file tree is unaffected. Start KA-Reader again to read the status again."
+        "When you opened the folder, KA-Reader stopped while finding out whether it's a repository and can't tell why. The file tree and the reading panel are unaffected. Start KA-Reader again to look again."
 
     private func launch(git: Data?) -> WindowLaunch {
         let launch = makeLaunch(answers: [Self.chosenFolder])
@@ -380,7 +380,7 @@ struct GitBetaLaunchTests {
         #expect(gitBefore.filter { $0 == notice }.count == (expectsNotice ? 1 : 0))
         #expect(gitBefore.isEmpty == plain)
         #expect(!gitBefore.contains { $0.contains("INTERNAL-DO-NOT-DRAW") })
-        if !expectsNotice && !plain { #expect(gitBefore == [GitSentences.fault]) }
+        if !expectsNotice && !plain { #expect(gitBefore == [GitSentences.faultBeforeRepository]) }
         view.rail.entryChosen?(.files)
         #expect(text(view.rootItemsView).filter { $0 == notice }.count == (expectsNotice ? 1 : 0))
         view.rootItemsView.outlineView.selectRowIndexes(

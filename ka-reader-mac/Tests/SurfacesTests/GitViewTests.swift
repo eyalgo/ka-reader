@@ -14,7 +14,7 @@ final class GitViewTests: XCTestCase {
 
     private let clean = "Nothing has changed in this repository."
     private let fault =
-        "KA-Reader stopped while reading this repository's Git status and can't tell why. The file tree is unaffected. Start KA-Reader again to read the status again."
+        "When you opened the folder, KA-Reader stopped while finding out whether it's a repository and can't tell why. The file tree and the reading panel are unaffected. Start KA-Reader again to look again."
 
     private struct Fixture {
         let view: GitView

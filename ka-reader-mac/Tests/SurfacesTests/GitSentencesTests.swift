@@ -24,7 +24,10 @@ final class GitSentencesTests: XCTestCase {
     /// Every sentence the catalogue can put in front of a person, the switch labels, headings and
     /// letters apart.
     private var everySentence: [String] {
-        [GitSentences.pending, GitSentences.clean, GitSentences.fault]
+        [
+            GitSentences.pending, GitSentences.clean, GitSentences.fault,
+            GitSentences.faultBeforeRepository,
+        ]
             + nonNormalStates.compactMap { GitSentences.statusSentence(for: $0) }
             + everyFailure.map { GitSentences.failure($0) }
     }
@@ -142,10 +145,10 @@ final class GitSentencesTests: XCTestCase {
                 "When you opened the folder, there was nothing where this repository's Git directory pointed, so KA-Reader couldn't read its Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again.",
             .notARepository:
                 "When you opened the folder, KA-Reader looked in its Git directory and found no repository there. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again.",
-            .probeRepositoryReadFailed: GitSentences.fault,
+            .probeRepositoryReadFailed: GitSentences.faultBeforeRepository,
             .notARoot: GitSentences.fault,
             .repositoryReadFailed: GitSentences.fault,
-            .machineConfigNotSwitchedOff: GitSentences.fault,
+            .machineConfigNotSwitchedOff: GitSentences.faultBeforeRepository,
             .gitmodulesUnreadable: gitmodulesUnreadableMessage,
         ]
 
@@ -451,12 +454,12 @@ final class GitSentencesTests: XCTestCase {
         let faults = GitCondition.allCases
             .filter { GitSentences.failure(.condition($0)) == GitSentences.fault }
 
+        let faultsBeforeARepository = GitCondition.allCases
+            .filter { GitSentences.failure(.condition($0)) == GitSentences.faultBeforeRepository }
+
+        XCTAssertEqual(Set(faults), [.notARoot, .repositoryReadFailed])
         XCTAssertEqual(
-            Set(faults),
-            [
-                .probeRepositoryReadFailed, .notARoot, .repositoryReadFailed,
-                .machineConfigNotSwitchedOff,
-            ])
+            Set(faultsBeforeARepository), [.probeRepositoryReadFailed, .machineConfigNotSwitchedOff])
     }
 
     // MARK: The status letter's tooltip (CP-591, CP-592)
@@ -517,6 +520,18 @@ struct GitBetaCatalogueTests {
         )
     }
 
+    /// CP-1293, CP-1295: the sentence for a stop before a repository was established is a whole
+    /// catalogue value that names no repository and no folder, and is not the after-side fault.
+    @Test func faultBeforeARepositoryIsItsOwnWholeSentence() {
+        let sentence = GitSentences.faultBeforeRepository
+
+        #expect(sentence == "When you opened the folder, KA-Reader stopped while finding out whether it's a repository and can't tell why. The file tree and the reading panel are unaffected. Start KA-Reader again to look again.")
+        #expect(!sentence.isEmpty)
+        #expect(sentence != GitSentences.fault)
+        #expect(!sentence.contains("this repository"))
+        #expect(!sentence.contains("this folder"))
+    }
+
     @Test func allLaterReadFailuresDescribeOpenAndRestart() {
         let cases: [(GitFailure, String)] = [
             (
@@ -561,7 +576,7 @@ struct GitBetaCatalogueTests {
             ),
             (
                 .condition(.probeRepositoryReadFailed),
-                "KA-Reader stopped while reading this repository's Git status and can't tell why. The file tree is unaffected. Start KA-Reader again to read the status again."
+                "When you opened the folder, KA-Reader stopped while finding out whether it's a repository and can't tell why. The file tree and the reading panel are unaffected. Start KA-Reader again to look again."
             ),
             (
                 .condition(.notARoot),
@@ -585,7 +600,7 @@ struct GitBetaCatalogueTests {
             ),
             (
                 .condition(.machineConfigNotSwitchedOff),
-                "KA-Reader stopped while reading this repository's Git status and can't tell why. The file tree is unaffected. Start KA-Reader again to read the status again."
+                "When you opened the folder, KA-Reader stopped while finding out whether it's a repository and can't tell why. The file tree and the reading panel are unaffected. Start KA-Reader again to look again."
             ),
             (
                 .condition(.gitmodulesUnreadable),
