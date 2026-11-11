@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Version: 1.4.0 — the Git beta walk suite's place in the gate joins the cases
+# Version: 1.3.0 — the Git beta scene helper's refusal and its gate place join the cases
 # Version: 1.2.0 — the tree-scene helper's refusal joins the cases
 # Version: 1.1.0 — gate script holds every rule; workflow calls it; suite readers re-aimed
 # Version: 1.0.0 — first version: the refusal of the guarded suites' entry points (NFDR QC-65)
@@ -34,6 +36,7 @@ ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 BUNDLE_SUITE="$ROOT/checks/tests/test_bundle.sh"
 RENDERER_SUITE="$ROOT/checks/tests/test_renderer.sh"
 TREE_SCENE_HELPER="$ROOT/checks/tree-scene.sh"
+GIT_BETA_SCENE_HELPER="$ROOT/checks/git-beta-scene.sh"
 WORKFLOWS="$ROOT/.github/workflows"
 WORKFLOW="$WORKFLOWS/ci.yml"
 GATE="$ROOT/checks/gate.sh"
@@ -49,9 +52,12 @@ test_bundle_suite_admits_on_a_vm_reading
 test_renderer_suite_refuses_off_vm_before_work
 test_renderer_suite_admits_on_a_vm_reading
 test_the_helper_refuses_off_a_vm_in_the_refusal_suite
+test_the_git_beta_helper_refuses_off_a_vm_in_the_refusal_suite
 test_moved_steps_hold_no_block_and_no_timer_setting
 test_moved_steps_are_single_line_commands_in_order
 test_every_toplevel_suite_is_an_entire_fatal_step
+test_the_gate_runs_the_git_beta_scene_suite_as_a_fatal_step_before_the_real_launch
+test_the_gate_runs_the_git_beta_walk_suite_as_a_fatal_step_before_the_real_launch
 test_no_conditional_or_nonfatal_step
 test_every_runner_names_macos_26
 "
@@ -204,6 +210,22 @@ test_the_helper_refuses_off_a_vm_in_the_refusal_suite() {
   vmr_assert_refusal "$TREE_SCENE_HELPER" tree-scene.sh || return 1
 }
 
+# QC-65 (CP-1314): off a macOS virtual machine checks/git-beta-scene.sh prints its one refusal line
+# and does nothing else, whatever it is given: with the app path and the built-from line, or with
+# none. The app it is given is a bare directory, so a helper that did not refuse could not reach a
+# real bundle, and the temporary directory is the scene a copy of the fixture would show up in.
+test_the_git_beta_helper_refuses_off_a_vm_in_the_refusal_suite() {
+  VMR_TMP="$WORK"
+  scene="$WORK/git-beta-scene-helper-scene"
+  mkdir -p "$scene/Fake.app/Contents/MacOS" "$scene/tmp"
+  : > "$scene/Fake.app/Contents/MacOS/Fake-Exe"
+  VMR_SCENE="$scene"
+
+  VMR_ENV=("TMPDIR=$scene/tmp")
+  vmr_assert_refusal "$GIT_BETA_SCENE_HELPER" git-beta-scene.sh "$scene/Fake.app" "built from a commit" || return 1
+  vmr_assert_refusal "$GIT_BETA_SCENE_HELPER" git-beta-scene.sh || return 1
+}
+
 # CP-792, CP-795: the two moved steps are exactly their scripts, with no timer setting and no
 # environment prefix; the rule they carried is in the scripts. Asserted over the gate's own calls.
 test_moved_steps_hold_no_block_and_no_timer_setting() {
@@ -259,6 +281,41 @@ test_every_toplevel_suite_is_an_entire_fatal_step() {
       || fail "checks/tests/$(basename "$suite") is not the entire command of a step in checks/gate.sh" || return 1
   done
   [ "$checked" -gt 0 ] || fail "no top-level suite was found, so nothing was checked"
+}
+
+# CP-1314 (QC-64): the Git beta scene helper's suite is one fatal step of the gate, named so and
+# running exactly that suite, after the tree-scene helper's suite and before the real launch. The
+# gate is read through gate_steps, which reads no step that is conditional, indented or non-fatal.
+test_the_gate_runs_the_git_beta_scene_suite_as_a_fatal_step_before_the_real_launch() {
+  read_gate_steps || return 1
+  assert_gate_step_runs_exactly "Git beta scene helper suite" "checks/tests/test_git_beta_scene.sh" || return 1
+
+  names="$(printf '%s\n' "$steps" | awk -F'\t' '{ print $1 }')"
+  position() { printf '%s\n' "$names" | grep -n -x -F "$1" | head -1 | cut -d: -f1; }
+  tree_scene="$(position "Tree scene helper suite")"
+  git_beta_scene="$(position "Git beta scene helper suite")"
+  launch="$(position "Launch the built bundle")"
+  [ "$tree_scene" -lt "$git_beta_scene" ] \
+    || fail "in checks/gate.sh, \"Git beta scene helper suite\" does not come after \"Tree scene helper suite\"" || return 1
+  [ "$git_beta_scene" -lt "$launch" ] \
+    || fail "in checks/gate.sh, \"Git beta scene helper suite\" does not come before \"Launch the built bundle\""
+}
+
+# CP-1314 (QC-64): the Git beta host walk's suite is one fatal step of the gate, named so and running
+# exactly that suite, after the scene helper's suite and before the real launch.
+test_the_gate_runs_the_git_beta_walk_suite_as_a_fatal_step_before_the_real_launch() {
+  read_gate_steps || return 1
+  assert_gate_step_runs_exactly "Git beta walk suite" "checks/tests/test_git_beta_walk.sh" || return 1
+
+  names="$(printf '%s\n' "$steps" | awk -F'\t' '{ print $1 }')"
+  position() { printf '%s\n' "$names" | grep -n -x -F "$1" | head -1 | cut -d: -f1; }
+  git_beta_scene="$(position "Git beta scene helper suite")"
+  git_beta_walk="$(position "Git beta walk suite")"
+  launch="$(position "Launch the built bundle")"
+  [ "$git_beta_scene" -lt "$git_beta_walk" ] \
+    || fail "in checks/gate.sh, \"Git beta walk suite\" does not come after \"Git beta scene helper suite\"" || return 1
+  [ "$git_beta_walk" -lt "$launch" ] \
+    || fail "in checks/gate.sh, \"Git beta walk suite\" does not come before \"Launch the built bundle\""
 }
 
 # CP-803: no step is conditional and none may fail without failing the run.

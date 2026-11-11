@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.2.1 — the pinned gate list names the two Git beta suites
 # Version: 1.2.0 — conditional beta prose and entire wording suites
 # Version: 1.1.0 — gate ordering includes the beta catalogue pair
 # Version: 1.0.0 — the README check's disposable entry-point and gate proofs
@@ -552,6 +553,8 @@ run_step '"'"'VM refusal suite'"'"' '"'"'checks/tests/test_vm_refusal.sh'"'"'
 run_step '"'"'Launch step suite'"'"' '"'"'checks/tests/test_launch.sh'"'"'
 run_step '"'"'Own state step suite'"'"' '"'"'checks/tests/test_own_state_step.sh'"'"'
 run_step '"'"'Tree scene helper suite'"'"' '"'"'checks/tests/test_tree_scene.sh'"'"'
+run_step '"'"'Git beta scene helper suite'"'"' '"'"'checks/tests/test_git_beta_scene.sh'"'"'
+run_step '"'"'Git beta walk suite'"'"' '"'"'checks/tests/test_git_beta_walk.sh'"'"'
 run_step '"'"'Launch the built bundle'"'"' '"'"'checks/launch.sh'"'"'
 run_step '"'"'Own state'"'"' '"'"'checks/own-state-step.sh'"'"''
 DIRECT="run_step 'README check' 'checks/readme.sh'"
