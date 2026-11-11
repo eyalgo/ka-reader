@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.3.0 — the in-window disk changes E9 - E13: each waits for Enter, then changes its copy from outside
 # Version: 1.2.0 — the failure states E5 - E8: E5, E6, E7 and one E8 id per distinct observed sentence
 # Version: 1.1.0 — the repository states E1 - E4: E1, the E2 members, E3, E4; E4 after a repository
 # Version: 1.0.0 — first version: the skeleton (admission, usage, the ids, the walk of one state, the
@@ -46,6 +47,15 @@
 #   a Desktop folder of a copy's name that has no note; a state whose setup failed; no new process after
 #   `open`; end of input. 2 on a wrong invocation, with usage on stderr, before anything is read or
 #   launched. 130 on INT and 143 on TERM.
+#
+# THE IN-WINDOW DISK CHANGES (E9 - E13)
+#   Each is walked as a first look, then a change made from outside while KA-Reader stays open,
+#   then a second look: E9 gives .git back the permissions E5 removed; E10 edits a file, stages it
+#   with git add and commits it with git commit; E11 moves .git out of the root, into a sibling
+#   folder this script makes and removes; E12 runs git init in the plain root; E13 changes a tracked
+#   file between the person's sidebar switches (Git, Files, Git). The change lands only after the
+#   person's Enter, one step at a time, each said on stderr, and only in the copy. One screen capture
+#   is taken when each look ends (E13: three).
 #
 # THE FAILURE STATES (E5 - E8)
 #   Each is a disk shape the core's own tests already pin for its condition, never a guess:
@@ -98,7 +108,7 @@ die() { say "$*"; exit 1; }
 
 # The ids in the order they are walked: a plain word list, because bash 3.2 has no associative array.
 # Each state's task adds its ids here, so a helper at any version walks every id it lists.
-STATE_IDS="E1 E2-clean E2-merge E2-rebase E2-cherry-pick E2-revert E2-bisect E2-am E2-detached E3 E4 E5 E6 E7 E8-1 E8-2 E8-3 E8-4 E8-5 E8-6 E8-7 E8-8 E8-9 E8-10 E8-11 E8-12"
+STATE_IDS="E1 E2-clean E2-merge E2-rebase E2-cherry-pick E2-revert E2-bisect E2-am E2-detached E3 E4 E5 E6 E7 E8-1 E8-2 E8-3 E8-4 E8-5 E8-6 E8-7 E8-8 E8-9 E8-10 E8-11 E8-12 E9 E10 E11 E12 E13"
 
 # The bounds, in ticks of 0.25 s, are constants (docs/nfdr.md QC-67).
 LAUNCH_WAIT_SECONDS=20
@@ -114,6 +124,8 @@ E3_FILES_PER_FOLDER=100
 # The identity every commit the states make carries, so the guest's own never shapes a scene.
 SCENE_AUTHOR_NAME="Scene Author"
 SCENE_AUTHOR_EMAIL="scene-author@example.invalid"
+# The tracked file E10 and E13 change.
+CHANGED_FILE="notes/today.md"
 FILL='<to fill from the look>'
 NL=$'\n'
 
@@ -233,6 +245,8 @@ stop_launched_process() {
 # sits beside the copy and not in it, so the folder the app opens holds nothing but the state.
 copy=""
 note=""
+# Where E11 moves .git to, once it has: a sibling of the copy that this script made.
+moved_git=""
 
 # Removes the copy and its note. A state may have taken a folder's permissions away, so they are
 # given back first, inside the copy only.
@@ -241,11 +255,16 @@ remove_copy() {
     chmod -R u+rwx "$copy" 2> /dev/null || true
     rm -rf "$copy"
   fi
+  if [ -n "$moved_git" ]; then
+    chmod -R u+rwx "$moved_git" 2> /dev/null || true
+    rm -rf "$moved_git"
+  fi
   if [ -n "$note" ]; then
     rm -f "$note"
   fi
   copy=""
   note=""
+  moved_git=""
 }
 
 # On every exit path, stop the pid this run recorded and no other, and remove what it made.
@@ -321,6 +340,11 @@ on_disk_of() {
     E8-10) echo "A folder whose .git file names a Git directory that is not there." ;;
     E8-11) echo "A folder whose .git folder holds no repository." ;;
     E8-12) echo "A repository whose .gitmodules has had every permission removed." ;;
+    E9) echo "A repository whose .git has had every permission removed. After the first look, its permissions are given back while KA-Reader stays open." ;;
+    E10) echo "A repository with nothing changed. After the first look, a file is edited, then staged, then committed, from outside KA-Reader while it stays open." ;;
+    E11) echo "A repository. After the first look, its .git is moved out of the folder while KA-Reader stays open." ;;
+    E12) echo "A plain folder, with no repository at its root. After the first look, a repository is created at its root with git init while KA-Reader stays open." ;;
+    E13) echo "A repository. Between the sidebar's switches, a tracked file is changed from outside KA-Reader while it stays open." ;;
     *) die "no description of state $1" ;;
   esac
 }
@@ -330,6 +354,8 @@ done_of() {
   case "$1" in
     E3) echo "The scene launched KA-Reader and asked for the folder above to be chosen in the Open panel, and for Git to be chosen as soon as the file tree appeared." ;;
     E4) echo "The scene launched KA-Reader right after the launch for $previous_walked_id, and asked for the folder above to be chosen in the Open panel." ;;
+    E9|E10|E11|E12) echo "The scene launched KA-Reader and asked for the folder above to be chosen in the Open panel. After the first look, it made the change above from outside KA-Reader and asked for a second look." ;;
+    E13) echo "The scene launched KA-Reader and asked for the folder above to be chosen in the Open panel, then for Git, Files and Git to be chosen in turn. Between Files and the second Git, it changed a tracked file from outside KA-Reader." ;;
     *) echo "The scene launched KA-Reader and asked for the folder above to be chosen in the Open panel." ;;
   esac
 }
@@ -341,6 +367,8 @@ rules_of() {
     E3|E4) echo "CP-1306" ;;
     E5|E8-*) echo "CP-1307 CP-1310" ;;
     E6|E7) echo "CP-1308" ;;
+    E9|E13) echo "CP-1309 CP-1310" ;;
+    E10|E11|E12) echo "CP-1309" ;;
     *) die "no rules for state $1" ;;
   esac
 }
@@ -351,9 +379,20 @@ print_entry() {
   printf '%s\n' "- Built from: $built_from"
   printf '%s\n' "- On disk: $(on_disk_of "$1")"
   printf '%s\n' "- Done: $(done_of "$1")"
-  printf '%s\n' "- The Git view showed: $FILL"
-  printf '%s\n' "- The head of the file tree showed: $FILL"
-  printf '%s\n' "- Letters beside the file tree's entries: $FILL"
+  case "$1" in
+    E9|E10|E11|E12|E13)
+      for look in "first look" "second look"; do
+        printf '%s\n' "- The Git view showed ($look): $FILL"
+        printf '%s\n' "- The head of the file tree showed ($look): $FILL"
+        printf '%s\n' "- Letters beside the file tree's entries ($look): $FILL"
+      done
+      ;;
+    *)
+      printf '%s\n' "- The Git view showed: $FILL"
+      printf '%s\n' "- The head of the file tree showed: $FILL"
+      printf '%s\n' "- Letters beside the file tree's entries: $FILL"
+      ;;
+  esac
   for rule in $(rules_of "$1"); do
     printf '%s\n' "- Verdict against $rule: $FILL"
   done
@@ -510,6 +549,12 @@ stage_state() {
       write_bulk_files
       ;;
     E4) ;;
+    E9)
+      init_repository
+      remove_permissions .git
+      ;;
+    E10 | E11 | E13) init_repository ;;
+    E12) ;;
     E5)
       init_repository
       remove_permissions .git
@@ -572,6 +617,8 @@ prepare_copy() {
       stop_walk "$1" "$folder is there and is not a scene copy, so it is left alone and the walk ends here. Move it somewhere else and run the walk again."
     fi
     remove_copy
+    # What a killed E11 moved out of its copy is this script's too: the note was there.
+    rm -rf "$desktop/.git-beta-scene-$1.git"
     copy="$desktop/git-beta-scene-$1"
     note="$desktop/.git-beta-scene-$1.note"
   fi
@@ -636,6 +683,84 @@ say_the_look() {
   esac
 }
 
+# Appends a line to the tracked file that E10 and E13 change.
+change_the_tracked_file() {
+  printf 'Changed from outside KA-Reader.\n' >> "$copy/$CHANGED_FILE" || setup_stopped "writing $CHANGED_FILE" "$?"
+}
+
+# The change state $1 makes from outside, once the person's Enter has come, each step said as it lands.
+change_disk() {
+  case "$1" in
+    E9)
+      chmod 755 "$copy/.git" || setup_stopped "chmod 755 .git" "$?"
+      say "E9: gave .git its permissions back."
+      ;;
+    E10)
+      change_the_tracked_file
+      say "E10: changed $CHANGED_FILE."
+      step add "$CHANGED_FILE"
+      say "E10: staged $CHANGED_FILE with git add."
+      step commit -q -m "Change the notes from outside KA-Reader"
+      say "E10: committed $CHANGED_FILE with git commit."
+      ;;
+    E11)
+      moved_git="$desktop/.git-beta-scene-E11.git"
+      if [ -e "$moved_git" ] || [ -L "$moved_git" ]; then
+        folder="$moved_git"
+        moved_git=""
+        stop_walk "$1" "$folder is there and is not a scene copy, so it is left alone and the walk ends here. Move it somewhere else and run the walk again."
+      fi
+      mv "$copy/.git" "$moved_git" || setup_stopped "mv .git out of the folder" "$?"
+      say "E11: moved .git out of the folder."
+      ;;
+    E12)
+      step init -q
+      say "E12: created a repository at the folder's root with git init."
+      ;;
+    E13)
+      change_the_tracked_file
+      say "E13: changed $CHANGED_FILE."
+      ;;
+  esac
+}
+
+# The looks of state $1, each ended by the person's Enter and a capture.
+look_at_state() {
+  case "$1" in
+    E9|E10|E11|E12)
+      say_the_look "$1"
+      if [ "$1" = "E10" ]; then
+        say "E10: before you press Enter, open $CHANGED_FILE in the reading panel, so you can see it change."
+      fi
+      say "$1: press Enter here when you have looked, and the folder changes on disk while KA-Reader stays open."
+      wait_for_enter "$1"
+      capture_screen "$1" "$1-before"
+      change_disk "$1"
+      say "$1: the change is made. Without closing KA-Reader or choosing another folder, look at both surfaces again as before, then press Enter here."
+      wait_for_enter "$1"
+      capture_screen "$1" "$1-after"
+      ;;
+    E13)
+      say "E13: choose Git in the sidebar, wait until the Git view shows the repository's state, read it, then press Enter here."
+      wait_for_enter "$1"
+      capture_screen "$1" "E13-first-look"
+      say "E13: choose Files in the sidebar and read what the head of the file tree shows, then press Enter here, and a tracked file changes on disk."
+      wait_for_enter "$1"
+      capture_screen "$1" "E13-files"
+      change_disk "$1"
+      say "E13: choose Git in the sidebar again and read the Git view, word for word, then press Enter here."
+      wait_for_enter "$1"
+      capture_screen "$1" "E13-second-look"
+      ;;
+    *)
+      say_the_look "$1"
+      say "$1: press Enter here when you have looked."
+      wait_for_enter "$1"
+      capture_screen "$1" "$1"
+      ;;
+  esac
+}
+
 # Walks state $1, which is state $2 of $3: stage, launch, instruct, wait, capture, clean up, print.
 walk_state() {
   state_id="$1"
@@ -645,10 +770,7 @@ walk_state() {
   say "$state_id, state $2 of $3: $(on_disk_of "$state_id")"
   say "$state_id: choose this folder in the app: $copy"
   say "$state_id: click KA-Reader in the Dock if its window is not in front; in its Open panel choose Desktop, go to the folder named above, then choose Open."
-  say_the_look "$state_id"
-  say "$state_id: press Enter here when you have looked."
-  wait_for_enter "$state_id"
-  capture_screen "$state_id" "$state_id"
+  look_at_state "$state_id"
   say "$state_id is walked to its end."
   stop_launched_process
   remove_copy
