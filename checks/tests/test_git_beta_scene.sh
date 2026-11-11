@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Version: 1.1.0 — the repository states' cases (E1 - E4): what each staged folder holds at the
+#   moment of its launch, the order of the first four ids, E4 after a repository, no guest config
 # Version: 1.0.0 — first version: the skeleton's cases (admission, usage, entries, stops, signals,
 #   the foreign folder and the leftover copy, nothing written outside the copies)
 #
@@ -23,7 +25,12 @@
 #   Runs on any host: every host reading is a stand-in and `open` only records.
 #
 # THE STAND-INS
-#   open           records its arguments and marks the app as opened, its pid running again.
+#   open           records its arguments and marks the app as opened, its pid running again. It also
+#                  records what every state's folder on the Desktop holds at that moment, under
+#                  seen/ in the scene: seen/order (id and whether it holds a repository, one line per
+#                  launch), and per id its git status, its porcelain status, its file count outside
+#                  .git and its listing. The copy is gone once the state is walked, so this is how a
+#                  case reads the staged shape.
 #   ps             lists a bystander, another instance of the same executable (pid 4243) and an
 #                  unrelated process; once `open` has run it lists the one launched (pid 4242) until
 #                  it has been told to stop.
@@ -67,6 +74,14 @@ test_a_desktop_folder_of_the_copys_name_without_the_note_stops_the_run_untouched
 test_a_leftover_copy_that_carries_the_note_is_replaced_and_only_it
 test_a_launch_that_starts_no_process_ends_the_run_and_stops_nothing
 test_nothing_under_the_fixtures_changes_and_no_write_leaves_the_copies
+test_e1_stages_one_changed_file_and_one_staged_file
+test_e2_clean_is_clean
+test_each_e2_member_leaves_its_operation_in_progress_as_git_status_names_it
+test_e3_working_tree_is_above_its_size_floor
+test_e4_is_a_plain_folder_walked_right_after_a_repository_launch
+test_e4_given_alone_walks_e2_clean_first_and_the_printed_lines_say_so
+test_a_repository_state_uses_no_config_of_the_guest
+test_e1_to_e4_are_walked_in_the_fixed_order_and_a_subset_in_that_order
 "
 
 # --- helpers ---
@@ -95,6 +110,7 @@ new_scene() {
   ln -sf "$(command -v git)" "$SCENE/ordinary/git"
   ln -sf "$(command -v tar)" "$SCENE/ordinary/tar"
   vmr_install_admission "$SCENE/bin"
+  write_snapshot
   write_open
   write_ps
   write_kill
@@ -102,10 +118,36 @@ new_scene() {
   write_screencapture
 }
 
+# What every state's folder holds when the app is launched: the staged shape, read by the real git
+# with no config of the machine, since the helper removes the copy once the state is walked.
+write_snapshot() {
+  cat > "$SCENE/snapshot.sh" <<'EOF'
+#!/bin/bash
+scene="$1"
+mkdir -p "$scene/seen"
+for folder in "$scene"/home/Desktop/git-beta-scene-*; do
+  [ -d "$folder" ] || continue
+  id="${folder##*/git-beta-scene-}"
+  [ "$id" != captures ] || continue
+  kind=plain
+  if [ -e "$folder/.git" ] || [ -L "$folder/.git" ]; then kind=repo; fi
+  printf '%s %s\n' "$id" "$kind" >> "$scene/seen/order"
+  if [ "$kind" = repo ]; then
+    env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 git -C "$folder" status > "$scene/seen/$id.status" 2>&1
+    env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 git -C "$folder" status --porcelain > "$scene/seen/$id.porcelain" 2>&1
+  fi
+  find "$folder" -path "$folder/.git" -prune -o -type f -print | wc -l | tr -d ' ' > "$scene/seen/$id.files"
+  ls -A "$folder" > "$scene/seen/$id.ls"
+done
+EOF
+  chmod +x "$SCENE/snapshot.sh"
+}
+
 write_open() {
   cat > "$SCENE/bin/open" <<EOF
 #!/bin/bash
 printf '%s\n' "\$*" >> '$SCENE/open_calls'
+'$SCENE/snapshot.sh' '$SCENE'
 : > '$SCENE/opened'
 rm -f '$SCENE/gone_$LAUNCHED_PID'
 exit 0
@@ -378,6 +420,158 @@ test_nothing_under_the_fixtures_changes_and_no_write_leaves_the_copies() {
   [ "$(vmr_snapshot "$SCENE/tmp")" = "$tmp_before" ] || fail "the walk left something in the temporary directory: $(ls -A "$SCENE/tmp")" || return 1
   left="$(ls -A "$SCENE/home/Desktop")"
   [ "$left" = "git-beta-scene-captures" ] || fail "the walk left something on the Desktop besides the captures folder: $left"
+}
+
+# --- the repository states, E1 - E4 ---
+
+# The text the snapshot took of state $1's $2 (status, porcelain, files, ls) at its launch.
+seen_of() {
+  cat "$SCENE/seen/$1.$2" 2> /dev/null
+}
+
+# The ids the open stand-in saw launched, in order, each with whether its folder held a repository.
+launch_order() {
+  cat "$SCENE/seen/order" 2> /dev/null
+}
+
+# One run of ids "$@" that must end 0, for the cases that read the snapshot.
+walk_ids() {
+  run_helper "$APP" "$BUILT_FROM" "$@"
+  [ "$STATUS" -eq 0 ] || fail "expected exit 0, got $STATUS. stderr: $(cat "$SCENE/err")"
+}
+
+# CP-1304, CP-1305: E1 holds one changed file that is not staged and one staged file.
+test_e1_stages_one_changed_file_and_one_staged_file() {
+  new_scene
+  walk_ids E1 || return 1
+  porcelain="$(seen_of E1 porcelain)"
+  [ "$(printf '%s\n' "$porcelain" | grep -c .)" -eq 2 ] \
+    && [ "$(printf '%s\n' "$porcelain" | grep -c -E '^ M ')" -eq 1 ] \
+    && [ "$(printf '%s\n' "$porcelain" | grep -c -E '^[MA]  ')" -eq 1 ] \
+    || fail "E1: expected one changed file and one staged file. git status reads: $(seen_of E1 status)"
+}
+
+# CP-1304, CP-1305: E2-clean is a repository with nothing changed and nothing staged.
+test_e2_clean_is_clean() {
+  new_scene
+  walk_ids E2-clean || return 1
+  [ -f "$SCENE/seen/E2-clean.status" ] && [ -z "$(seen_of E2-clean porcelain)" ] \
+    || fail "E2-clean: the repository is not clean. git status reads: $(seen_of E2-clean status)"
+}
+
+# One assertion per member: what `git status` says of each operation left in progress, and of a
+# detached HEAD. The sentences are Git's own.
+test_each_e2_member_leaves_its_operation_in_progress_as_git_status_names_it() {
+  new_scene
+  walk_ids E2-merge E2-rebase E2-cherry-pick E2-revert E2-bisect E2-am E2-detached || return 1
+  assert_status_names E2-merge merge "You have unmerged paths" || return 1
+  assert_status_names E2-rebase rebase "rebase in progress" || return 1
+  assert_status_names E2-cherry-pick cherry-pick "You are currently cherry-picking" || return 1
+  assert_status_names E2-revert revert "You are currently reverting" || return 1
+  assert_status_names E2-bisect bisect "You are currently bisecting" || return 1
+  assert_status_names E2-am am "You are in the middle of an am session" || return 1
+  grep -q -F "HEAD detached at" "$SCENE/seen/E2-detached.status" 2> /dev/null \
+    || fail "E2-detached: HEAD is not detached. git status reads: $(seen_of E2-detached status)"
+}
+
+# $1 is the state id, $2 Git's word for its operation, $3 the sentence git status prints for it.
+assert_status_names() {
+  grep -q -F "$3" "$SCENE/seen/$1.status" 2> /dev/null \
+    || fail "$1: git status does not name a $2 in progress. git status reads: $(seen_of "$1" status)"
+}
+
+# CP-1306: E3 is a repository large enough that its status read is still under way when the person
+# opens the Git view. The floor is the script's own constant, never a number written here.
+test_e3_working_tree_is_above_its_size_floor() {
+  new_scene
+  floor="$(sed -n 's/^E3_FILE_COUNT=//p' "$GIT_BETA_SCENE_SH")"
+  case "$floor" in
+    '' | *[!0-9]*) fail "E3: the script states no numeric E3_FILE_COUNT (it reads: $floor)"; return 1 ;;
+  esac
+  walk_ids E3 || return 1
+  file_count="$(seen_of E3 files)"
+  [ "${file_count:-0}" -ge "$floor" ] \
+    || fail "E3: the working tree's file count is ${file_count:-0}, below the floor of $floor" || return 1
+  grep -q -x -F -e "git-beta-scene.sh: E3: writing $floor files into the working tree." "$SCENE/err" \
+    || fail "E3: stderr does not say how many files were written. stderr: $(grep 'E3' "$SCENE/err")" || return 1
+  grep -q -x -F -e '- Verdict against CP-1306: <to fill from the look>' "$SCENE/out" \
+    || fail "E3: its entry has no verdict line for CP-1306. got: $(cat "$SCENE/out")"
+}
+
+# CP-1306: E4 is a folder with no repository, and the launch right before it is a repository's.
+test_e4_is_a_plain_folder_walked_right_after_a_repository_launch() {
+  new_scene
+  walk_ids E1 E4 || return 1
+  [ "$(launch_order)" = "$(printf 'E1 repo\nE4 plain')" ] \
+    || fail "E4: the launch before E4 was not for a repository state. open saw: $(launch_order | tr '\n' ';')" || return 1
+  [ ! -e "$SCENE/seen/E4.status" ] && [ -n "$(seen_of E4 ls)" ] \
+    || fail "E4: the folder holds a repository or nothing. It holds: $(seen_of E4 ls)"
+}
+
+# E4 given alone has no repository launch before it: the helper walks E2-clean first and says why.
+test_e4_given_alone_walks_e2_clean_first_and_the_printed_lines_say_so() {
+  new_scene
+  walk_ids E4 || return 1
+  [ "$(entry_ids)" = "E2-clean E4" ] \
+    || fail "E4 given alone: E2-clean was not walked before it. The entries read: $(entry_ids)" || return 1
+  grep -q -x -F -e 'git-beta-scene.sh: E4 needs a launch on a repository right before it, so E2-clean is walked first.' "$SCENE/err" \
+    || fail "E4 given alone: stderr does not say why E2-clean comes first. stderr: $(cat "$SCENE/err")" || return 1
+  [ "$(launch_order)" = "$(printf 'E2-clean repo\nE4 plain')" ] \
+    || fail "E4 given alone: the launches were not a repository's then E4's: $(launch_order | tr '\n' ';')"
+}
+
+# The guest's own git config must never shape a scene: a global config that signs every commit
+# with a program that is not there, and a hook that refuses every commit, would stop a state built
+# without the helper's overrides. The states and what git says of them are the same with and
+# without it.
+test_a_repository_state_uses_no_config_of_the_guest() {
+  repository_ids="E1 E2-clean E2-merge E2-rebase E2-cherry-pick E2-revert E2-bisect E2-am E2-detached"
+  new_scene
+  walk_ids $repository_ids || return 1
+  plain_reading="$(normalized_statuses)"
+  new_scene
+  plant_guest_git_config
+  walk_ids $repository_ids || return 1
+  planted_reading="$(normalized_statuses)"
+  [ -n "$plain_reading" ] || fail "no state was read: $(launch_order | tr '\n' ';')" || return 1
+  [ "$plain_reading" = "$planted_reading" ] \
+    || fail "the guest's config changed the states. Without it: $plain_reading With it: $planted_reading"
+}
+
+# Every state's status as the snapshot took it, with commit ids made alike.
+normalized_statuses() {
+  for status_file in "$SCENE"/seen/*.status; do
+    echo "== ${status_file##*/}"
+    sed -E 's/[0-9a-f]{7,40}/<commit>/g' "$status_file"
+  done
+}
+
+plant_guest_git_config() {
+  mkdir -p "$SCENE/home/hooks"
+  printf '#!/bin/sh\nexit 1\n' > "$SCENE/home/hooks/pre-commit"
+  chmod +x "$SCENE/home/hooks/pre-commit"
+  cat > "$SCENE/home/.gitconfig" <<EOF
+[commit]
+  gpgsign = true
+[gpg]
+  program = $SCENE/no-such-gpg-program
+[core]
+  hooksPath = $SCENE/home/hooks
+[init]
+  defaultBranch = guest-branch
+EOF
+}
+
+# The fixed order of E1 - E4: a subset is walked in that order, whatever order it was given in.
+test_e1_to_e4_are_walked_in_the_fixed_order_and_a_subset_in_that_order() {
+  new_scene
+  walk_ids E4 E1 || return 1
+  [ "$(entry_ids)" = "E1 E4" ] \
+    || fail "stdout does not carry exactly one entry per id walked, in the walk's order. The entries read: $(entry_ids)" || return 1
+  new_scene
+  walk_ids E4 E2-bisect E1 E2-clean || return 1
+  [ "$(entry_ids)" = "E1 E2-clean E2-bisect E4" ] \
+    || fail "stdout does not carry exactly one entry per id walked, in the walk's order. The entries read: $(entry_ids)"
 }
 
 # --- the runner ---
