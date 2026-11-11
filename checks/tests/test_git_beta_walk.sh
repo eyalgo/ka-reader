@@ -215,8 +215,11 @@ new_scene() {
   scene_git -c user.name=walk -c user.email=walk@example.invalid -c commit.gpgsign=false commit --quiet -m "the checkout"
 }
 
+# The checkout is built with no configuration of the machine running the suite: not the system's,
+# not the user's, and not what an environment injects through GIT_CONFIG_COUNT (a hook path would
+# make this commit run the host's commit hook).
 scene_git() {
-  GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null git -C "$SCENE/checkout" "$@"
+  GIT_CONFIG_COUNT=0 GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null git -C "$SCENE/checkout" "$@"
 }
 
 # Runs the walk from the product root with the stand-ins and the temporary home only. Sets STATUS,
