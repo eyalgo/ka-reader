@@ -2,7 +2,8 @@
 
 **Status:** Draft
 **Owner:** Principal Architect
-**Version:** 94 — Fold cycle-85 § 2.1: QC-67 takes the no-seam reading as drafted — a suite hands a check script its tools through `PATH`, the platform's variable — and the answer's addition as a dated reading rather than a rule: at `ka-reader@528c152` five suites, the two Git beta suites among them, build the whole `PATH` from an empty environment, and fourteen put their stand-ins in front of the host's `PATH`, so QC-67 states both forms and requires neither; whether every suite must build its `PATH` is raised to the owner as a new choice to confirm. One item from downstream still awaits the owner — RN-104.
+**Version:** 95 — Fold cycle-86 §§ 2.1 and 3.1: QC-67 makes the built form the rule — every suite under `checks/tests/` that launches a check script launches it under `/usr/bin/env -i` with a `PATH` of directories the suite built, every tool linked in by name, no host directory on it — and re-measures the suites at `ka-reader@528c152` in three forms, six built, fourteen prepended and six on the host's `PATH` whole, each outside the built form a known gap, with a launch-line scan owed; QC-72, new, records the owner's bounded departure from `testing_doctrine.md` § *A test reads nothing of the machine it runs on*: a suite may run the host's `git`, `tar` or `cargo` only where the case asserts what the tool makes of a state it built, on its own temporary copies, with machine `git` configuration shut out, every other process a stand-in. Bound (3) is held as worded, so the host shell and text tools every suite runs are known gaps, and whether the departure reaches them goes back to the owner as a choice to confirm. Status stays Draft — RN-105.
+Version 94 — Fold cycle-85 § 2.1: QC-67 takes the no-seam reading as drafted — a suite hands a check script its tools through `PATH`, the platform's variable — and the answer's addition as a dated reading rather than a rule: at `ka-reader@528c152` five suites, the two Git beta suites among them, build the whole `PATH` from an empty environment, and fourteen put their stand-ins in front of the host's `PATH`, so QC-67 states both forms and requires neither; whether every suite must build its `PATH` is raised to the owner as a new choice to confirm. One item from downstream still awaits the owner — RN-104.
 Version 93 — Fold cycle-84 §§ 3.1–3.4 and draft § 2.1: QC-65's set names `checks/git-beta-scene.sh` beside the tree-scene helper, its suite outside the set, and names the two host walks, `checks/git-beta-walk.sh` and `checks/tree-walk.sh`, as outside it with the reason, at `ka-reader@528c152`; § 9's suites bullet is re-measured at twenty-seven suites with the twenty-five kept as a dated reading, its two counts left behind by earlier re-measurements move with it, and it states that every suite under `checks/tests/` is a bash script that is its own runner, setting aside the Shell packet's pytest line; QC-70's meaning of 2 widens to an argument the script does not take, and it records both new scripts' statuses, the literal scan's `exit 3` and the walk's uncovered lost-guest status; QC-67, drafted, states that a suite hands a check script its tools through `PATH`; § 10's QC-65 row follows. Two items await the owner, so Status is Draft — RN-103.
 Version 92 — Fold cycle-83 §§ 3.1–3.2 and settle § 2.1 on the § 3.1 answer, the close: QC-44's tail names `checks/git-beta.sh` 1.0.0 and `checks/readme.sh` 1.1.0, with their suites, as holding the beta's wording at every change in both modes — the catalogue `grep` on a build that reads Git state at open, and the README's known gaps either way — re-pinned at `ka-reader@7a88215`, and keeps release inspection for the release-note wordings, the four items, the uncovered-case line, where and when each surface draws the statement, and every downloaded-release proof; QC-70 records `checks/git-beta.sh`'s statuses; § 9's suites bullet is re-measured at twenty-five suites with the twenty-three kept as a dated reading, and its Swift bullet states that the packet's `@testable import` rule binds, held by `development-design` until the test targets carry layer words; § 10's QC-44 row follows; and the four passages `ka-reader@5c1a640` wrote inside v91 with no version and no RN — QC-44's *Local README realization*, QC-70's *README command status reading*, § 9's *Additional measurement at `1ee6ba1`* and § 10's QC-44 row — are taken in as this revision's, kept as dated readings where re-pinned. The companion is removed; Status is Settled — RN-102.
 Version 91 — Fold cycle-82 §§ 3.1–3.2, the close: QC-41's tail names `checks/notices.sh` 1.1.0 and its suite as holding the crates' copyright lines beside the names, re-pinned at `ka-reader@75fe66c`, and keeps release inspection for what the check does not read — the libraries' and the icon set's copyright lines, `NOTICE` files, the no-licence-file and no-copyright-line sentences, and each licence as declared — with `development-design` no longer that rule's gate; QC-71 moves to the two repositories: the check covers exactly the commits the public repository receives and never `ka-reader-dev`'s refs, its secrets half is QC-28's *Secret scan* as built with nothing widened, and it gains the public repository's one branch, its `main` refusing a force push and a deletion, and each release keeping the previous one's history whole; both § 10 rows and § 10's review-gate list follow. The companion is removed; Status is Settled — RN-101.
@@ -2683,42 +2684,72 @@ answer at `docs/trail/architecture/cycle-51.md` § 3.2 — RN-69)*.
   the gate holds its steps at their defaults is the delivery tier's. A suite hands a check script
   its tools, real or stand-in, through `PATH`. `PATH` is the platform's variable, so the hand-off
   is neither a bound nor a seam, and no variable of a script's own chooses a tool *(through v93 "by
-  putting them first on `PATH`" — RN-104)*. At `ka-reader@528c152` the suites do it in two forms.
-  The two Git beta suites build the whole `PATH` the script runs under, from an empty environment,
-  with every tool, real or stand-in, linked into it by name: `/usr/bin/env -i
-  PATH="$SCENE/bin:$SCENE/ordinary"` (`checks/tests/test_git_beta_scene.sh:L276`, `:L408`, `:L813`;
-  `checks/tests/test_git_beta_walk.sh:L243`), as `checks/tests/test_tree_scene.sh` (`:L172`,
-  `:L319`), `checks/tests/test_launch.sh` (`:L166`) and `checks/tests/test_own_state_step.sh`
-  (`:L132`, `:L143`) do. Under that form a tool a suite forgot to link is absent, and the script
-  refuses — "was not found on PATH" (`checks/git-beta-scene.sh:L212`). Fourteen suites put their
-  stand-ins in front of the host's `PATH` instead — `PATH="$stubs:$PATH"`
+  putting them first on `PATH`" — RN-104)*. **Every suite under `checks/tests/` that launches a check script launches it under
+  `/usr/bin/env -i`, with a `PATH` made only of directories the suite built, every tool on it linked
+  in by name, and no host directory on it** — not `$PATH`, `/usr/bin` or `/bin`. A tool on that
+  `PATH` is a stand-in, or a host tool QC-72 admits. Under this form a tool a suite forgot to link
+  is absent, and the script refuses — "was not found on PATH" (`checks/git-beta-scene.sh:L212`) —
+  or the shell's own "command not found" fails the case, so nothing reaches the script that the
+  suite did not name *(through v94 "This entry states both forms as a dated reading and requires
+  neither" — RN-105)*. At `ka-reader@528c152` the suites launch their scripts in three forms
+  *(through v94 "in two forms" — RN-105)*. **Built**, as the rule says, six suites: the two Git
+  beta suites, `/usr/bin/env -i PATH="$SCENE/bin:$SCENE/ordinary"`
+  (`checks/tests/test_git_beta_scene.sh:L276`, `:L408`, `:L813`;
+  `checks/tests/test_git_beta_walk.sh:L243`), `checks/tests/test_tree_scene.sh` (`:L172`, `:L319`),
+  `checks/tests/test_launch.sh` (`:L166`), `checks/tests/test_own_state_step.sh` (`:L132`,
+  `:L143`), and `checks/tests/test_vm_refusal.sh` through its helper `vmr_run`
+  (`checks/tests/support/vm_refusal.sh:L190-L191`), which a count of `env -i` lines in the suite
+  files alone misses *(through v94 "five suites" — RN-105)*. **Prepended**, fourteen suites: they
+  put their stand-ins in front of the host's `PATH`, `PATH="$stubs:$PATH"`
   (`checks/tests/test_bundle.sh:L209`, `checks/tests/test_no_network.sh:L78`, and in the same form
   `test_entry_points.sh`, `test_git_beta.sh`, `test_notices.sh`, `test_offline_page.sh`,
   `test_own_state.sh`, `test_read_only.sh`, `test_readme.sh`, `test_release_absent.sh`,
-  `test_release_pack.sh`, `test_renderer.sh`, `test_secret_scan.sh` and `test_view.sh`). Under
-  that form a tool a suite forgot to stand in is the host's, and the case runs on it. This entry
-  states both forms as a dated reading and requires neither *(RN-104)*. The Git beta suites'
+  `test_release_pack.sh`, `test_renderer.sh`, `test_secret_scan.sh` and `test_view.sh`), so a tool a suite forgot to stand in is the host's, and the case runs on it.
+  **The host's `PATH` taken whole, with no stand-in on it**, six suites, each running the real
+  script directly: `test_release_shape.sh`, `test_release_sums.sh`, `test_release_version.sh`,
+  `test_secret_scan_planted.sh`, `test_strings.sh` and `test_structure.sh`, so every tool their
+  script starts is the host's. `checks/tests/test_notices.sh:L490` runs one case under
+  `env -i PATH="$STUBS:/usr/bin:/bin"`, built but keeping the system's own directories, so a
+  forgotten tool in `/usr/bin` is the host's there too. Each prepended and host-whole suite, and
+  that case, is a known gap until a change moves it. `checks/tests/test_strings_step.sh` launches
+  no check script: it reads copies of `checks/gate.sh` as text in its own `gate_verdict` (`:L113`),
+  and the one process of the product's it starts is a copy of itself, under the host's `PATH`
+  whole (`run_nested`, `:L309`). The rule does not reach it; the host tools it runs are QC-72's
+  question. Two cases are uncovered, and named. A check script that calls a tool by absolute path
+  reaches the host's tool under any `PATH`; none does at `528c152`, where the only absolute tool
+  paths outside a comment in `checks/*.sh` are two in `checks/offline-page.sh` (`:L102`, `:L181`),
+  both the text of a refusal message. And a script that probes for an optional tool with
+  `command -v` takes its fallback branch, silently, when the suite links no such tool *(the rule
+  added at v95, on the owner's seat's answer at `docs/trail/architecture/cycle-86.md` § 2.1 —
+  RN-105)*. The Git beta suites'
   ordinary tools include the host's own: `checks/tests/test_git_beta_scene.sh` links the host's
   `git` and `tar` into its built `PATH` (`:L134-L136`), and `checks/tests/test_git_beta_walk.sh`
   does so for `git` (`:L216`) and, in one case, for `tar` (`:L364`). Neither
   `checks/git-beta-scene.sh` nor `checks/git-beta-walk.sh` reads a variable of its own beyond the
   platform's `HOME` (`checks/git-beta-scene.sh:L216`); the walk suite's `SCENE_DIR` is read only by
   its stand-ins (`checks/tests/test_git_beta_walk.sh:L39`). So the two add nothing to the list
-  above. Whether a suite may hand a script the host's real tools at all is not settled by this
-  sentence *(drafted at v93 — RN-103; the no-seam reading confirmed at v94 on
-  `docs/trail/architecture/cycle-85.md` § 2.1 — RN-104)*.
+  above. Which host tools a suite may link in at all is QC-72's *(through v94 "Whether a suite may hand
+  a script the host's real tools at all is not settled by this sentence" — RN-105; drafted at v93 —
+  RN-103; the no-seam reading confirmed at v94 on `docs/trail/architecture/cycle-85.md` § 2.1 —
+  RN-104)*.
   — *verified by:* a case in a suite `checks/gate.sh` runs that sets each variable this entry lists
   to a sabotaging value and requires each gate step to run at its script's default (layer 6); and
   a scan of `checks/*.sh` for a script's own environment reads — `${NAME:-` and the other forms —
   that fails on a bound missing its name form, its default or its refusal, and on a variable that
-  is neither a bound nor a seam a suite sets (layer 6). Neither exists at `ka-reader@2529a42`, so
-  until the change that adds them lands, `development-design` reading this entry is its gate for a
+  is neither a bound nor a seam a suite sets (layer 6); and a scan of the lines under
+  `checks/tests/` that launch a check script, which fails on a launch outside `/usr/bin/env -i` and
+  on a `PATH` that holds `$PATH` or a host directory (layer 6) *(added at v95 — RN-105)*. None of the
+  three exists at `ka-reader@2529a42`, and the third is not in the tree at `ka-reader@528c152`, so
+  until the change that adds each lands, `development-design` reading this entry is its gate for a
   change under `checks/`, and a new environment read in a check script is held against it there
   *(drafted at v77, on the owner's seat's answer at `docs/trail/architecture/cycle-68.md` § 3.5 — RN-87)* *(traces to:
   QC-65 — "The script offers no option, flag or variable of its own that skips the refusal";
   SDD § 4 C-I3's *Violated by*, "a build that skips a script", as QC-64 traces it; ADR-0012
   § Decision — "a gate that cannot go red has not run"; QC-30 half (2) for the reviewed list a
-  seam can replace; the name form is this document's own realization — RN-87)*
+  seam can replace; the name form is this document's own realization — RN-87; the launch rule realizes
+  `testing_doctrine.md` v2.9.0 § *A test reads nothing of the machine it runs on* — "the test fakes
+  every process the code starts, the host's tools included" — as a doctrine default, on the owner's
+  seat's answer at `docs/trail/architecture/cycle-86.md` § 2.1 — RN-105)*
 - **QC-70:** A check script under `checks/` ends with one of five statuses, and they are the
   product's own. **0** is a pass, and only a pass is 0. **1** is a refusal: a finding, or a
   precondition that failed. **2** is a wrong invocation, an argument count, or an argument, the
@@ -2839,6 +2870,47 @@ answer at `docs/trail/architecture/cycle-51.md` § 3.2 — RN-69)*.
   source, so no command can check it here, and `development-design` reading this entry is its gate
   *(added at v93, on the owner's seat's answer at `docs/trail/architecture/cycle-84.md` § 3.3 —
   RN-103)*.
+- **QC-72:** A suite under `checks/tests/` runs the host's real `git`, `tar` or `cargo` only within
+  three bounds. (1) The case asserts what that tool makes of a state the suite itself built, and
+  the tool runs only on temporary copies the suite made. (2) Every run of the host's `git` shuts
+  out machine-level `git` configuration: `GIT_CONFIG_GLOBAL=/dev/null` and `GIT_CONFIG_NOSYSTEM=1`.
+  (3) Every other process the check script starts is a stand-in. This departs from
+  `testing_doctrine.md` v2.9.0 § *A test reads nothing of the machine it runs on* — "the test fakes
+  every process the code starts, the host's tools included". The record carries the departure
+  because the owner authorized it for this product's check suites, not because a seat may relax
+  doctrine, which is user-owned (`<CORE>/roles/CROSS_ROLE.md` § 3). The ground: the Git beta
+  scene's state cases exist to prove what `git status` says of each state the scene builds, which
+  is what a person compares with the app's window, so a stand-in `git` would prove the stand-in.
+  At `ka-reader@528c152` four suites run a host tool this entry names.
+  `checks/tests/test_git_beta_scene.sh` links the host's `git` and `tar` into its built `PATH`
+  (`:L134-L136`) and reads `git status` back with machine configuration shut out (`:L161-L162`).
+  `checks/tests/test_git_beta_walk.sh` links the host's `git` (`:L216`), runs it with machine
+  configuration shut out and `GIT_CONFIG_COUNT=0` (`:L235`), and links the host's `tar` in one
+  case (`:L364`). `checks/tests/test_entry_points.sh` and `checks/tests/test_no_network.sh` run
+  the real `cargo` through their stubs (`test_entry_points.sh:L44`, `:L599`;
+  `test_no_network.sh:L37`, `:L131`), and both also run it on the product's own tree, not on a
+  copy (`test_entry_points.sh:L1612`, `:L1617`; `test_no_network.sh:L220`, `:L233`), so each is a
+  known gap under bound (1) until a change moves it. Bound (3) is held as the ruling words it:
+  every process other than the host's `git`, `tar` and `cargo` — the host's shell and its ordinary
+  text and file tools included. At `528c152` every suite runs some of those: the built suites link
+  them in by name (`checks/tests/support/vm_refusal.sh:L64` lists 37,
+  `checks/tests/test_git_beta_walk.sh:L53` lists 26), and the prepended and host-whole suites QC-67
+  names take them from the host's `PATH`. Read this way, each suite is a known gap under bound (3).
+  Whether the departure reaches the tools a check script is written in is open with the owner
+  *(the architecture companion's § 2.1 at v95 — RN-105)*.
+  — *verified by:* `development-design` reading this entry, for every change under `checks/tests/`
+  that adds or changes a run of a host tool (review gate). No command holds bounds (1) and (3).
+  Bound (1) turns on what a case asserts and where its tool runs, which a scan of launch lines
+  cannot read, and bound (3)'s reach waits on the owner's answer above, so a scan written now would
+  encode a reading not yet settled. Bound (2) mechanizes: a scan of `checks/tests/` for a run of
+  the host's `git` without `GIT_CONFIG_GLOBAL=/dev/null` and `GIT_CONFIG_NOSYSTEM=1` beside it
+  (layer 6). It is not in the tree at `ka-reader@528c152`, so `development-design` holds bound (2)
+  too until a change adds it *(added at v95 — RN-105)* *(traces to: the owner's answer at
+  `docs/trail/architecture/cycle-86.md` § 3.1, 2026-11-11, which adopts the bound drafted at
+  `docs/trail/architecture/self_answer-87.md` § *Left for the owner* and brings the two `cargo`
+  suites under it; `testing_doctrine.md` v2.9.0 § *A test reads nothing of the machine it runs on*,
+  the rule departed from; QC-67, whose built `PATH` makes each host tool a suite links a name a
+  reader can find — RN-105)*
 
 ## 9. Test strategy
 
@@ -3004,7 +3076,10 @@ left with `ka-reader-ui` at `ka-reader@0aca57e` (RN-22; RN-25).
   gate's membership checks read `checks/tests/*.sh` alone, so a suite in another form would join no
   step. That check is in no suite at `ka-reader@528c152`; it is a review gate until a change adds it,
   because nothing runs it, and `development-design` reading this bullet is that gate *(added at v93,
-  on the owner's seat's answer at `docs/trail/architecture/cycle-84.md` § 3.4 — RN-103)*. Each `checks/<name>.sh` script with a suite `checks/tests/test_<name>.sh` beside it is
+  on the owner's seat's answer at `docs/trail/architecture/cycle-84.md` § 3.4 — RN-103)*. How a suite
+  launches the script it tests is QC-67's, and which host tools it may run is QC-72's, the owner's
+  bounded departure from `testing_doctrine.md` § *A test reads nothing of the machine it runs on*
+  *(added at v95 — RN-105)*. Each `checks/<name>.sh` script with a suite `checks/tests/test_<name>.sh` beside it is
   proved by that suite to read what its entry says it reads, and the suite runs as its own fatal step
   of `checks/gate.sh`, the way the gate's `Bundle probe suite` step runs `checks/tests/test_bundle.sh`
   (`checks/gate.sh:L93` at `ka-reader@3fa227e`; `:L87` at `ka-reader@f25fdbb` — RN-95; `:L86` at
@@ -3601,12 +3676,13 @@ is stated once, in § 8 *(added at v56, on the owner's answer at `docs/trail/arc
 | QC-61 | logging facade and its implementation | `checks/no-network.sh` (suite `test_no_network.sh`); `checks/structure.sh` (suite `test_structure.sh`) | the tree; the change | CI build; `development-implementation` (the structure pair) |
 | QC-64 | every rule of `ci.yml` held by one script, run at the change; `ci.yml` holds none of its own; `release.yml`'s step set held at the change | the card's test command through the gate tool; `grep -nE '^[[:space:]]+run:' .github/workflows/ci.yml`; the suites loop over `checks/gate.sh`; `checks/tests/test_vm_refusal.sh` — `test_every_toplevel_suite_is_an_entire_fatal_step`, `test_moved_steps_are_single_line_commands_in_order`; `checks/release-shape.sh .github/workflows/release.yml` and `checks/tests/test_release_shape.sh` | the change; the tree | `development-implementation`; `development-design` reading the entry (`ci.yml`'s *nothing else* half) |
 | QC-65 | the launching and home-reading steps refuse outside a virtual machine | the refusal case in each guarded script's suite, and the two guarded suites' cases in `checks/tests/test_vm_refusal.sh`, the tree-scene helper's case in `checks/tests/test_tree_scene.sh` and in `checks/tests/test_vm_refusal.sh`, the Git beta scene helper's case in `checks/tests/test_git_beta_scene.sh` and in `checks/tests/test_vm_refusal.sh`; the gate tool's `Environment:` line | the change | `development-implementation` |
-| QC-67 | a check script's own environment reads are bounds or seams, and none reaches a gate run | a case in a gate suite setting each listed variable to a sabotaging value; a scan of `checks/*.sh` for a script's own environment reads — neither in the tree at `ka-reader@2529a42` | the change; the tree | `development-design` reading the entry until both land |
+| QC-67 | a check script's own environment reads are bounds or seams, and none reaches a gate run; every suite launches its script under a `PATH` it built | a case in a gate suite setting each listed variable to a sabotaging value; a scan of `checks/*.sh` for a script's own environment reads — neither in the tree at `ka-reader@2529a42`; a scan of the launch lines under `checks/tests/` — not in the tree at `ka-reader@528c152` | the change; the tree | `development-design` reading the entry until each lands |
 | QC-68 | the containment port's one implementation, one fake and one contract suite | `cargo test --locked -p ka-reader-core --test containment`, against `FolderContainment` and `SeededContainment` (layer 2); `grep -rnE '^[[:space:]]*impl ContainmentCheck for' crates` printing the two alone; the two manifest greps QC-68 names | the change; the tree | `development-implementation` (the suite, through the gate's *Test gate*); `development-design` when a change touches the port (the greps) |
 | QC-70 | a check script exits 0 on a pass alone, 1 on a refusal, 2 on a wrong invocation, 128 + n or 1 on a signal, or a run child's status | `checks/tests/test_read_only.sh` — `test_no_argument_is_a_usage_error`, `test_extra_argument_is_a_usage_error`; `checks/tests/test_offline_page.sh` — `test_no_argument_and_two_arguments_print_usage_and_exit_two`; `checks/tests/test_notices.sh` — `test_wrong_argument_count_is_a_usage_error`; a case in `checks/tests/test_offline_page.sh` that fails the comparison and requires a non-zero end with no `same` — not in the suite at `ka-reader@8823057` | the change | `development-implementation` (the suites, through `checks/gate.sh`); `development-design` reading the entry (a new script, or a new way one ends; the failed comparison until its case lands) |
+| QC-72 | every run of the host's `git` in a suite shuts out machine configuration | a scan of `checks/tests/` for a run of the host's `git` without `GIT_CONFIG_GLOBAL=/dev/null` and `GIT_CONFIG_NOSYSTEM=1` — not in the tree at `ka-reader@528c152` | the change | `development-design` reading the entry until it lands |
 
 Entries with no row are review gates, each arguing its downgrade in its own tail: QC-10 (the setting-aside
-of the trait-collaborator line, and the read seam until it is built), QC-13 (the delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a listed crate and name), QC-18, QC-21, QC-31, QC-33, QC-43, QC-45, QC-50, QC-54, QC-57, QC-69 (until the read seam is built), QC-44 (the README's uncovered-case line), QC-71 (the private half), QC-41 (the libraries' and the icon set's copyright lines, `NOTICE` files, the no-licence-file and no-copyright-line sentences, and each licence as declared), QC-70 (a new script's statuses, or a new way one ends, the offline-page check's failed comparison until its case lands, and the Git beta walk's status on a lost guest), and QC-59's behaviour member.
+of the trait-collaborator line, and the read seam until it is built), QC-13 (the delegation half), QC-63 (the types-and-values half), QC-30 (a new read inside a listed crate and name), QC-18, QC-21, QC-31, QC-33, QC-43, QC-45, QC-50, QC-54, QC-57, QC-69 (until the read seam is built), QC-44 (the README's uncovered-case line), QC-71 (the private half), QC-41 (the libraries' and the icon set's copyright lines, `NOTICE` files, the no-licence-file and no-copyright-line sentences, and each licence as declared), QC-70 (a new script's statuses, or a new way one ends, the offline-page check's failed comparison until its case lands, and the Git beta walk's status on a lost guest), QC-72 (bounds (1) and (3)), and QC-59's behaviour member.
 
 ---
 
@@ -9442,3 +9518,74 @@ of the trait-collaborator line, and the read seam until it is built), QC-13 (the
   status lines read as in the header, so the `Inputs read:` line stands.
   `docs/trail/architecture/cycle-85.md` holds the answered companion whole. Two items are open, the
   new § 2.1 and § 3.1, so the companion is rewritten with them and `Status:` stays Draft.
+- **RN-105:** *(v95 — the cycle-86 fold, §§ 2.1 and 3.1)* The committed answers at
+  `docs/trail/architecture/cycle-86.md` authorize every change here: § 2.1 by the owner's seat,
+  whose reasoning is `docs/trail/architecture/self_answer-89.md` § 2.1, and § 3.1 by the owner,
+  2026-11-11. `docs/trail/architecture/self_answer-90.md` decided nothing and named the one reading
+  the fold had to make, under *Bound (3)* below.
+
+  **§ 2.1 → QC-67, overridden as answered.** The built form is QC-67's rule. The two-form reading
+  is replaced by the three forms the answer measured: the six built suites, `test_vm_refusal.sh`
+  among them through `vmr_run`; the fourteen prepended; and the six that take the host's `PATH`
+  whole. Every suite outside the built form, and `test_notices.sh:L490`'s one case, is a known gap
+  until a change moves it. The `verified by:` tail gains the layer-6 scan of the launch lines,
+  held by `development-design` until it lands, and § 10's QC-67 row names it. The trace gains the
+  doctrine default the rule realizes. The answer left `test_strings_step.sh` to the fold to
+  measure. It launches no check script: it reads its copies of `checks/gate.sh` as text
+  (`gate_verdict`, `:L113`) and starts only a copy of itself, under the host's `PATH` whole
+  (`run_nested`, `:L309`). So the launch rule does not reach it, and QC-67 says so.
+
+  **§ 3.1 → QC-72, new, in § 8 beside QC-67 and QC-70.** The owner authorized a departure from a
+  core testing rule and asked for it to be recorded in this document. It is a constraint a change
+  could break, with bounds a reviewer can name, so it takes an entry of its own rather than a
+  sentence inside QC-67, which binds how a suite launches a script and not which tools it may run.
+  § 9's suites bullet points at both entries. The departure's three bounds are the owner's words.
+  The ground is the one `self_answer-87.md` gave. The owner brought the two `cargo` suites under
+  the same bounds, and they are measured against them: both run the real `cargo` on the product's
+  own tree, not a temporary copy (`test_entry_points.sh:L1612`, `:L1617`; `test_no_network.sh:L220`,
+  `:L233`), so each is a known gap under bound (1). The ruling did not weigh that, and it is
+  recorded as a gap under the rule the owner set, not raised as a question: the bound's words
+  settle it.
+
+  **Bound (3), held as worded, and the residue raised.** The ruling says "every other process the
+  script starts stays a stand-in". `self_answer-90.md` named two readings: every process other
+  than the host's `git`, `tar` and `cargo`, or only the processes the case's subject reaches,
+  leaving the tools the script is written in alone. The words carry the first. The second is part 1
+  of the four-part bound `self_answer-88.md` and `self_answer-89.md` drafted, which the ruling,
+  naming `self_answer-87.md`'s three parts, does not include. This seat may record a departure the
+  owner authorized. It may not widen one, because widening a departure relaxes doctrine
+  (`<CORE>/roles/CROSS_ROLE.md` § 3). So QC-72 holds bound (3) as worded and names what that costs:
+  every suite runs the host's shell and its text and file tools, so read this way every suite is a
+  known gap. Whether the owner meant that is the companion's new § 2.1. It is drafted into the
+  records as worded, and an override would add the script's own language as a fourth part.
+  § 2.1's "every tool on it, real or stand-in, linked in by name" is not read as that widening.
+  QC-67 binds how a tool arrives, and says a host tool on the built `PATH` is one QC-72 admits.
+
+  **Beyond the answers' words.** Three things. (1) QC-67 names a second uncovered case,
+  `self_answer-89.md`'s check 4: a script probing for an optional tool with `command -v` takes its
+  fallback branch silently under the built form. (2) QC-72's tail argues a review gate for bounds
+  (1) and (3) and names the scan bound (2) mechanizes into; § 10 carries that scan as QC-72's row
+  and the review-gate list names bounds (1) and (3). (3) No ADR is written. Fixing how a suite
+  launches a script is cheap to reverse and is the doctrine's default, not a trade-off this product
+  made. The departure is a real trade-off and surprising, but it is not hard to reverse: undoing it
+  moves four suites' state cases onto stand-ins and touches no shipped code. So neither clears the
+  three gates, and the departure's why lives in QC-72's own tail and the owner's answer.
+
+  **Read by this run.** At `ka-reader@c2cc306`, whose tree outside `docs/` is `528c152`'s
+  (`git diff --stat 528c152 HEAD -- . ':!docs'` prints nothing), every file read with `git show
+  528c152:<path>`: `checks/tests/test_strings_step.sh` `:L113`, `:L159-L162`, `:L225-L238`,
+  `:L294-L335`; `checks/tests/support/vm_refusal.sh:L185-L195`; `checks/tests/test_git_beta_scene.sh`
+  `:L134-L136`, `:L161-L162`; `checks/tests/test_git_beta_walk.sh` `:L216`, `:L235`, `:L364`;
+  `checks/tests/test_entry_points.sh` `:L10-L25`, `:L44`, `:L599`, `:L1612`, `:L1617`;
+  `checks/tests/test_no_network.sh` `:L18`, `:L37`, `:L131`, `:L220`, `:L233`; and, in each of the
+  six host-whole suites, a count of `env -i` lines and of `PATH=` assignments carrying `$PATH`, both
+  zero. From the managing core, `testing_doctrine.md` v2.9.0 § *A test reads nothing of the machine
+  it runs on*. No product test ran: nothing under `crates/`, `checks/` or `ka-reader-mac/` is changed
+  by this fold.
+
+  **Limits.** No ADR is written or restatused, so the index is unchanged. QC-72 is added; no `QC`
+  is renumbered or reused. QC-67 and § 9's suites bullet are the entries edited, and § 10 re-states
+  QC-67's row, adds QC-72's and extends the review-gate list. The inputs' status lines read as in
+  the header, so the `Inputs read:` line stands. `docs/trail/architecture/cycle-86.md` holds the
+  answered companion whole. One item is open, the new § 2.1, so the companion is rewritten with it
+  alone and `Status:` stays Draft.
