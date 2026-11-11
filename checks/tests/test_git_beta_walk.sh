@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Version: 1.1.0 — integrity review: the checkout reaches the guest without .git, target or .build,
+#   and each built-from failure names what went wrong (a clean tree claimed changed, a dirty one missed)
 # Version: 1.0.0 — first version: the host walk's cases (refusals, the build before the scene, the ids,
 #   the built-from line, the scene's status, the results folder, a stopped guest started with a window)
 #
@@ -64,6 +66,7 @@ test_a_failing_build_in_the_guest_exits_one_and_runs_no_scene
 test_the_scene_is_never_run_without_first_building
 test_the_ids_reach_the_scene_command_unchanged
 test_built_from_names_head_and_says_when_the_tree_has_uncommitted_changes
+test_the_checkout_reaches_the_guest_without_git_target_or_build
 test_the_scenes_status_is_the_scripts_status
 test_results_land_in_the_host_desktop_folder
 test_a_stopped_guest_is_started_with_a_window_and_then_used
@@ -127,7 +130,17 @@ case "$sub" in
         exit "$(cat "$SCENE_DIR/scene_status" 2> /dev/null || echo 0)"
         ;;
     esac
-    # Anything else may be fed a stream (the checkout); it is read to its end and dropped.
+    # The checkout's stream is unpacked into $SCENE_DIR/guest/copy when the case asks for it
+    # ($SCENE_DIR/unpack); otherwise it, like any other stream, is read to its end and dropped.
+    case "$cmd" in
+      "tar -C "*" -xf -")
+        if [ -f "$SCENE_DIR/unpack" ]; then
+          mkdir -p "$SCENE_DIR/guest/copy"
+          tar -C "$SCENE_DIR/guest/copy" -xf -
+          exit $?
+        fi
+        ;;
+    esac
     if [ "$wants_stdin" = 1 ]; then cat > /dev/null; fi
     case "$cmd" in
       "ls "*captures*)
@@ -320,8 +333,12 @@ test_built_from_names_head_and_says_when_the_tree_has_uncommitted_changes() {
   run_walk
   commit="$(scene_git rev-parse HEAD)"
   line="$(grep '^git-beta-walk.sh: built from ' "$SCENE/stderr" || true)"
+  case "$line" in
+    *"$commit"*) ;;
+    *) fail "the built-from line does not name HEAD $commit. got: $line" || return 1 ;;
+  esac
   [ "$line" = "git-beta-walk.sh: built from $commit, with no uncommitted changes" ] \
-    || fail "the built-from line does not name HEAD $commit. got: $line" || return 1
+    || fail "the built-from line says the tree has uncommitted changes, and it has none. got: $line" || return 1
   grep -q "'$commit, with no uncommitted changes'" "$SCENE/scene_command" \
     || fail "the built-from line does not reach the scene as one argument. The scene was run as: $(cat "$SCENE/scene_command")" || return 1
 
@@ -335,12 +352,27 @@ test_built_from_names_head_and_says_when_the_tree_has_uncommitted_changes() {
     *) fail "the built-from line does not name HEAD $commit. got: $line" || return 1 ;;
   esac
   [ "$line" = "git-beta-walk.sh: built from $commit, with uncommitted changes in the tree" ] \
-    || fail "the built-from line does not say the tree has uncommitted changes. got: $line" || return 1
+    || fail "the built-from line does not say the tree has uncommitted changes. got: $line"
+}
 
-  # The line of a clean tree must not claim changes: the clean run above printed none.
-  case "$(cat "$SCENE/stderr")" in
-    *"with no uncommitted changes"*) fail "the built-from line says the tree has uncommitted changes, and it has none. got: $line" ;;
-  esac
+# The checkout goes into the guest without its .git, its target folder and the Swift package's
+# .build (Task 6). The stand-in tart unpacks the stream the real tar makes, so the case reads what
+# the guest's copy would hold.
+test_the_checkout_reaches_the_guest_without_git_target_or_build() {
+  new_scene
+  rm -f "$SCENE/bin/tar"
+  ln -sf "$(command -v tar)" "$SCENE/ordinary/tar"
+  : > "$SCENE/unpack"
+  mkdir -p "$SCENE/checkout/target/release" "$SCENE/checkout/ka-reader-mac/.build/debug" "$SCENE/checkout/ka-reader-mac/Sources"
+  echo "built" > "$SCENE/checkout/target/release/artifact"
+  echo "built" > "$SCENE/checkout/ka-reader-mac/.build/debug/artifact"
+  echo "source" > "$SCENE/checkout/ka-reader-mac/Sources/kept.swift"
+  run_walk
+  copy="$SCENE/guest/copy"
+  [ -f "$copy/README" ] && [ -f "$copy/checks/git-beta-walk.sh" ] && [ -f "$copy/ka-reader-mac/Sources/kept.swift" ] \
+    || fail "the checkout did not reach the guest: the copy holds $(cd "$copy" 2> /dev/null && find . | LC_ALL=C sort | tr '\n' ' ')" || return 1
+  [ ! -e "$copy/.git" ] && [ ! -e "$copy/target" ] && [ ! -e "$copy/ka-reader-mac/.build" ] \
+    || fail "the checkout reached the guest with .git, target or .build: the copy holds $(cd "$copy" && find . -maxdepth 2 | LC_ALL=C sort | tr '\n' ' ')"
 }
 
 test_the_scenes_status_is_the_scripts_status() {

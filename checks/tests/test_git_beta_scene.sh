@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Version: 1.5.0 — integrity review: an argument holding two ids is a wrong invocation, every usage
+#   sub-case can fail the case, and a state whose setup fails ends the run with 1
 # Version: 1.4.0 — the entries' verdict lines: each state names the rules the spec's Examples table assigns it
 # Version: 1.3.0 — the in-window disk changes' cases (E9 - E13): each change lands only after Enter and
 #   only in its copy, the clearing, the commit order, the moved .git, the new repository, E13's
@@ -79,6 +81,7 @@ test_a_signal_ends_130_or_143_with_the_same_cleanup
 test_a_desktop_folder_of_the_copys_name_without_the_note_stops_the_run_untouched
 test_a_leftover_copy_that_carries_the_note_is_replaced_and_only_it
 test_a_launch_that_starts_no_process_ends_the_run_and_stops_nothing
+test_a_state_whose_setup_fails_ends_the_run_with_one_and_launches_nothing
 test_nothing_under_the_fixtures_changes_and_no_write_leaves_the_copies
 test_e1_stages_one_changed_file_and_one_staged_file
 test_e2_clean_is_clean
@@ -317,13 +320,16 @@ test_off_a_vm_it_exits_one_having_launched_nothing_copied_nothing_and_read_no_ho
 }
 
 # QC-70: too few arguments, an unknown id and a repeated id each end with exit 2 and the usage
-# lines, before anything is read or launched.
+# lines, before anything is read or launched. An argument that holds two ids with a space between
+# them is no state id either, and an id it repeats is repeated.
 test_a_wrong_invocation_exits_two_with_usage_and_launches_nothing() {
   new_scene
-  assert_wrong_invocation "no argument"
+  assert_wrong_invocation "no argument" || return 1
   assert_wrong_invocation "one argument" "$APP" || return 1
   assert_wrong_invocation "unknown id" "$APP" "$BUILT_FROM" E99 || return 1
+  assert_wrong_invocation "unknown id" "$APP" "$BUILT_FROM" "E1 E2-clean" || return 1
   assert_wrong_invocation "repeated id" "$APP" "$BUILT_FROM" E1 E1 || return 1
+  assert_wrong_invocation "repeated id" "$APP" "$BUILT_FROM" E1 "E1 E2-clean" || return 1
 }
 
 # $1 is the case label; the rest is the helper's argument vector.
@@ -462,6 +468,24 @@ test_a_launch_that_starts_no_process_ends_the_run_and_stops_nothing() {
     || fail "stderr does not say no process appeared. stderr: $(cat "$SCENE/err")" || return 1
   [ ! -s "$SCENE/kill_log" ] || fail "kill was called though no process was recorded: $(cat "$SCENE/kill_log")" || return 1
   [ ! -e "$(scene_copy E1)" ] || fail "the state's folder is still on the Desktop: $(ls -A "$SCENE/home/Desktop")"
+}
+
+# QC-70, status 1: a state whose setup failed ends the run. Here `git` fails on its first call, so
+# E1 cannot be built: the helper names the step and its status, launches nothing for the state,
+# prints no entry for it, and removes its copy and note.
+test_a_state_whose_setup_fails_ends_the_run_with_one_and_launches_nothing() {
+  new_scene
+  rm -f "$SCENE/ordinary/git"
+  printf '#!/bin/bash\nexit 7\n' > "$SCENE/ordinary/git"
+  chmod +x "$SCENE/ordinary/git"
+  run_helper "$APP" "$BUILT_FROM" E1
+  [ "$STATUS" -eq 1 ] || fail "setup fails: expected exit 1, got $STATUS. stderr: $(cat "$SCENE/err")" || return 1
+  grep -q -x -F -e "git-beta-scene.sh: E1: setting up this state's folder stopped when git init -q exited with status 7, so KA-Reader was not launched for it and the walk ends here." "$SCENE/err" \
+    || fail "setup fails: stderr does not name the step that stopped. stderr: $(cat "$SCENE/err")" || return 1
+  [ ! -s "$SCENE/open_calls" ] || fail "setup fails: open was called: $(cat "$SCENE/open_calls")" || return 1
+  [ ! -s "$SCENE/out" ] || fail "setup fails: stdout carries an entry for a state not walked to its end: $(cat "$SCENE/out")" || return 1
+  [ "$(ls -A "$SCENE/home/Desktop")" = "git-beta-scene-captures" ] \
+    || fail "setup fails: the state's folder or its note is still on the Desktop: $(ls -A "$SCENE/home/Desktop")"
 }
 
 # CP-1316: a walk leaves the fixtures as they were and writes nothing outside the copies, the
