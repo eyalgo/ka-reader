@@ -23,9 +23,10 @@
 #   Runs on any host: every host reading is a stand-in and `open` only records.
 #
 # THE STAND-INS
-#   open           records its arguments and marks the app as opened.
+#   open           records its arguments and marks the app as opened, its pid running again.
 #   ps             lists a bystander, another instance of the same executable (pid 4243) and an
-#                  unrelated process; once `open` has run it lists the one launched (pid 4242).
+#                  unrelated process; once `open` has run it lists the one launched (pid 4242) until
+#                  it has been told to stop.
 #   kill           records its arguments; once told to stop a pid it reports that pid gone.
 #   sleep          records its argument and returns at once.
 #   screencapture  records its arguments and writes the file it was named.
@@ -64,6 +65,7 @@ test_end_of_input_exits_one_stopping_only_the_recorded_pid_and_removing_the_copi
 test_a_signal_ends_130_or_143_with_the_same_cleanup
 test_a_desktop_folder_of_the_copys_name_without_the_note_stops_the_run_untouched
 test_a_leftover_copy_that_carries_the_note_is_replaced_and_only_it
+test_a_launch_that_starts_no_process_ends_the_run_and_stops_nothing
 test_nothing_under_the_fixtures_changes_and_no_write_leaves_the_copies
 "
 
@@ -105,6 +107,7 @@ write_open() {
 #!/bin/bash
 printf '%s\n' "\$*" >> '$SCENE/open_calls'
 : > '$SCENE/opened'
+rm -f '$SCENE/gone_$LAUNCHED_PID'
 exit 0
 EOF
   chmod +x "$SCENE/bin/open"
@@ -115,7 +118,7 @@ write_ps() {
 #!/bin/bash
 printf '%s\n' '9999 /usr/bin/other'
 printf '%s\n' '$BYSTANDER_PID $APP/Contents/MacOS/Fake-Exe'
-if [ -f '$SCENE/opened' ] && [ ! -f '$SCENE/no_new_process' ]; then
+if [ -f '$SCENE/opened' ] && [ ! -f '$SCENE/no_new_process' ] && [ ! -f '$SCENE/gone_$LAUNCHED_PID' ]; then
   printf '%s\n' '$LAUNCHED_PID $APP/Contents/MacOS/Fake-Exe'
 fi
 exit 0
@@ -345,6 +348,19 @@ test_a_leftover_copy_that_carries_the_note_is_replaced_and_only_it() {
   [ ! -e "$(scene_copy E1)" ] || fail "a leftover scene copy was not replaced: $(ls -A "$SCENE/home/Desktop")" || return 1
   [ "$(cat "$SCENE/home/Desktop/other.txt" 2> /dev/null)" = "mine" ] || fail "another file on the Desktop was touched"
   [ "$(cat "$SCENE/open_calls")" = "-n $APP" ] || fail "open was not called once for the replaced copy: $(cat "$SCENE/open_calls")"
+}
+
+# `open` that starts no new process of the app leaves the run nothing to stop and nothing to show:
+# it ends with exit 1 and the stop lines, and calls `kill` for nothing (QC-70, status 1).
+test_a_launch_that_starts_no_process_ends_the_run_and_stops_nothing() {
+  new_scene
+  : > "$SCENE/no_new_process"
+  run_helper "$APP" "$BUILT_FROM"
+  [ "$STATUS" -eq 1 ] || fail "no new process: expected exit 1, got $STATUS. stderr: $(cat "$SCENE/err")" || return 1
+  grep -q 'no new process of .* appeared within 20 seconds of open' "$SCENE/err" \
+    || fail "stderr does not say no process appeared. stderr: $(cat "$SCENE/err")" || return 1
+  [ ! -s "$SCENE/kill_log" ] || fail "kill was called though no process was recorded: $(cat "$SCENE/kill_log")" || return 1
+  [ ! -e "$(scene_copy E1)" ] || fail "the state's folder is still on the Desktop: $(ls -A "$SCENE/home/Desktop")"
 }
 
 # CP-1316: a walk leaves the fixtures as they were and writes nothing outside the copies, the

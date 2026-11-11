@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.16.0 — the suite of the Git beta scene helper joins the list, after the tree-scene helper's
 # Version: 1.15.0 — wording suites ignore inherited case selection
 # Version: 1.14.0 — the beta catalogue command and its entire suite join the document checks
 # Version: 1.13.0 — the README wording/image check and its entire suite join the document checks
@@ -163,15 +164,16 @@ run_step 'Release image suite' 'checks/tests/test_release_pack.sh'
 run_step 'Release checksum suite' 'checks/tests/test_release_sums.sh'
 run_step 'Release absent suite' 'checks/tests/test_release_absent.sh'
 run_step 'Own state suite' 'checks/tests/test_own_state.sh'
-# "VM refusal suite", "Launch step suite", "Own state step suite" and "Tree scene helper suite"
-# launch nothing, so they run before the real launch below. The helper's suite holds
-# checks/tree-scene.sh, which launches the bundle and so refuses off a macOS VM, on stand-ins for
-# `open`, `ps` and `kill`; it comes after the other launch-step suites and never after the real
-# launch.
+# "VM refusal suite", "Launch step suite", "Own state step suite", "Tree scene helper suite" and
+# "Git beta scene helper suite" launch nothing, so they run before the real launch below. Each
+# helper's suite holds a script that launches the bundle and so refuses off a macOS VM
+# (checks/tree-scene.sh, checks/git-beta-scene.sh), on stand-ins for `open`, `ps` and `kill`; they
+# come after the other launch-step suites and never after the real launch.
 run_step 'VM refusal suite' 'checks/tests/test_vm_refusal.sh'
 run_step 'Launch step suite' 'checks/tests/test_launch.sh'
 run_step 'Own state step suite' 'checks/tests/test_own_state_step.sh'
 run_step 'Tree scene helper suite' 'checks/tests/test_tree_scene.sh'
+run_step 'Git beta scene helper suite' 'checks/tests/test_git_beta_scene.sh'
 # The app's own log is written by a launch. Steps above this one launch the product, and each may
 # already have left the log behind: "Bundle probe", "Bundle probe suite", "Renderer gate" and
 # "Renderer gate suite". "Own state", the step that runs checks/own-state.sh against this machine's
