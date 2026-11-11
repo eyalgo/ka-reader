@@ -459,7 +459,8 @@ final class GitSentencesTests: XCTestCase {
 
         XCTAssertEqual(Set(faults), [.notARoot, .repositoryReadFailed])
         XCTAssertEqual(
-            Set(faultsBeforeARepository), [.probeRepositoryReadFailed, .machineConfigNotSwitchedOff])
+            Set(faultsBeforeARepository),
+            [.probeRepositoryReadFailed, .machineConfigNotSwitchedOff])
     }
 
     // MARK: The status letter's tooltip (CP-591, CP-592)
@@ -525,7 +526,10 @@ struct GitBetaCatalogueTests {
     @Test func faultBeforeARepositoryIsItsOwnWholeSentence() {
         let sentence = GitSentences.faultBeforeRepository
 
-        #expect(sentence == "When you opened the folder, KA-Reader stopped while finding out whether it's a repository and can't tell why. The file tree and the reading panel are unaffected. Start KA-Reader again to look again.")
+        #expect(
+            sentence
+                == "When you opened the folder, KA-Reader stopped while finding out whether it's a repository and can't tell why. The file tree and the reading panel are unaffected. Start KA-Reader again to look again."
+        )
         #expect(!sentence.isEmpty)
         #expect(sentence != GitSentences.fault)
         #expect(!sentence.contains("this repository"))
