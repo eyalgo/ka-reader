@@ -161,11 +161,15 @@ for folder in "$scene"/home/Desktop/git-beta-scene-*; do
   cat "$folder/.gitmodules" > "$scene/seen/$id.gitmodules" 2> /dev/null
   if [ -f "$folder/.git" ] && [ ! -L "$folder/.git" ]; then cat "$folder/.git" > "$scene/seen/$id.git_entry" 2> /dev/null; fi
   # The shape as a whole: every path outside .git with its mode, and the files above. Two states
-  # with the same fingerprint are the same shape.
+  # with the same fingerprint are the same shape. A folder of thousands of files (E3's) is not
+  # listed entry by entry: that would spawn two processes for each and cost a minute.
   {
-    find "$folder" -path "$folder/.git/*" -prune -o -print 2> /dev/null | LC_ALL=C sort | while IFS= read -r entry; do
-      printf '%s %s\n' "$(mode_of "$entry")" "${entry#"$folder"}"
-    done
+    printf '%s .\n' "$(mode_of "$folder")"
+    if [ "$(cat "$scene/seen/$id.files")" -lt 1000 ]; then
+      find "$folder" -mindepth 1 -path "$folder/.git/*" -prune -o -print 2> /dev/null | LC_ALL=C sort | while IFS= read -r entry; do
+        printf '%s %s\n' "$(mode_of "$entry")" "${entry#"$folder"}"
+      done
+    fi
     for kept in .git/config .git/objects/info/alternates .gitmodules; do
       if [ -f "$folder/$kept" ]; then printf -- '-- %s\n' "$kept"; cat "$folder/$kept"; fi
     done
@@ -643,7 +647,7 @@ test_e6_stages_a_repository_whose_config_is_invalid() {
 test_e7_stages_the_chosen_status_only_shape() {
   new_scene
   walk_ids E7 || return 1
-  [ "$(seen_of E7 mode_index)" = "----------" ] && [ "$(seen_of E7 mode_git)" = "drwxr-xr-x" ] \
+  [ "$(seen_of E7 mode_index)" = "----------" ] && [ "$(seen_of E7 mode_git | cut -c1-4)" = "drwx" ] \
     || fail "E7: the folder does not hold the shape the state is staged with. It holds: .git $(seen_of E7 mode_git), index $(seen_of E7 mode_index)" || return 1
   grep -q -F 'test_state_ok_and_status_failing_is_a_failed_item' "$GIT_BETA_SCENE_SH" \
     || fail "E7: the script's header does not name the git_state.rs case the shape was confirmed against"

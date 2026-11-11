@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.2.0 — the failure states E5 - E8: E5, E6, E7 and one E8 id per distinct observed sentence
 # Version: 1.1.0 — the repository states E1 - E4: E1, the E2 members, E3, E4; E4 after a repository
 # Version: 1.0.0 — first version: the skeleton (admission, usage, the ids, the walk of one state, the
 #   entries, the stops and the cleanup); the states come in later versions
@@ -46,6 +47,30 @@
 #   `open`; end of input. 2 on a wrong invocation, with usage on stderr, before anything is read or
 #   launched. 130 on INT and 143 on TERM.
 #
+# THE FAILURE STATES (E5 - E8)
+#   Each is a disk shape the core's own tests already pin for its condition, never a guess:
+#   E5  .git of a repository with mode 000 (crates/ka-reader-core/tests/root_finding.rs
+#       test_unreadable_git_directory_reports_condition).
+#   E6  a .git/config that is not Git config syntax; the probe's repository-read-failed condition
+#       (root_finding.rs test_invalid_git_config_reports_observed_failure).
+#   E7  a probe that answers root and a status read that stops unexplained: the shape chosen is the
+#       UNREADABLE INDEX (.git/index with mode 000), one of the status-only RepositoryReadFailed
+#       paths of git_reader/libgit2.rs verify_submodules (`repository.index()` failing). Confirmed
+#       against crates/ka-reader-core/tests/git_state.rs
+#       test_state_ok_and_status_failing_is_a_failed_item, which pins that a root whose status read
+#       fails folds to a failed item. No git_state.rs case pins this disk shape itself, so the look
+#       confirms which sentence the app shows; if it shows another, E7 is recorded as not seen with
+#       what was tried (change_spec CP-1303).
+#   E8-<n>  one shape per distinct sentence ka-reader-mac/Sources/Surfaces/GitSentences.swift
+#       draws for a condition KA-Reader observed, numbered from 1 in the order the sentences first
+#       appear in GitSentences.failure: 1 the Git directory outside, 2 the config names a path
+#       outside, 3 the config names a path not located, 4 the object store names another outside,
+#       5 the object store names another not located, 6 a .gitmodules path leading elsewhere, 7 the
+#       folder cannot be looked in, 8 the Git directory cannot be read, 9 .git is a link, 10 nothing
+#       where the Git directory pointed, 11 no repository in the Git directory, 12 .gitmodules
+#       cannot be read. The suite reads the count from that file, so a sentence added there fails
+#       the suite until an id is added here.
+#
 # ADMISSION
 #   The first thing the script does is ask the host whether it is a macOS virtual machine
 #   (`uname -s` Darwin and `sysctl -n kern.hv_vmm_present` 1, both succeeding). On any other reading
@@ -73,7 +98,7 @@ die() { say "$*"; exit 1; }
 
 # The ids in the order they are walked: a plain word list, because bash 3.2 has no associative array.
 # Each state's task adds its ids here, so a helper at any version walks every id it lists.
-STATE_IDS="E1 E2-clean E2-merge E2-rebase E2-cherry-pick E2-revert E2-bisect E2-am E2-detached E3 E4"
+STATE_IDS="E1 E2-clean E2-merge E2-rebase E2-cherry-pick E2-revert E2-bisect E2-am E2-detached E3 E4 E5 E6 E7 E8-1 E8-2 E8-3 E8-4 E8-5 E8-6 E8-7 E8-8 E8-9 E8-10 E8-11 E8-12"
 
 # The bounds, in ticks of 0.25 s, are constants (docs/nfdr.md QC-67).
 LAUNCH_WAIT_SECONDS=20
@@ -155,7 +180,8 @@ executables="$(find "$app/Contents/MacOS" -mindepth 1 -maxdepth 1 | LC_ALL=C sor
   || die "$app does not hold exactly one executable under Contents/MacOS, so nothing was launched. Give the path of the KA-Reader.app that ka-reader-mac/assemble.sh built."
 bundle_executable="$app/Contents/MacOS/$(basename "$executables")"
 
-fixture="$(cd "$(dirname "$0")" && pwd)/fixtures/git-beta-scene"
+fixtures_root="$(cd "$(dirname "$0")" && pwd)/fixtures"
+fixture="$fixtures_root/git-beta-scene"
 [ -d "$fixture" ] || die "the fixture is not at $fixture, so nothing was set up or launched. Run the helper from a full checkout of the product."
 
 # `open`, `ps`, `kill`, `screencapture` and `git` are found through PATH, so a case can put its own
@@ -280,6 +306,21 @@ on_disk_of() {
     E2-detached) echo "A repository with HEAD detached at a commit." ;;
     E3) echo "A repository with $E3_FILE_COUNT files in its working tree." ;;
     E4) echo "A plain folder, with no repository at its root." ;;
+    E5) echo "A repository whose .git has had every permission removed." ;;
+    E6) echo "A folder whose .git/config holds a line that is not Git config syntax." ;;
+    E7) echo "A repository whose index file has had every permission removed." ;;
+    E8-1) echo "A folder whose .git file names a Git directory outside the folder." ;;
+    E8-2) echo "A repository whose .git/config sets a path outside the folder." ;;
+    E8-3) echo "A repository whose .git/config sets a path whose destination cannot be worked out." ;;
+    E8-4) echo "A repository whose object store names another store outside the folder." ;;
+    E8-5) echo "A repository whose object store names another store whose destination cannot be worked out." ;;
+    E8-6) echo "A repository whose .gitmodules gives a submodule a path that leads somewhere else." ;;
+    E8-7) echo "A folder that has had every permission removed." ;;
+    E8-8) echo "A repository whose .git has had every permission removed." ;;
+    E8-9) echo "A folder whose .git is a link." ;;
+    E8-10) echo "A folder whose .git file names a Git directory that is not there." ;;
+    E8-11) echo "A folder whose .git folder holds no repository." ;;
+    E8-12) echo "A repository whose .gitmodules has had every permission removed." ;;
     *) die "no description of state $1" ;;
   esac
 }
@@ -298,6 +339,8 @@ rules_of() {
   case "$1" in
     E1|E2-*) echo "CP-1304 CP-1305" ;;
     E3|E4) echo "CP-1306" ;;
+    E5|E8-*) echo "CP-1307 CP-1310" ;;
+    E6|E7) echo "CP-1308" ;;
     *) die "no rules for state $1" ;;
   esac
 }
@@ -397,6 +440,24 @@ write_bulk_files() {
   ) || setup_stopped "writing the files of the working tree" "$?"
 }
 
+# Writes the text $2 (with a final newline) to the path $1 below the copy, replacing what is there.
+plant_file() {
+  printf '%s\n' "$2" > "$copy/$1" || setup_stopped "writing $1" "$?"
+}
+
+# Takes every permission away from the path $1 below the copy ("." for the copy itself).
+remove_permissions() {
+  chmod 000 "$copy/$1" || setup_stopped "chmod 000 $1" "$?"
+}
+
+# Replaces the copy with the existing fixture $1 and the .git its archive holds, as the read-only
+# steps consume them: checks/fixtures/$1 beside checks/fixtures/$1.git.tar.
+use_archived_fixture() {
+  rm -rf "$copy" || setup_stopped "rm -rf the copy" "$?"
+  cp -R "$fixtures_root/$1" "$copy" || setup_stopped "cp -R $1" "$?"
+  tar -xf "$fixtures_root/$1.git.tar" -C "$copy" || setup_stopped "tar -xf $1.git.tar" "$?"
+}
+
 # Stages state $1 in the copy, which holds the fixture and no .git. E4 is the fixture alone.
 stage_state() {
   case "$1" in
@@ -449,6 +510,50 @@ stage_state() {
       write_bulk_files
       ;;
     E4) ;;
+    E5)
+      init_repository
+      remove_permissions .git
+      ;;
+    E6)
+      init_repository
+      printf '[core\n\tbare = = nonsense\n' > "$copy/.git/config" || setup_stopped "writing .git/config" "$?"
+      ;;
+    E7)
+      init_repository
+      remove_permissions .git/index
+      ;;
+    E8-1) plant_file .git "gitdir: ../git-beta-scene-nowhere/.git" ;;
+    E8-2) use_archived_fixture config-names-outside ;;
+    E8-3)
+      init_repository
+      printf '[include]\n\tpath = ~/ka-reader-never-read.config\n' >> "$copy/.git/config" || setup_stopped "writing .git/config" "$?"
+      ;;
+    E8-4) use_archived_fixture alternates-names-outside ;;
+    E8-5)
+      init_repository
+      mkdir -p "$copy/.git/objects/info" || setup_stopped "mkdir -p .git/objects/info" "$?"
+      plant_file .git/objects/info/alternates "~/objects"
+      ;;
+    E8-6) use_archived_fixture gitmodules-names-outside ;;
+    E8-7)
+      init_repository
+      remove_permissions .
+      ;;
+    E8-8)
+      init_repository
+      remove_permissions .git
+      ;;
+    E8-9) ln -s nowhere "$copy/.git" || setup_stopped "ln -s nowhere .git" "$?" ;;
+    E8-10) plant_file .git "gitdir: .nothere" ;;
+    E8-11)
+      plant_file .git "gitdir: .realgit"
+      mkdir "$copy/.realgit" || setup_stopped "mkdir .realgit" "$?"
+      ;;
+    E8-12)
+      init_repository
+      plant_file .gitmodules "# nothing"
+      remove_permissions .gitmodules
+      ;;
     *) ;;
   esac
 }
