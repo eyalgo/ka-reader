@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.3.2 — an argument holding two ids with a space between them is no state id (exit 2)
 # Version: 1.3.1 — E12's entry names both rules the spec assigns it, CP-1306 and CP-1309
 # Version: 1.3.0 — the in-window disk changes E9 - E13: each waits for Enter, then changes its copy from outside
 # Version: 1.2.0 — the failure states E5 - E8: E5, E6, E7 and one E8 id per distinct observed sentence
@@ -154,10 +155,17 @@ esac
 
 requested=""
 for requested_id in "$@"; do
-  case " $STATE_IDS " in
-    *" $requested_id "*) ;;
-    *) usage_die "$requested_id is not one of the state ids, so nothing was set up or launched. Run it again with ids from the list below, or with none to walk every state." ;;
-  esac
+  # Compared with each listed id whole, never found inside the list: an argument holding two ids
+  # with a space between them would otherwise be found there and pass as one id.
+  is_listed=0
+  for listed_id in $STATE_IDS; do
+    if [ "$requested_id" = "$listed_id" ]; then
+      is_listed=1
+    fi
+  done
+  [ "$is_listed" -eq 1 ] \
+    || usage_die "$requested_id is not one of the state ids, so nothing was set up or launched. Run it again with ids from the list below, or with none to walk every state."
+  # Each id has passed the check above, so it holds no space and is found in the list only whole.
   case " $requested " in
     *" $requested_id "*) usage_die "$requested_id is given more than once, so nothing was set up or launched. Give each id once." ;;
   esac
