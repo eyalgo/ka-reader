@@ -104,14 +104,18 @@ struct GitBetaNoticeTests {
         }
     }
     @Test func replacementRemovesEarlierNoticeAndMarkers() {
-        let faults: [GitItem] =
-            [.pending, .plain, .stopped]
+        let faults: [(item: GitItem, drawn: [String])] =
+            [
+                (.pending, ["Reading Git status."]), (.plain, []),
+                (.stopped, [GitSentences.faultBeforeRepository]),
+            ]
             + [
-                GitCondition.probeRepositoryReadFailed, .notARoot, .repositoryReadFailed,
-                .machineConfigNotSwitchedOff,
-            ].map { .failed(.condition($0)) }
+                GitCondition.probeRepositoryReadFailed, .machineConfigNotSwitchedOff,
+            ].map { (.failed(.condition($0)), [GitSentences.faultBeforeRepository]) }
+            + [GitCondition.notARoot, .repositoryReadFailed]
+            .map { (.failed(.condition($0)), [GitSentences.fault]) }
         for starting in [repository(changed: true), .failed(.condition(.gitDirectoryMissing))] {
-            for replacement in faults {
+            for (replacement, drawn) in faults {
                 let git = GitView(
                     statusGlyphs: glyphs, tooltipRest: TooltipRestDouble().rest,
                     keyWindow: KeyWindowDouble().source)
@@ -130,12 +134,7 @@ struct GitBetaNoticeTests {
                 root.showGit(replacement)
                 #expect(notices(git).isEmpty && notices(root).isEmpty)
                 #expect(!fields(root).contains { $0.stringValue == "M" })
-                #expect(
-                    fields(git).map(\.stringValue)
-                        == (replacement == .plain
-                            ? []
-                            : replacement == .pending
-                                ? ["Reading Git status."] : [GitSentences.fault]))
+                #expect(fields(git).map(\.stringValue) == drawn)
                 withExtendedLifetime(windows) {}
             }
         }
@@ -178,11 +177,12 @@ struct GitBetaNoticeTests {
                 .probeGitEntryNotDirectory, .probeGitFileUnreadable, .gitDirectoryMissing,
                 .gitDirectoryUnreadable, .notARepository, .gitmodulesUnreadable,
             ].map { .condition($0) }
-        let faults: [GitItem] =
-            [
-                GitCondition.probeRepositoryReadFailed, .notARoot, .repositoryReadFailed,
-                .machineConfigNotSwitchedOff,
-            ].map { .failed(.condition($0)) } + [.stopped]
+        let faults: [(item: GitItem, drawn: String)] =
+            [GitCondition.probeRepositoryReadFailed, .machineConfigNotSwitchedOff]
+            .map { (.failed(.condition($0)), GitSentences.faultBeforeRepository) }
+            + [GitCondition.notARoot, .repositoryReadFailed]
+            .map { (.failed(.condition($0)), GitSentences.fault) }
+            + [(.stopped, GitSentences.faultBeforeRepository)]
         let view = GitView(
             statusGlyphs: glyphs, tooltipRest: TooltipRestDouble().rest,
             keyWindow: KeyWindowDouble().source)
@@ -196,12 +196,12 @@ struct GitBetaNoticeTests {
                 fields(slot).map(\.stringValue) == [GitSentences.failure(failure)], "\(failure)")
             #expect(!notice.isDescendant(of: slot), "\(failure)")
         }
-        for item in faults {
+        for (item, drawn) in faults {
             view.show(repository(changed: true))
             view.show(item)
             let slot = try #require(statusSlots(view).only, "\(item)")
-            #expect(fields(slot).map(\.stringValue) == [GitSentences.fault], "\(item)")
-            #expect(fields(view).map(\.stringValue) == [GitSentences.fault], "\(item)")
+            #expect(fields(slot).map(\.stringValue) == [drawn], "\(item)")
+            #expect(fields(view).map(\.stringValue) == [drawn], "\(item)")
         }
         withExtendedLifetime(window) {}
     }

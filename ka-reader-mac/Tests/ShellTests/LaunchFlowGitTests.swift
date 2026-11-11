@@ -25,7 +25,7 @@ final class LaunchFlowGitTests: LaunchWindowTestCase {
             + #""changed":[{"path":"a.txt","category":"modified"}]}"#).utf8)
 
     private static let faultSentence =
-        "KA-Reader stopped while reading this repository's Git status and can't tell why. The file tree is unaffected. Start KA-Reader again to read the status again."
+        "When you opened the folder, KA-Reader stopped while finding out whether it's a repository and can't tell why. The file tree and the reading panel are unaffected. Start KA-Reader again to look again."
 
     private func launch(git: Data?) -> WindowLaunch {
         let launch = makeLaunch(answers: [Self.chosenFolder])
@@ -347,7 +347,10 @@ struct GitBetaLaunchTests {
             (child as? NSTextField).map { [$0.stringValue] } ?? text(child)
         }
     }
-    private func exercise(_ answer: Data, expectsNotice: Bool, plain: Bool = false) async throws {
+    private func exercise(
+        _ answer: Data, expectsNotice: Bool, plain: Bool = false,
+        fault: String = GitSentences.faultBeforeRepository
+    ) async throws {
         createTheSharedApplication()
         let log = EventLog()
         let bridge = RecordingBridge(log: log)
@@ -380,7 +383,7 @@ struct GitBetaLaunchTests {
         #expect(gitBefore.filter { $0 == notice }.count == (expectsNotice ? 1 : 0))
         #expect(gitBefore.isEmpty == plain)
         #expect(!gitBefore.contains { $0.contains("INTERNAL-DO-NOT-DRAW") })
-        if !expectsNotice && !plain { #expect(gitBefore == [GitSentences.fault]) }
+        if !expectsNotice && !plain { #expect(gitBefore == [fault]) }
         view.rail.entryChosen?(.files)
         #expect(text(view.rootItemsView).filter { $0 == notice }.count == (expectsNotice ? 1 : 0))
         view.rootItemsView.outlineView.selectRowIndexes(
@@ -449,5 +452,21 @@ struct GitBetaLaunchTests {
             Data(
                 #"{"state":"failed","condition":"git_directory_missing","diagnostic":"INTERNAL-DO-NOT-DRAW"}"#
                     .utf8), expectsNotice: false)
+    }
+    /// CP-1293, CP-1294, CP-1297, CP-1299: each unexplained condition, decoded from a conforming
+    /// answer through the launch flow, draws the sentence its side of the repository takes and
+    /// nothing else, with no read-at-open statement, and the tree and the reading panel still work.
+    @Test(arguments: [
+        ("probe_repository_read_failed", GitSentences.faultBeforeRepository),
+        ("machine_config_not_switched_off", GitSentences.faultBeforeRepository),
+        ("not_a_root", GitSentences.fault),
+        ("repository_read_failed", GitSentences.fault),
+    ])
+    func unexplainedConditionsDrawTheirSideFaultAloneAndKeepRoutes(
+        condition: String, fault: String
+    ) async throws {
+        try await exercise(
+            Data(#"{"state":"failed","condition":"\#(condition)"}"#.utf8), expectsNotice: false,
+            fault: fault)
     }
 }

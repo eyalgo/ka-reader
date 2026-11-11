@@ -93,6 +93,6 @@ private func removingPathOnce(_ path: String, from shown: [String]) -> [String]?
 
     let shown = shownText(in: view)
     #expect(
-        shown == [GitSentences.fault],
+        shown == [GitSentences.faultBeforeRepository],
         "git view stopped: expected one catalogue sentence and nothing else; shown \(shown)")
 }

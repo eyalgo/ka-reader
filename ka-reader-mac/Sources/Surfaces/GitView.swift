@@ -155,7 +155,7 @@ package final class GitView: NSView {
         case .failed(let failure):
             add(message: GitSentences.failure(failure), glyph: statusGlyphs.failure)
         case .stopped:
-            add(message: GitSentences.fault, glyph: statusGlyphs.failure)
+            add(message: GitSentences.faultBeforeRepository, glyph: statusGlyphs.failure)
         }
         // Auto Layout places the rows, so they have no frames until the view is laid out; the row
         // under a still pointer is found against the frames they are about to have.

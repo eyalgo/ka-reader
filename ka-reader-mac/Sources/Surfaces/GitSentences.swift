@@ -22,9 +22,17 @@ package nonisolated enum GitSentences {
     package static let readAtOpen =
         "The Git view and the letters beside changed files show the Git state KA-Reader read when you opened the folder. They do not update while KA-Reader is open."
 
-    /// The beta fault from `docs/CONTENT.md` § Message patterns, Error — an unexplained fault.
+    /// The beta fault from `docs/CONTENT.md` § Message patterns, Error — an unexplained fault, for
+    /// a stop after a repository was established: it is the one sentence that says "this
+    /// repository".
     package static let fault =
         "KA-Reader stopped while reading this repository's Git status and can't tell why. The file tree is unaffected. Start KA-Reader again to read the status again."
+
+    /// The beta fault for a stop before KA-Reader established a repository: the second example under
+    /// `docs/CONTENT.md` § Message patterns, Error — an unexplained fault. It names no repository
+    /// and no folder as one.
+    package static let faultBeforeRepository =
+        "When you opened the folder, KA-Reader stopped while finding out whether it's a repository and can't tell why. The file tree and the reading panel are unaffected. Start KA-Reader again to look again."
 
     private static let unreadableGitDirectory =
         "When you opened the folder, KA-Reader couldn't read its Git directory, so it couldn't show the folder's Git status. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
@@ -47,7 +55,10 @@ package nonisolated enum GitSentences {
     }
 
     /// The one message a failed answer draws. A condition KA-Reader observed gets a statement naming
-    /// only what it records; one that records only that Git refused or failed takes the fault.
+    /// only what it records; one that records only that Git refused or failed takes a fault. The
+    /// probe's read failure and the machine configuration that could not be switched off, both
+    /// before a repository was established, take `faultBeforeRepository`; `notARoot` and
+    /// `repositoryReadFailed`, after one was, take `fault`.
     package static func failure(_ failure: GitFailure) -> String {
         switch failure {
         case .gitDirectoryOutside(let gitDirectory):
@@ -91,8 +102,9 @@ package nonisolated enum GitSentences {
                 "When you opened the folder, KA-Reader looked in its Git directory and found no repository there. The file tree and the reading panel are unaffected. Start KA-Reader again to read the status again."
         case .gitmodulesUnreadable:
             return gitmodulesUnreadable
-        case .probeRepositoryReadFailed, .notARoot, .repositoryReadFailed,
-            .machineConfigNotSwitchedOff:
+        case .probeRepositoryReadFailed, .machineConfigNotSwitchedOff:
+            return faultBeforeRepository
+        case .notARoot, .repositoryReadFailed:
             return fault
         }
     }

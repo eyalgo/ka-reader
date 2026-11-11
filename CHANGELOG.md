@@ -64,6 +64,7 @@ Each entry records a change to what a user of a fresh clone installs, runs, type
 - **ka-reader** — On a rendered Markdown page, a link to a folder inside the opened folder now shows where it points and does nothing, as a link that leads anywhere but a file does. Before, it was a control that opened nothing. Code on the page, in a block or inline in a line of text, now sits on a background of its own that sets it off from the prose, with padding, rounded corners and no border. (`374faf7afe`, `9c53f14406`, `bb6534ce84`, `27e2521254`, `b6a3216fc0`)
 - **ka-reader** — On a rendered Markdown page, the box shown where an image would be now sits on a background of its own that sets it off from the page, with rounded corners, its thin border and more room around its text. Before, it shared the page's background and had square corners. (`7f56d3c97`)
 - **ka-reader** — When KA-Reader can't read a folder's Git status, the Git view no longer says it will show the status later. It says what KA-Reader found when you opened the folder, and that starting KA-Reader again reads the status again. (`88c11734e`)
+- **ka-reader** — When KA-Reader stops and can't tell why before it has found out whether the opened folder is a repository, the Git view now says so and no longer calls the folder a repository. Before, every such stop said KA-Reader had stopped while reading this repository's Git status, even for a folder that isn't one. A stop after a repository was found keeps that sentence. (`82903be25`)
 
 ### Security
 
