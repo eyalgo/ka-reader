@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.4.0 — the Git beta walk suite's place in the gate joins the cases
 # Version: 1.3.0 — the Git beta scene helper's refusal and its gate place join the cases
 # Version: 1.2.0 — the tree-scene helper's refusal joins the cases
 # Version: 1.1.0 — gate script holds every rule; workflow calls it; suite readers re-aimed
@@ -56,6 +57,7 @@ test_moved_steps_hold_no_block_and_no_timer_setting
 test_moved_steps_are_single_line_commands_in_order
 test_every_toplevel_suite_is_an_entire_fatal_step
 test_the_gate_runs_the_git_beta_scene_suite_as_a_fatal_step_before_the_real_launch
+test_the_gate_runs_the_git_beta_walk_suite_as_a_fatal_step_before_the_real_launch
 test_no_conditional_or_nonfatal_step
 test_every_runner_names_macos_26
 "
@@ -297,6 +299,23 @@ test_the_gate_runs_the_git_beta_scene_suite_as_a_fatal_step_before_the_real_laun
     || fail "in checks/gate.sh, \"Git beta scene helper suite\" does not come after \"Tree scene helper suite\"" || return 1
   [ "$git_beta_scene" -lt "$launch" ] \
     || fail "in checks/gate.sh, \"Git beta scene helper suite\" does not come before \"Launch the built bundle\""
+}
+
+# CP-1314 (QC-64): the Git beta host walk's suite is one fatal step of the gate, named so and running
+# exactly that suite, after the scene helper's suite and before the real launch.
+test_the_gate_runs_the_git_beta_walk_suite_as_a_fatal_step_before_the_real_launch() {
+  read_gate_steps || return 1
+  assert_gate_step_runs_exactly "Git beta walk suite" "checks/tests/test_git_beta_walk.sh" || return 1
+
+  names="$(printf '%s\n' "$steps" | awk -F'\t' '{ print $1 }')"
+  position() { printf '%s\n' "$names" | grep -n -x -F "$1" | head -1 | cut -d: -f1; }
+  git_beta_scene="$(position "Git beta scene helper suite")"
+  git_beta_walk="$(position "Git beta walk suite")"
+  launch="$(position "Launch the built bundle")"
+  [ "$git_beta_scene" -lt "$git_beta_walk" ] \
+    || fail "in checks/gate.sh, \"Git beta walk suite\" does not come after \"Git beta scene helper suite\"" || return 1
+  [ "$git_beta_walk" -lt "$launch" ] \
+    || fail "in checks/gate.sh, \"Git beta walk suite\" does not come before \"Launch the built bundle\""
 }
 
 # CP-803: no step is conditional and none may fail without failing the run.
