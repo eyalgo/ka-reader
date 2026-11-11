@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Version: 1.3.0 — the in-window disk changes' cases (E9 - E13): each change lands only after Enter and
+#   only in its copy, the clearing, the commit order, the moved .git, the new repository, E13's
+#   captures, the status-0 full walk, nothing written outside; the skeleton's fixtures case walks E1 and E2-clean
 # Version: 1.2.0 — the failure states' cases (E5 - E8): the shape each id stages, one E8 id per
 #   distinct observed sentence with the count read from GitSentences.swift, the fixed order, no guest config
 # Version: 1.1.0 — the repository states' cases (E1 - E4): what each staged folder holds at the
@@ -91,6 +94,14 @@ test_e8_ids_are_one_per_distinct_observed_sentence_and_the_count_is_read_from_th
 test_each_e8_shape_is_made_by_a_fixture_or_a_planned_disk_shape_and_none_is_empty
 test_e5_to_e8_are_walked_after_e4_in_the_fixed_order
 test_no_failure_shape_reads_the_guests_own_git_config
+test_each_disk_change_lands_only_after_enter_and_only_in_its_copy
+test_e9_clears_the_condition_on_enter
+test_e10_edits_then_stages_then_commits_in_that_order
+test_e11_moves_the_git_directory_out_of_the_root
+test_e12_creates_a_repository_in_the_plain_root
+test_e13_changes_a_tracked_file_between_switches_and_captures_each_look
+test_a_full_walk_of_every_id_exits_zero
+test_the_walk_writes_nothing_outside_its_copies_the_captures_and_the_temporary_home
 "
 
 # --- helpers ---
@@ -245,7 +256,10 @@ EOF
 # $SCENE/err, the status in STATUS. The environment holds only the stand-ins' PATH, the scene's
 # home and the scene's temporary directory.
 run_helper() {
-  run_helper_with_input $'\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n' "$@"
+  # Eighty Enters, more than a full walk waits for; the trailing x keeps the substitution from
+  # stripping the newlines.
+  typed="$(printf '\n%.0s' $(seq 1 80); printf x)"
+  run_helper_with_input "${typed%x}" "$@"
 }
 
 # As run_helper, with $1 as the whole of standard input.
@@ -455,7 +469,7 @@ test_nothing_under_the_fixtures_changes_and_no_write_leaves_the_copies() {
   fixtures_before="$(vmr_snapshot "$FIXTURES")"
   cwd_before="$(vmr_snapshot "$SCENE/cwd")"
   tmp_before="$(vmr_snapshot "$SCENE/tmp")"
-  run_helper "$APP" "$BUILT_FROM"
+  run_helper "$APP" "$BUILT_FROM" E1 E2-clean
   [ "$STATUS" -eq 0 ] || fail "expected exit 0, got $STATUS. stderr: $(cat "$SCENE/err")" || return 1
   [ "$(vmr_snapshot "$FIXTURES")" = "$fixtures_before" ] \
     || fail "the walk changed checks/fixtures/: $(vmr_snapshot "$FIXTURES" | head -5)" || return 1
@@ -757,6 +771,226 @@ cat_fingerprints() {
     echo "== ${fingerprint##*/}"
     cat "$fingerprint"
   done
+}
+
+# --- the in-window disk changes, E9 - E13 ---
+
+# Starts the helper on ids "$@" with standard input held by the case, which types each Enter
+# itself, so the case can read the folder at every wait. Leaves HELPER_PID. Standard input is a
+# fifo held open for writing on fd 7, so the helper's read waits until a case sends a line.
+start_held_helper() {
+  new_scene
+  mkfifo "$SCENE/enter"
+  exec 7<> "$SCENE/enter"
+  (
+    cd "$SCENE/cwd" || exit 99
+    exec /usr/bin/env -i PATH="$SCENE/bin:$SCENE/ordinary" HOME="$SCENE/home" TMPDIR="$SCENE/tmp" \
+      "$GIT_BETA_SCENE_SH" "$APP" "$BUILT_FROM" "$@"
+  ) > "$SCENE/out" 2> "$SCENE/err" < "$SCENE/enter" &
+  HELPER_PID=$!
+}
+
+# Waits until the helper has printed $1 lines asking for Enter, which is when it is waiting.
+await_prompts() {
+  waited=0
+  until [ "$(grep -c 'press Enter here' "$SCENE/err" 2> /dev/null)" -ge "$1" ]; do
+    waited=$((waited + 1))
+    if [ "$waited" -ge 400 ]; then
+      kill -KILL "$HELPER_PID" 2> /dev/null
+      exec 7>&-
+      fail "the helper never reached its wait number $1. stderr: $(cat "$SCENE/err")"
+      return 1
+    fi
+    /bin/sleep 0.05
+  done
+}
+
+send_enter() {
+  printf '\n' >&7
+}
+
+# Ends the held helper: waits for it, leaves its status in STATUS and lets go of its input.
+finish_held_helper() {
+  wait "$HELPER_PID"
+  STATUS=$?
+  exec 7>&-
+}
+
+# The disk-change lines the helper has printed for state $1, in the order printed.
+change_lines() {
+  grep -E "^git-beta-scene.sh: $1: (gave|changed|staged|committed|moved|created) " "$SCENE/err" 2> /dev/null
+}
+
+# Everything the walk of state $1 may not change: the rest of the home, the working directory,
+# the temporary directory, the fixtures, and what is on the Desktop besides the state's own copy,
+# its note, what E11 moves out and the captures.
+outside_listing() {
+  ls -A "$SCENE/home"
+  ls -A "$SCENE/cwd"
+  ls -A "$SCENE/tmp"
+  vmr_snapshot "$FIXTURES"
+  ls -A "$SCENE/home/Desktop" | grep -v -e "^git-beta-scene-$1\$" -e "^\.git-beta-scene-$1\." -e '^git-beta-scene-captures$'
+}
+
+# CP-1309: each of E9 - E12 changes its folder from outside once Enter has come and not before, and
+# changes nothing but that folder (and what E11 moves out of it).
+test_each_disk_change_lands_only_after_enter_and_only_in_its_copy() {
+  for changing_id in E9 E10 E11 E12; do
+    start_held_helper "$changing_id"
+    await_prompts 1 || return 1
+    [ -z "$(change_lines "$changing_id")" ] \
+      || fail "$changing_id: the folder changed on disk before Enter came: $(change_lines "$changing_id")" || return 1
+    copy_before="$(vmr_snapshot "$(scene_copy "$changing_id")")"
+    outside_before="$(outside_listing "$changing_id")"
+    send_enter
+    await_prompts 2 || return 1
+    copy_after="$(vmr_snapshot "$(scene_copy "$changing_id")")"
+    [ "$copy_before" != "$copy_after" ] \
+      || fail "$changing_id: the folder did not change on disk after Enter: $copy_after" || return 1
+    [ "$(outside_listing "$changing_id")" = "$outside_before" ] \
+      || fail "$changing_id: something outside the state's folder changed: $(outside_listing "$changing_id")" || return 1
+    send_enter
+    finish_held_helper
+    [ "$STATUS" -eq 0 ] || fail "$changing_id: expected exit 0, got $STATUS. stderr: $(cat "$SCENE/err")" || return 1
+  done
+}
+
+# CP-1309, CP-1310: E9 is E5's shape, and Enter gives .git its permissions back.
+test_e9_clears_the_condition_on_enter() {
+  start_held_helper E9
+  await_prompts 1 || return 1
+  [ "$(ls -ld "$(scene_copy E9)/.git" | cut -c1-10)" = "d---------" ] \
+    || fail "E9: .git can be read before Enter: its mode is $(ls -ld "$(scene_copy E9)/.git" | cut -c1-10)" || return 1
+  send_enter
+  await_prompts 2 || return 1
+  [ "$(ls -ld "$(scene_copy E9)/.git" | cut -c1-4)" = "drwx" ] \
+    && env GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null git -C "$(scene_copy E9)" status --porcelain > /dev/null 2>&1 \
+    || fail "E9: .git can still not be read after Enter: its mode is $(ls -ld "$(scene_copy E9)/.git" | cut -c1-10)" || return 1
+  grep -q -x -F -e 'git-beta-scene.sh: E9: gave .git its permissions back.' "$SCENE/err" \
+    || fail "E9: stderr does not say the permissions were given back. stderr: $(cat "$SCENE/err")" || return 1
+  send_enter
+  finish_held_helper
+}
+
+# CP-1309: E10 edits a file, then stages it, then commits it, from outside, in that order.
+test_e10_edits_then_stages_then_commits_in_that_order() {
+  start_held_helper E10
+  await_prompts 1 || return 1
+  commits_before="$(env GIT_CONFIG_GLOBAL=/dev/null git -C "$(scene_copy E10)" rev-list --count HEAD)"
+  [ -z "$(env GIT_CONFIG_GLOBAL=/dev/null git -C "$(scene_copy E10)" status --porcelain)" ] \
+    || fail "E10: the folder is not clean before Enter: $(env GIT_CONFIG_GLOBAL=/dev/null git -C "$(scene_copy E10)" status --short)" || return 1
+  grep -q -x -F -e 'git-beta-scene.sh: E10: before you press Enter, open notes/today.md in the reading panel, so you can see it change.' "$SCENE/err" \
+    || fail "E10: stderr does not name the file to open. stderr: $(cat "$SCENE/err")" || return 1
+  send_enter
+  await_prompts 2 || return 1
+  commits_after="$(env GIT_CONFIG_GLOBAL=/dev/null git -C "$(scene_copy E10)" rev-list --count HEAD)"
+  [ "$commits_after" -eq $((commits_before + 1)) ] \
+    || fail "E10: the log gained $((commits_after - commits_before)) commits, not one" || return 1
+  expected_lines="$(printf '%s\n' \
+    'git-beta-scene.sh: E10: changed notes/today.md.' \
+    'git-beta-scene.sh: E10: staged notes/today.md with git add.' \
+    'git-beta-scene.sh: E10: committed notes/today.md with git commit.')"
+  [ "$(change_lines E10)" = "$expected_lines" ] \
+    || fail "E10: the steps did not appear in the order change, stage, commit: $(change_lines E10)" || return 1
+  send_enter
+  finish_held_helper
+}
+
+# CP-1309: E11 moves .git out of the root, to a place outside the copy that the helper made and
+# removes.
+test_e11_moves_the_git_directory_out_of_the_root() {
+  start_held_helper E11
+  await_prompts 1 || return 1
+  [ -d "$(scene_copy E11)/.git" ] || fail "E11: the folder has no .git before Enter" || return 1
+  send_enter
+  await_prompts 2 || return 1
+  [ ! -e "$(scene_copy E11)/.git" ] || fail "E11: .git is still in the folder after Enter: $(ls -A "$(scene_copy E11)")" || return 1
+  moved="$SCENE/home/Desktop/.git-beta-scene-E11.git"
+  [ -f "$moved/HEAD" ] || fail "E11: .git was not moved to a place the helper made: $(ls -A "$SCENE/home/Desktop")" || return 1
+  grep -q -x -F -e 'git-beta-scene.sh: E11: moved .git out of the folder.' "$SCENE/err" \
+    || fail "E11: stderr does not say .git was moved. stderr: $(cat "$SCENE/err")" || return 1
+  send_enter
+  finish_held_helper
+  [ "$STATUS" -eq 0 ] || fail "E11: expected exit 0, got $STATUS. stderr: $(cat "$SCENE/err")" || return 1
+  [ ! -e "$moved" ] && [ ! -e "$(scene_copy E11)" ] \
+    || fail "E11: the moved .git or the folder is still on the Desktop: $(ls -A "$SCENE/home/Desktop")"
+}
+
+# CP-1306, CP-1309: E12 is a plain folder, and Enter runs git init in it.
+test_e12_creates_a_repository_in_the_plain_root() {
+  start_held_helper E12
+  await_prompts 1 || return 1
+  [ ! -e "$(scene_copy E12)/.git" ] || fail "E12: the folder already holds a .git before Enter" || return 1
+  send_enter
+  await_prompts 2 || return 1
+  env GIT_CONFIG_GLOBAL=/dev/null git -C "$(scene_copy E12)" rev-parse --git-dir > /dev/null 2>&1 \
+    && [ -d "$(scene_copy E12)/.git" ] \
+    || fail "E12: the folder holds no repository after Enter: $(ls -A "$(scene_copy E12)")" || return 1
+  grep -q -x -F -e "git-beta-scene.sh: E12: created a repository at the folder's root with git init." "$SCENE/err" \
+    || fail "E12: stderr does not say a repository was created. stderr: $(cat "$SCENE/err")" || return 1
+  send_enter
+  finish_held_helper
+}
+
+# The captures E13 has made so far: one for each of its three looks, each taken when Enter ends it.
+e13_captures() {
+  ls "$SCENE/home/Desktop/git-beta-scene-captures" 2> /dev/null | grep -c '^E13'
+}
+
+# CP-1309, CP-1310: E13 is the sidebar round trip with a tracked file changed in the middle, and
+# one capture for each of its three looks.
+test_e13_changes_a_tracked_file_between_switches_and_captures_each_look() {
+  start_held_helper E13
+  await_prompts 1 || return 1
+  tracked_status() { env GIT_CONFIG_GLOBAL=/dev/null git -C "$(scene_copy E13)" status --porcelain; }
+  [ -z "$(tracked_status)" ] && [ "$(e13_captures)" -eq 0 ] \
+    || fail "E13: the folder changed or a capture was taken before the first Enter: $(tracked_status)" || return 1
+  send_enter
+  await_prompts 2 || return 1
+  [ -z "$(tracked_status)" ] && [ "$(e13_captures)" -eq 1 ] \
+    || fail "E13: the folder changed before the middle Enter, or the first look has no capture ($(e13_captures)): $(tracked_status)" || return 1
+  send_enter
+  await_prompts 3 || return 1
+  [ "$(tracked_status)" = " M notes/today.md" ] \
+    || fail "E13: the file did not differ after the middle Enter: $(tracked_status)" || return 1
+  [ "$(e13_captures)" -eq 2 ] || fail "E13: the captures after the middle Enter number $(e13_captures), not two" || return 1
+  grep -q -x -F -e 'git-beta-scene.sh: E13: changed notes/today.md.' "$SCENE/err" \
+    || fail "E13: stderr does not say the file was changed. stderr: $(cat "$SCENE/err")" || return 1
+  send_enter
+  finish_held_helper
+  [ "$STATUS" -eq 0 ] || fail "E13: expected exit 0, got $STATUS. stderr: $(cat "$SCENE/err")" || return 1
+  [ "$(e13_captures)" -eq 3 ] || fail "E13: the captures number $(e13_captures), not one for each of three looks"
+}
+
+# QC-70, status 0: every id walked to its end, one entry per id in the fixed order, and the states
+# with two looks print their fields once per look.
+test_a_full_walk_of_every_id_exits_zero() {
+  new_scene
+  run_helper "$APP" "$BUILT_FROM"
+  [ "$STATUS" -eq 0 ] || fail "full walk: expected exit 0, got $STATUS. stderr: $(cat "$SCENE/err")" || return 1
+  [ "$(entry_ids)" = "$(state_ids)" ] \
+    || fail "stdout does not carry exactly one entry per id walked, in the walk's order. The entries read: $(entry_ids)" || return 1
+  [ "$(grep -c -x -F -e '- The Git view showed (second look): <to fill from the look>' "$SCENE/out")" -eq 5 ] \
+    || fail "full walk: the five states with two looks do not each print a second look. got: $(grep -c 'second look' "$SCENE/out")" || return 1
+  [ "$(grep -c -x -F -e '- The Git view showed: <to fill from the look>' "$SCENE/out")" -eq "$(( $(state_ids | wc -w) - 5 ))" ] \
+    || fail "full walk: the states with one look do not each print one: $(grep -c 'The Git view showed:' "$SCENE/out")"
+}
+
+# CP-1316: a full walk changes nothing but the copies it made, the captures folder and the
+# temporary home: before and after, the tree under the scene is the same.
+test_the_walk_writes_nothing_outside_its_copies_the_captures_and_the_temporary_home() {
+  new_scene
+  fixtures_before="$(vmr_snapshot "$FIXTURES")"
+  cwd_before="$(vmr_snapshot "$SCENE/cwd")"
+  tmp_before="$(vmr_snapshot "$SCENE/tmp")"
+  run_helper "$APP" "$BUILT_FROM"
+  [ "$STATUS" -eq 0 ] || fail "full walk: expected exit 0, got $STATUS. stderr: $(cat "$SCENE/err")" || return 1
+  [ "$(vmr_snapshot "$FIXTURES")" = "$fixtures_before" ] || fail "the walk changed checks/fixtures/: $(vmr_snapshot "$FIXTURES" | head -5)" || return 1
+  [ "$(vmr_snapshot "$SCENE/cwd")" = "$cwd_before" ] || fail "the walk changed the working directory" || return 1
+  [ "$(vmr_snapshot "$SCENE/tmp")" = "$tmp_before" ] || fail "the walk left something in the temporary directory: $(ls -A "$SCENE/tmp")" || return 1
+  [ "$(ls -A "$SCENE/home")" = "Desktop" ] || fail "the walk wrote into the home beside the Desktop: $(ls -A "$SCENE/home")" || return 1
+  [ "$(ls -A "$SCENE/home/Desktop")" = "git-beta-scene-captures" ] \
+    || fail "the walk left something on the Desktop besides the captures folder: $(ls -A "$SCENE/home/Desktop")"
 }
 
 # --- the runner ---
