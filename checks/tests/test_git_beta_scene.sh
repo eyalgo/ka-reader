@@ -223,6 +223,12 @@ run_helper_with_input() {
   STATUS=$?
 }
 
+# Every id the helper lists, in its order: the script's own constant, so the list the cases expect
+# grows with the script's and a case never repeats it.
+state_ids() {
+  sed -n 's/^STATE_IDS="\(.*\)"$/\1/p' "$GIT_BETA_SCENE_SH"
+}
+
 # Where the helper puts its copy of state $1 in the scene.
 scene_copy() {
   echo "$SCENE/home/Desktop/git-beta-scene-$1"
@@ -316,7 +322,7 @@ test_end_of_input_exits_one_stopping_only_the_recorded_pid_and_removing_the_copi
     || fail "stderr does not say no Enter came. stderr: $(cat "$SCENE/err")" || return 1
   grep -q -x -F -e 'git-beta-scene.sh: no state was walked to its end.' "$SCENE/err" \
     || fail "stderr does not say nothing was walked. stderr: $(cat "$SCENE/err")" || return 1
-  grep -q -x -F -e 'git-beta-scene.sh: to walk the rest, run the walk again with these ids: E1 E2-clean' "$SCENE/err" \
+  grep -q -x -F -e "git-beta-scene.sh: to walk the rest, run the walk again with these ids: $(state_ids)" "$SCENE/err" \
     || fail "stderr does not name the ids to run again. stderr: $(cat "$SCENE/err")" || return 1
   assert_only_the_launched_pid_was_stopped || return 1
   [ ! -e "$(scene_copy E1)" ] || fail "no Enter: a state's folder is still on the Desktop: $(ls -A "$SCENE/home/Desktop")"

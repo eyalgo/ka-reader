@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.1.0 — the repository states E1 - E4: E1, the E2 members, E3, E4; E4 after a repository
 # Version: 1.0.0 — first version: the skeleton (admission, usage, the ids, the walk of one state, the
 #   entries, the stops and the cleanup); the states come in later versions
 #
@@ -72,12 +73,22 @@ die() { say "$*"; exit 1; }
 
 # The ids in the order they are walked: a plain word list, because bash 3.2 has no associative array.
 # Each state's task adds its ids here, so a helper at any version walks every id it lists.
-STATE_IDS="E1 E2-clean"
+STATE_IDS="E1 E2-clean E2-merge E2-rebase E2-cherry-pick E2-revert E2-bisect E2-am E2-detached E3 E4"
 
 # The bounds, in ticks of 0.25 s, are constants (docs/nfdr.md QC-67).
 LAUNCH_WAIT_SECONDS=20
 LAUNCH_POLL_TICKS=80
 STOP_POLL_TICKS=20
+# E3 is a repository whose working tree is large enough that the status read is still under way when
+# the person opens the Git view. The count is a starting value, measured in the guest by whoever
+# walks it: if the Git view has already answered by the time the person reaches it, raise the count
+# here and walk E3 again; if no count gives the time, the entry records E3 as not seen, with what
+# was tried (change_spec CP-1303). The files go in folders of E3_FILES_PER_FOLDER.
+E3_FILE_COUNT=20000
+E3_FILES_PER_FOLDER=100
+# The identity every commit the states make carries, so the guest's own never shapes a scene.
+SCENE_AUTHOR_NAME="Scene Author"
+SCENE_AUTHOR_EMAIL="scene-author@example.invalid"
 FILL='<to fill from the look>'
 NL=$'\n'
 
@@ -127,6 +138,12 @@ for known_id in $STATE_IDS; do
   fi
 done
 run_ids="${run_ids# }"
+# E4 is a plain folder walked right after a repository launch. Every id before it in the fixed order
+# is a repository state, so only an E4 that comes first has no such launch before it.
+e2_clean_added=0
+case "$run_ids" in
+  E4 | "E4 "*) run_ids="E2-clean $run_ids"; e2_clean_added=1 ;;
+esac
 
 # --- the app, the fixture, the tools, the Desktop ---
 
@@ -217,6 +234,8 @@ trap 'exit 143' TERM
 # --- the stops ---
 
 walked_count=0
+# The state walked just before the one in hand; E4's entry names it.
+previous_walked_id=""
 
 # The ids from the stopped state $1 to the end of the ids this run was given, in walk order.
 remaining_ids() {
@@ -252,6 +271,15 @@ on_disk_of() {
   case "$1" in
     E1) echo "A repository with one changed file and one staged file." ;;
     E2-clean) echo "A clean repository: nothing changed and nothing staged." ;;
+    E2-merge) echo "A repository with a merge left in progress by a conflict." ;;
+    E2-rebase) echo "A repository with a rebase left in progress by a conflict." ;;
+    E2-cherry-pick) echo "A repository with a cherry-pick left in progress by a conflict." ;;
+    E2-revert) echo "A repository with a revert left in progress by a conflict." ;;
+    E2-bisect) echo "A repository with a bisect in progress, started between a good commit and a bad one." ;;
+    E2-am) echo "A repository with an am session left in progress by a patch that does not apply." ;;
+    E2-detached) echo "A repository with HEAD detached at a commit." ;;
+    E3) echo "A repository with $E3_FILE_COUNT files in its working tree." ;;
+    E4) echo "A plain folder, with no repository at its root." ;;
     *) die "no description of state $1" ;;
   esac
 }
@@ -259,6 +287,8 @@ on_disk_of() {
 # The state's account of what the scene did, never of what the person did.
 done_of() {
   case "$1" in
+    E3) echo "The scene launched KA-Reader and asked for the folder above to be chosen in the Open panel, and for Git to be chosen as soon as the file tree appeared." ;;
+    E4) echo "The scene launched KA-Reader right after the launch for $previous_walked_id, and asked for the folder above to be chosen in the Open panel." ;;
     *) echo "The scene launched KA-Reader and asked for the folder above to be chosen in the Open panel." ;;
   esac
 }
@@ -267,6 +297,7 @@ done_of() {
 rules_of() {
   case "$1" in
     E1|E2-*) echo "CP-1304 CP-1305" ;;
+    E3|E4) echo "CP-1306" ;;
     *) die "no rules for state $1" ;;
   esac
 }
@@ -287,9 +318,137 @@ print_entry() {
 
 # --- the staging of a state ---
 
-# Stages state $1 in the copy. A state's task fills its case; until then a state is the fixture alone.
+# A setup step that could not be taken ends the walk: $1 is the step as it was run, $2 its status.
+setup_stopped() {
+  stop_walk "$state_id" "$state_id: setting up this state's folder stopped when $1 exited with status $2, so KA-Reader was not launched for it and the walk ends here."
+}
+
+# Runs git on the copy alone. The guest's own config is out of the way (no system config, no global
+# one), the commit identity is the scene's, and nothing is signed or opens an editor, so no machine
+# shapes a state. Output goes to standard output.
+git_raw() {
+  env GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null GIT_EDITOR=true GIT_TERMINAL_PROMPT=0 \
+    git -C "$copy" -c user.name="$SCENE_AUTHOR_NAME" -c user.email="$SCENE_AUTHOR_EMAIL" -c commit.gpgsign=false "$@"
+}
+
+# As git_raw, with git's output on standard error: standard output holds the entries and nothing else.
+git_in_copy() {
+  git_raw "$@" 1>&2
+}
+
+# One step that must succeed: $@ are git's arguments.
+step() {
+  step_status=0
+  git_in_copy "$@" || step_status=$?
+  [ "$step_status" -eq 0 ] || setup_stopped "git $*" "$step_status"
+}
+
+# One step that leaves an operation in progress: $1 is the files under .git, any one of which shows
+# the operation is there; the rest are git's arguments. Git ends such a step with a failure status,
+# so the status is not read; the operation being there is.
+step_leaving() {
+  markers="$1"
+  shift
+  step_status=0
+  git_in_copy "$@" || step_status=$?
+  for marker in $markers; do
+    if [ -e "$copy/.git/$marker" ]; then
+      return 0
+    fi
+  done
+  setup_stopped "git $*" "$step_status"
+}
+
+# Sets the last line of the day's notes: the one line every conflict in these states is about.
+set_plan() {
+  printf '# Today\n\n%s\n' "$1" > "$copy/notes/today.md" || setup_stopped "writing notes/today.md" "$?"
+}
+
+# A repository with the fixture's files in one commit, on a branch named main.
+init_repository() {
+  step init -q
+  step symbolic-ref HEAD refs/heads/main
+  step add -A
+  step commit -q -m "Start the scene folder"
+}
+
+# Two branches that changed the same line of the notes: main, and topic from the first commit. The
+# copy is left on main.
+init_conflicting_pair() {
+  init_repository
+  step checkout -q -b topic
+  set_plan "The topic branch plans a walk."
+  step commit -q -a -m "Plan a walk on the topic branch"
+  step checkout -q main
+  set_plan "Main plans a reading."
+  step commit -q -a -m "Plan a reading on main"
+}
+
+# The files of E3: E3_FILE_COUNT empty files in folders of E3_FILES_PER_FOLDER, written into the
+# copy at run time and committed nowhere. The names are relative and hold no space.
+write_bulk_files() {
+  say "E3: writing $E3_FILE_COUNT files into the working tree."
+  (
+    cd "$copy" || exit 1
+    awk -v total="$E3_FILE_COUNT" -v per="$E3_FILES_PER_FOLDER" \
+      'BEGIN { for (n = 0; n < total; n += per) printf "bulk/d%05d\n", n / per }' | xargs mkdir -p
+    awk -v total="$E3_FILE_COUNT" -v per="$E3_FILES_PER_FOLDER" \
+      'BEGIN { for (n = 0; n < total; n++) printf "bulk/d%05d/f%05d.txt\n", int(n / per), n }' | xargs touch
+  ) || setup_stopped "writing the files of the working tree" "$?"
+}
+
+# Stages state $1 in the copy, which holds the fixture and no .git. E4 is the fixture alone.
 stage_state() {
   case "$1" in
+    E1)
+      init_repository
+      printf 'A staged line.\n' >> "$copy/docs/guide.md" || setup_stopped "writing docs/guide.md" "$?"
+      step add docs/guide.md
+      printf 'A changed line.\n' >> "$copy/notes/today.md" || setup_stopped "writing notes/today.md" "$?"
+      ;;
+    E2-clean) init_repository ;;
+    E2-merge)
+      init_conflicting_pair
+      step_leaving MERGE_HEAD merge topic
+      ;;
+    E2-rebase)
+      init_conflicting_pair
+      step checkout -q topic
+      step_leaving "rebase-merge rebase-apply" rebase main
+      ;;
+    E2-cherry-pick)
+      init_conflicting_pair
+      step_leaving CHERRY_PICK_HEAD cherry-pick topic
+      ;;
+    E2-revert)
+      init_repository
+      set_plan "The first plan."
+      step commit -q -a -m "Write the first plan"
+      set_plan "The second plan."
+      step commit -q -a -m "Write the second plan"
+      step_leaving REVERT_HEAD revert --no-edit HEAD~1
+      ;;
+    E2-bisect)
+      init_repository
+      step commit -q --allow-empty -m "Second commit"
+      step commit -q --allow-empty -m "Third commit"
+      step commit -q --allow-empty -m "Fourth commit"
+      step_leaving BISECT_LOG bisect start HEAD HEAD~3
+      ;;
+    E2-am)
+      init_conflicting_pair
+      patch_text="$(git_raw format-patch -1 --stdout topic)" || setup_stopped "git format-patch -1 --stdout topic" "$?"
+      step_leaving "rebase-apply/applying" am <<< "$patch_text"
+      ;;
+    E2-detached)
+      init_repository
+      step checkout -q --detach
+      ;;
+    E3)
+      init_repository
+      write_bulk_files
+      ;;
+    E4) ;;
     *) ;;
   esac
 }
@@ -359,6 +518,19 @@ capture_screen() {
   fi
 }
 
+# What the person is asked to look at in state $1.
+say_the_look() {
+  case "$1" in
+    E3)
+      say "E3: as soon as the file tree appears, choose Git in the sidebar and read what the Git view shows first, before it changes. Then choose Files and read what the head of the file tree shows, and whether letters stand beside its entries."
+      say "E3: if the Git view already showed the repository's state when you first saw it, this state was not seen: write not seen in its verdicts, with what you did."
+      ;;
+    *)
+      say "$1: choose Git in the sidebar and read every sentence the Git view shows, word for word. Then choose Files and read what the head of the file tree shows, and whether letters stand beside its entries."
+      ;;
+  esac
+}
+
 # Walks state $1, which is state $2 of $3: stage, launch, instruct, wait, capture, clean up, print.
 walk_state() {
   state_id="$1"
@@ -368,7 +540,7 @@ walk_state() {
   say "$state_id, state $2 of $3: $(on_disk_of "$state_id")"
   say "$state_id: choose this folder in the app: $copy"
   say "$state_id: click KA-Reader in the Dock if its window is not in front; in its Open panel choose Desktop, go to the folder named above, then choose Open."
-  say "$state_id: choose Git in the sidebar and read every sentence the Git view shows, word for word. Then choose Files and read what the head of the file tree shows, and whether letters stand beside its entries."
+  say_the_look "$state_id"
   say "$state_id: press Enter here when you have looked."
   wait_for_enter "$state_id"
   capture_screen "$state_id" "$state_id"
@@ -377,6 +549,7 @@ walk_state() {
   remove_copy
   walked_count=$((walked_count + 1))
   print_entry "$state_id"
+  previous_walked_id="$state_id"
 }
 
 # --- the walk ---
@@ -390,6 +563,10 @@ mkdir -p "$captures"
 say "for each state, the scene sets up a folder on the Desktop, launches KA-Reader, and tells you here what to choose and when to press Enter."
 say "a state you could not bring about in the window is not seen: write not seen in its verdicts, with what you tried."
 say "the screen captures go to $captures. Keep them out of the record: a capture can show this machine's login name and paths."
+
+if [ "$e2_clean_added" -eq 1 ]; then
+  say "E4 needs a launch on a repository right before it, so E2-clean is walked first."
+fi
 
 position=0
 for walk_id in $run_ids; do
