@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Version: 1.2.0 — the failure states' cases (E5 - E8): the shape each id stages, one E8 id per
+#   distinct observed sentence with the count read from GitSentences.swift, the fixed order, no guest config
 # Version: 1.1.0 — the repository states' cases (E1 - E4): what each staged folder holds at the
 #   moment of its launch, the order of the first four ids, E4 after a repository, no guest config
 # Version: 1.0.0 — first version: the skeleton's cases (admission, usage, entries, stops, signals,
@@ -82,6 +84,13 @@ test_e4_is_a_plain_folder_walked_right_after_a_repository_launch
 test_e4_given_alone_walks_e2_clean_first_and_the_printed_lines_say_so
 test_a_repository_state_uses_no_config_of_the_guest
 test_e1_to_e4_are_walked_in_the_fixed_order_and_a_subset_in_that_order
+test_e5_stages_an_unreadable_git_directory
+test_e6_stages_a_repository_whose_config_is_invalid
+test_e7_stages_the_chosen_status_only_shape
+test_e8_ids_are_one_per_distinct_observed_sentence_and_the_count_is_read_from_the_catalogue
+test_each_e8_shape_is_made_by_a_fixture_or_a_planned_disk_shape_and_none_is_empty
+test_e5_to_e8_are_walked_after_e4_in_the_fixed_order
+test_no_failure_shape_reads_the_guests_own_git_config
 "
 
 # --- helpers ---
@@ -137,7 +146,31 @@ for folder in "$scene"/home/Desktop/git-beta-scene-*; do
     env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 git -C "$folder" status --porcelain > "$scene/seen/$id.porcelain" 2>&1
   fi
   find "$folder" -path "$folder/.git" -prune -o -type f -print | wc -l | tr -d ' ' > "$scene/seen/$id.files"
-  ls -A "$folder" > "$scene/seen/$id.ls"
+  ls -A "$folder" > "$scene/seen/$id.ls" 2> /dev/null
+  # The modes of the entries a failure state takes away, and the few files that name the shape.
+  mode_of() {
+    mode="$(ls -ld "$1" 2> /dev/null | awk '{ print $1 }')"
+    echo "${mode:-none}"
+  }
+  mode_of "$folder" > "$scene/seen/$id.mode_folder"
+  mode_of "$folder/.git" > "$scene/seen/$id.mode_git"
+  mode_of "$folder/.git/index" > "$scene/seen/$id.mode_index"
+  mode_of "$folder/.gitmodules" > "$scene/seen/$id.mode_gitmodules"
+  cat "$folder/.git/config" > "$scene/seen/$id.git_config" 2> /dev/null
+  cat "$folder/.git/objects/info/alternates" > "$scene/seen/$id.alternates" 2> /dev/null
+  cat "$folder/.gitmodules" > "$scene/seen/$id.gitmodules" 2> /dev/null
+  if [ -f "$folder/.git" ] && [ ! -L "$folder/.git" ]; then cat "$folder/.git" > "$scene/seen/$id.git_entry" 2> /dev/null; fi
+  # The shape as a whole: every path outside .git with its mode, and the files above. Two states
+  # with the same fingerprint are the same shape.
+  {
+    find "$folder" -path "$folder/.git/*" -prune -o -print 2> /dev/null | LC_ALL=C sort | while IFS= read -r entry; do
+      printf '%s %s\n' "$(mode_of "$entry")" "${entry#"$folder"}"
+    done
+    for kept in .git/config .git/objects/info/alternates .gitmodules; do
+      if [ -f "$folder/$kept" ]; then printf -- '-- %s\n' "$kept"; cat "$folder/$kept"; fi
+    done
+    if [ -f "$folder/.git" ]; then printf -- '-- .git\n'; cat "$folder/.git"; fi
+  } > "$scene/seen/$id.fingerprint"
 done
 EOF
   chmod +x "$SCENE/snapshot.sh"
@@ -578,6 +611,148 @@ test_e1_to_e4_are_walked_in_the_fixed_order_and_a_subset_in_that_order() {
   walk_ids E4 E2-bisect E1 E2-clean || return 1
   [ "$(entry_ids)" = "E1 E2-clean E2-bisect E4" ] \
     || fail "stdout does not carry exactly one entry per id walked, in the walk's order. The entries read: $(entry_ids)"
+}
+
+# --- the failure states, E5 - E8 ---
+
+# CP-1307: E5 is a repository whose .git the folder cannot read: mode 000, as the core's own tests
+# set it (root_finding.rs test_unreadable_git_directory_reports_condition).
+test_e5_stages_an_unreadable_git_directory() {
+  new_scene
+  walk_ids E5 || return 1
+  [ "$(seen_of E5 mode_git)" = "d---------" ] \
+    || fail "E5: .git can still be read: its mode is $(seen_of E5 mode_git)"
+}
+
+# CP-1308: E6 is a repository whose .git/config is not Git config syntax, which fails the probe.
+test_e6_stages_a_repository_whose_config_is_invalid() {
+  new_scene
+  walk_ids E6 || return 1
+  planted_config="$SCENE/planted.config"
+  seen_of E6 git_config > "$planted_config"
+  grep -q -F 'bare = = nonsense' "$planted_config" \
+    || fail "E6: .git/config does not hold the line the state is staged with. It reads: $(seen_of E6 git_config)" || return 1
+  env GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null git config --file "$planted_config" --list > /dev/null 2>&1 \
+    && fail "E6: .git/config does not hold the line the state is staged with. git config --list reads it without a fault: $(seen_of E6 git_config)"
+  return 0
+}
+
+# CP-1308: E7 is a probe that answers root and a status read that stops unexplained. The shape the
+# script chose is the unreadable index, one of the status-only paths in git_reader/libgit2.rs
+# verify_submodules; the header names the git_state.rs case it was confirmed against.
+test_e7_stages_the_chosen_status_only_shape() {
+  new_scene
+  walk_ids E7 || return 1
+  [ "$(seen_of E7 mode_index)" = "----------" ] && [ "$(seen_of E7 mode_git)" = "drwxr-xr-x" ] \
+    || fail "E7: the folder does not hold the shape the state is staged with. It holds: .git $(seen_of E7 mode_git), index $(seen_of E7 mode_index)" || return 1
+  grep -q -F 'test_state_ok_and_status_failing_is_a_failed_item' "$GIT_BETA_SCENE_SH" \
+    || fail "E7: the script's header does not name the git_state.rs case the shape was confirmed against"
+}
+
+# The number of distinct sentences the Git view draws for a condition KA-Reader observed, read out
+# of GitSentences.swift: the cases of `failure` that carry their own sentence, and the groups of
+# `sentence(for:)` that return a sentence of their own rather than one of the two unexplained
+# faults. Never a number written here (design section 5).
+observed_sentence_count() {
+  awk '
+    /static func failure\(/ { in_failure = 1; in_sentence = 0; next }
+    /static func sentence\(for/ { in_sentence = 1; in_failure = 0; next }
+    /^    }$/ { in_failure = 0; in_sentence = 0 }
+    in_failure && /^        case \.[a-zA-Z]+\(/ && $0 !~ /case \.condition\(/ { count++ }
+    in_sentence && /^        case \./ { waiting = 1 }
+    in_sentence && waiting && /return/ {
+      if ($0 !~ /return (fault|faultBeforeRepository)$/) { count++ }
+      waiting = 0
+    }
+    END { print count + 0 }
+  ' "$ROOT/ka-reader-mac/Sources/Surfaces/GitSentences.swift"
+}
+
+e8_ids() {
+  state_ids | tr ' ' '\n' | grep -E '^E8-[0-9]+$' | tr '\n' ' ' | sed 's/ $//'
+}
+
+# CP-1307, CP-1310: one E8 id per distinct observed sentence, numbered from 1.
+test_e8_ids_are_one_per_distinct_observed_sentence_and_the_count_is_read_from_the_catalogue() {
+  sentence_count="$(observed_sentence_count)"
+  [ "$sentence_count" -gt 0 ] || fail "E8: no observed sentence was read from GitSentences.swift" || return 1
+  walked_count="$(e8_ids | wc -w | tr -d ' ')"
+  [ "$walked_count" -eq "$sentence_count" ] \
+    || fail "E8: the number of E8 states walked is $walked_count, and the number of distinct observed sentences is $sentence_count" || return 1
+  expected="$(i=1; while [ "$i" -le "$sentence_count" ]; do printf 'E8-%s ' "$i"; i=$((i + 1)); done | sed 's/ $//')"
+  [ "$(e8_ids)" = "$expected" ] || fail "E8: the ids are not numbered from 1 in order. They read: $(e8_ids)"
+}
+
+# Each E8 member's shape: what it stages, by the id's place in the order the sentences first appear
+# in GitSentences.failure, and that no two members are the same shape.
+test_each_e8_shape_is_made_by_a_fixture_or_a_planned_disk_shape_and_none_is_empty() {
+  new_scene
+  walk_ids $(e8_ids) || return 1
+  assert_e8 1 git_entry 'gitdir: ../' || return 1
+  assert_e8 2 git_config 'path = ../../outside.config' || return 1
+  assert_e8 3 git_config 'path = ~/' || return 1
+  assert_e8 4 alternates '../../../elsewhere/objects' || return 1
+  assert_e8 5 alternates '~/objects' || return 1
+  assert_e8 6 gitmodules 'path = link/x' || return 1
+  assert_e8 7 mode_folder 'd---------' || return 1
+  assert_e8 8 mode_git 'd---------' || return 1
+  assert_e8 9 mode_git 'l' || return 1
+  assert_e8 10 git_entry 'gitdir: .nothere' || return 1
+  assert_e8 11 git_entry 'gitdir: .realgit' || return 1
+  assert_e8 12 mode_gitmodules '----------' || return 1
+  for first in $(e8_ids); do
+    [ -s "$SCENE/seen/$first.fingerprint" ] || fail "$first: the folder does not hold the shape for its sentence. It holds nothing" || return 1
+    for second in $(e8_ids); do
+      [ "$first" = "$second" ] && continue
+      cmp -s "$SCENE/seen/$first.fingerprint" "$SCENE/seen/$second.fingerprint" \
+        && fail "$first: the folder does not hold the shape for its sentence. It is the same shape as $second" && return 1
+    done
+  done
+  return 0
+}
+
+# $1 is the member's number, $2 the thing the snapshot kept, $3 what it must begin with or hold.
+assert_e8() {
+  found="$(seen_of "E8-$1" "$2")"
+  case "$found" in
+    *"$3"*) return 0 ;;
+  esac
+  fail "E8-$1: the folder does not hold the shape for its sentence. It holds: $2 reads: $found"
+}
+
+# The fixed order across E1 - E8: ids given out of order are walked E1 ... E4, E5, E6, E7, E8-n.
+test_e5_to_e8_are_walked_after_e4_in_the_fixed_order() {
+  case "$(state_ids)" in
+    "E1 E2-clean E2-merge E2-rebase E2-cherry-pick E2-revert E2-bisect E2-am E2-detached E3 E4 E5 E6 E7 E8-1 "*) ;;
+    *) fail "the fixed list does not run E1 - E4, E5, E6, E7, then E8-1 on: $(state_ids)"; return 1 ;;
+  esac
+  new_scene
+  walk_ids E8-12 E5 E4 E2-merge E7 E1 E8-1 E6 || return 1
+  [ "$(entry_ids)" = "E1 E2-merge E4 E5 E6 E7 E8-1 E8-12" ] \
+    || fail "stdout does not carry exactly one entry per id walked, in the walk's order. The entries read: $(entry_ids)"
+}
+
+# The guest's own config shapes none of the failure states: the same planted config as the
+# repository states', and each state is the shape it is without it.
+test_no_failure_shape_reads_the_guests_own_git_config() {
+  failure_ids="E5 E6 E7 $(e8_ids)"
+  new_scene
+  walk_ids $failure_ids || return 1
+  plain_reading="$(cat_fingerprints)"
+  new_scene
+  plant_guest_git_config
+  walk_ids $failure_ids || return 1
+  planted_reading="$(cat_fingerprints)"
+  [ -n "$plain_reading" ] || fail "no state was read: $(launch_order | tr '\n' ';')" || return 1
+  [ "$plain_reading" = "$planted_reading" ] \
+    || fail "the guest's config changed the states. Without it: $plain_reading With it: $planted_reading"
+}
+
+cat_fingerprints() {
+  for fingerprint in "$SCENE"/seen/*.fingerprint; do
+    echo "== ${fingerprint##*/}"
+    cat "$fingerprint"
+  done
 }
 
 # --- the runner ---
