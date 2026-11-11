@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.4.0 — the entries' verdict lines: each state names the rules the spec's Examples table assigns it
 # Version: 1.3.0 — the in-window disk changes' cases (E9 - E13): each change lands only after Enter and
 #   only in its copy, the clearing, the commit order, the moved .git, the new repository, E13's
 #   captures, the status-0 full walk, nothing written outside; the skeleton's fixtures case walks E1 and E2-clean
@@ -101,6 +102,7 @@ test_e11_moves_the_git_directory_out_of_the_root
 test_e12_creates_a_repository_in_the_plain_root
 test_e13_changes_a_tracked_file_between_switches_and_captures_each_look
 test_a_full_walk_of_every_id_exits_zero
+test_each_entry_prints_a_verdict_for_every_rule_the_specs_examples_assign_its_state
 test_the_walk_writes_nothing_outside_its_copies_the_captures_and_the_temporary_home
 "
 
@@ -974,6 +976,40 @@ test_a_full_walk_of_every_id_exits_zero() {
     || fail "full walk: the five states with two looks do not each print a second look. got: $(grep -c 'second look' "$SCENE/out")" || return 1
   [ "$(grep -c -x -F -e '- The Git view showed: <to fill from the look>' "$SCENE/out")" -eq "$(( $(state_ids | wc -w) - 5 ))" ] \
     || fail "full walk: the states with one look do not each print one: $(grep -c 'The Git view showed:' "$SCENE/out")"
+}
+
+# The rules the spec's Examples table assigns to state $1 (change_spec, Examples: E1 and E2 CP-1304
+# and CP-1305; E3, E4 and E12 CP-1306; E5 and E8 CP-1307 and CP-1310; E6 and E7 CP-1308; E9 - E13
+# CP-1309; E9 and E13 also CP-1310; E12 also CP-1309). Written here from the table and not read from
+# the script, so the script is held to it.
+specs_rules_of() {
+  case "$1" in
+    E1|E2-*) echo "CP-1304 CP-1305" ;;
+    E3|E4) echo "CP-1306" ;;
+    E5|E8-*) echo "CP-1307 CP-1310" ;;
+    E6|E7) echo "CP-1308" ;;
+    E9|E13) echo "CP-1309 CP-1310" ;;
+    E10|E11) echo "CP-1309" ;;
+    E12) echo "CP-1306 CP-1309" ;;
+  esac
+}
+
+test_each_entry_prints_a_verdict_for_every_rule_the_specs_examples_assign_its_state() {
+  new_scene
+  # E3 is left out only for its twenty thousand files; its rule is the same one E4's carries.
+  walked="E1 E2-clean E2-merge E4 E5 E6 E7 E8-1 E8-12 E9 E10 E11 E12 E13"
+  # shellcheck disable=SC2086
+  run_helper "$APP" "$BUILT_FROM" $walked
+  [ "$STATUS" -eq 0 ] || fail "verdicts: expected exit 0, got $STATUS. stderr: $(cat "$SCENE/err")" || return 1
+  for id in $walked; do
+    got="$(awk -v heading="## $id" '
+      $0 == heading { inside = 1; next }
+      /^## / { inside = 0 }
+      inside && /^- Verdict against / { sub(/^- Verdict against /, ""); sub(/:.*/, ""); printf "%s ", $0 }
+    ' "$SCENE/out" | sed 's/ $//')"
+    [ "$got" = "$(specs_rules_of "$id")" ] \
+      || fail "$id: the verdict lines name '$got', and the spec's Examples assign '$(specs_rules_of "$id")'" || return 1
+  done
 }
 
 # CP-1316: a full walk changes nothing but the copies it made, the captures folder and the
