@@ -13,7 +13,7 @@ resolver = "3"
 # that is not "v" followed by this string. checks/release-version.sh reads the version line below
 # by its exact form.
 [workspace.package]
-version = "0.0.0"
+version = "0.1.0"
 
 [workspace.lints.rust]
 # unsafe is refused by default: none of the other quality gates can see its misuse — the
