@@ -124,26 +124,26 @@ private func hundredthsOffTheLine(red: Int, green: Int, blue: Int) -> Int {
 private func drawnPixels(of image: CGImage, number: Int, path: String) throws -> [UInt8] {
     let width = image.width
     let height = image.height
-    guard width > 0, height > 0, let colorSpace = CGColorSpace(name: CGColorSpace.sRGB) else {
+    // The context allocates its own bitmap (data: nil) and the bytes are copied out of it below. The
+    // bitmap is never handed in through withUnsafeMutableBytes: whether that call needs an `unsafe`
+    // mark depends on the Swift release (6.3.2 requires it and 6.4.2 reports it as unnecessary, each
+    // an error under warnings-as-errors), and a mark that one release demands and the other refuses
+    // cannot be written once for both.
+    guard
+        width > 0, height > 0, let colorSpace = CGColorSpace(name: CGColorSpace.sRGB),
+        let context = unsafe CGContext(
+            data: nil, width: width, height: height, bitsPerComponent: 8,
+            bytesPerRow: width * channelCount, space: colorSpace,
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue),
+        let bitmap = unsafe context.data
+    else {
         throw ProbeFailure.cannotDrawImage(number: number, path: path)
     }
-    var pixels = [UInt8](repeating: 0, count: width * height * channelCount)
-    let bitmapInfo = CGImageAlphaInfo.premultipliedLast.rawValue
-    let drawn = pixels.withUnsafeMutableBytes { buffer -> Bool in
-        guard
-            let context = unsafe CGContext(
-                data: buffer.baseAddress, width: width, height: height, bitsPerComponent: 8,
-                bytesPerRow: width * channelCount, space: colorSpace, bitmapInfo: bitmapInfo)
-        else {
-            return false
-        }
-        context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
-        return true
-    }
-    guard drawn else {
-        throw ProbeFailure.cannotDrawImage(number: number, path: path)
-    }
-    return pixels
+    context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
+    return unsafe Array(
+        UnsafeBufferPointer(
+            start: bitmap.assumingMemoryBound(to: UInt8.self), count: width * height * channelCount)
+    )
 }
 
 /// The largest distance from the line of any fully opaque pixel, in hundredths of a level.
