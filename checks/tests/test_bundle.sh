@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Version: 1.6.0 — the stand-in application icon rule: a bundle carrying the stand-in's bytes is refused
+#   before anything is compiled or launched, and a bundle that carries none prints one pass line
 # Version: 1.5.0 — the licence-and-notices rule: the bundle's copies are the tree's files
 # Version: 1.4.0 — the launch steps refuse off a VM
 # Version: 1.3.0 — the suite prints the control line — test_bundle.sh publishes the control's one
@@ -80,6 +82,12 @@ LICENCE_PASS_LINE="licence and notices: 2 copies checked — each is byte-identi
 LICENCE_CLOSING_LINE="bundle.sh: the bundle's licence and notices are not the tree's; the bundle was not launched"
 LICENCE_COPY="Contents/Resources/KA-Reader-LICENSE"
 NOTICES_COPY="Contents/Resources/THIRD_PARTY_NOTICES.md"
+# The stand-in application icon rule (CP-1326, CP-1327): the fixture holds the stand-in's bytes, the
+# pass line is what a bundle without them prints, and the closing line ends a refusal.
+STAND_IN_FIXTURE="$ROOT/checks/fixtures/stand-in-icon.icns"
+STAND_IN_PASS_LINE="application icon: the stand-in is not in the bundle"
+STAND_IN_CLOSING_LINE="bundle.sh: the bundle carries the stand-in application icon; the bundle was not launched"
+STAND_IN_ICON_COPY="Contents/Resources/icon.icns"
 
 OUT=""
 STATUS=0
@@ -153,8 +161,8 @@ test_false_value_fails
 test_missing_key_fails
 test_invalid_probe_window_is_refused_before_launch
 test_header_names_the_probe_window
-test_licence_and_notices_pass_line_is_on_stdout
-test_negative_control_pass_carries_the_licence_line
+test_licence_and_stand_in_pass_lines_are_on_stdout
+test_negative_control_pass_carries_the_licence_and_stand_in_lines
 test_licence_copy_missing_fails
 test_notices_copy_missing_fails
 test_licence_copy_differing_fails
@@ -169,6 +177,14 @@ test_unreadable_tree_file_is_refused_before_any_copy_is_compared
 test_symlinked_copy_reads_as_missing
 test_licence_refusal_leaves_no_temporary
 test_header_names_the_licence_and_notices_rule
+test_stand_in_icon_is_refused_before_launch
+test_negative_control_refuses_a_bundle_carrying_the_stand_in
+test_stand_in_at_two_paths_is_named_twice_in_sorted_order
+test_stand_in_beside_the_drawn_icon_is_refused
+test_symbolic_link_to_the_stand_in_is_refused
+test_symbolic_link_to_a_directory_is_not_followed
+test_unreadable_file_is_refused_before_launch
+test_bundle_naming_no_icon_passes_the_stand_in_rule
 test_empty_probe_window_reads_as_the_default
 test_leading_zero_window_reads_in_base_ten
 test_never_sandboxed_within_the_window_fails_naming_it
@@ -411,6 +427,10 @@ test_real_bundle_passes() {
   expect_output_lacks "glyph missing from" || return 1
   expect_output_lacks "glyph outside" || return 1
   expect_output_contains "$LICENCE_PASS_LINE" || return 1
+  expect_output_contains "$STAND_IN_PASS_LINE" || return 1
+  case "$OUT" in
+    *"stand-in application icon:"*) fail "the real bundle's output carries a stand-in application icon: line. output: $OUT" || return 1 ;;
+  esac
   expect_output_lacks "missing from the bundle" || return 1
   expect_output_lacks "differs from the tree's" || return 1
   expect_no_bundle_process "$APP"
@@ -1826,9 +1846,22 @@ line_number_of() {
   printf '%s\n' "$1" | grep -n -x -F -- "$2" | head -1 | cut -d: -f1
 }
 
+# CP-1327: the stand-in rule's pass line is on stdout, before the launched: line, and never on
+# stderr. $1 is the run's stdout file and $2 its stderr file.
+expect_stand_in_pass_line_before_launch() {
+  stand_in_stdout="$(cat "$1")"
+  stand_in_pass_at="$(line_number_of "$stand_in_stdout" "$STAND_IN_PASS_LINE")"
+  stand_in_launched_at="$(printf '%s\n' "$stand_in_stdout" | grep -n '^launched: ' | head -1 | cut -d: -f1)"
+  [ -n "$stand_in_pass_at" ] || fail "stdout lacks the exact line: $STAND_IN_PASS_LINE. output: $OUT" || return 1
+  [ -n "$stand_in_launched_at" ] && [ "$stand_in_pass_at" -lt "$stand_in_launched_at" ] \
+    || fail "the stand-in pass line must come before the launched: line. output: $OUT" || return 1
+  ! grep -q -F -- "$STAND_IN_PASS_LINE" "$2" \
+    || fail "the stand-in pass line was printed on stderr. output: $OUT"
+}
+
 # CP-1217: the pass line is printed on stdout, after the glyph pass line and before the launch, and
 # stderr never carries it. The probe is a stub so the run reaches its end quickly.
-test_licence_and_notices_pass_line_is_on_stdout() {
+test_licence_and_stand_in_pass_lines_are_on_stdout() {
   seq="$WORK/seq-licence-pass"
   sequenced_probe_stub "$seq" "yes denied denied"
 
@@ -1851,13 +1884,14 @@ test_licence_and_notices_pass_line_is_on_stdout() {
   esac
   ! grep -q -F -- "$LICENCE_PASS_LINE" "$WORK/licence-pass.err" \
     || fail "the pass line was printed on stderr. output: $OUT" || return 1
+  expect_stand_in_pass_line_before_launch "$WORK/licence-pass.out" "$WORK/licence-pass.err" || return 1
   expect_no_bundle_process "$APP"
 }
 
 # CP-1217: the negative control passes through the same rule. On a copy re-signed with the empty
 # entitlement set that carries both copies, the control exits 0 with the line before the launch, and
 # its own line is still stdout's last.
-test_negative_control_pass_carries_the_licence_line() {
+test_negative_control_pass_carries_the_licence_and_stand_in_lines() {
   seq="$WORK/seq-control-licence"
   write_entitlements "$WORK/empty.plist"
   copy="$(resigned_copy control-licence "$WORK/empty.plist")" || fail "could not re-sign the copy" || return 1
@@ -1873,6 +1907,7 @@ test_negative_control_pass_carries_the_licence_line() {
   launched_at="$(printf '%s\n' "$stdout_text" | grep -n '^launched: ' | head -1 | cut -d: -f1)"
   [ -n "$pass_at" ] && [ "$pass_at" -lt "$launched_at" ] \
     || fail "stdout must carry the exact line before the launched: line. output: $OUT" || return 1
+  expect_stand_in_pass_line_before_launch "$WORK/control-licence.out" "$WORK/control-licence.err" || return 1
   last_line="$(tail -1 "$WORK/control-licence.out")"
   case "$last_line" in
     "negative control: "*) ;;
@@ -2090,6 +2125,8 @@ test_refuses_off_vm_before_work() {
   scene="$WORK/refusal-scene"
   mkdir -p "$scene/plain" "$scene/Fake.app/Contents"
   : > "$scene/Fake.app/Contents/Info.plist"
+  mkdir -p "$scene/Fake.app/Contents/Resources"
+  cp "$STAND_IN_FIXTURE" "$scene/Fake.app/Contents/Resources/icon.icns"
   VMR_SCENE="$scene"
   VMR_ENV=()
 
@@ -2117,6 +2154,174 @@ test_admits_on_a_vm_reading() {
   [ ! -s "$vmr_case/stdout" ] || fail "stdout is not empty: $(cat "$vmr_case/stdout")" || return 1
   [ "$(cat "$vmr_case/stderr")" = "bundle.sh: not found: /nonexistent" ] \
     || fail "expected only the existing verdict. stderr: $(cat "$vmr_case/stderr")"
+}
+
+# --- the stand-in application icon rule (CP-1326 to CP-1330) ---
+
+# A copy of the built bundle, named $1, with the stand-in's bytes placed at each path after $2
+# (relative to the bundle), then re-signed with the entitlement file $2 so the seal covers them
+# (CP-1328). A path that already holds a file is replaced.
+copy_carrying_stand_in() {
+  name="$1"
+  entitlements="$2"
+  shift 2
+  copy="$WORK/$name/KA-Reader.app"
+  mkdir -p "$WORK/$name"
+  cp -R "$APP" "$copy" || return 1
+  for relative in "$@"; do
+    mkdir -p "$(dirname "$copy/$relative")"
+    rm -f -- "${copy:?}/$relative"
+    cp "$STAND_IN_FIXTURE" "$copy/$relative" || { echo "could not place the stand-in's bytes at $relative"; return 1; }
+  done
+  codesign --force --sign - --entitlements "$entitlements" "$copy" > /dev/null 2>&1 || return 1
+  printf '%s' "$copy"
+}
+
+# Stands in `rustc` ahead of the real one in the stubs folder of the case $1, recording a call in
+# $WORK/rustc-$1.log, so a run that compiled the probe is seen. `open` is the helper's.
+stand_in_rustc_stub() {
+  mkdir -p "$WORK/stubs-$1"
+  make_stub "$WORK/stubs-$1" rustc "echo \"\$@\" >> \"$WORK/rustc-$1.log\"; exit 1"
+}
+
+# The shape every refusal of this rule shares: nothing was launched, the probe was not compiled, and
+# stderr is exactly the lines in "$@" (the path lines, then the closing line), exit 1. $1 is the tag.
+expect_stand_in_refusal() {
+  tag="$1"
+  shift
+  [ ! -e "$WORK/open-$tag.log" ] \
+    || fail "open was called: the bundle was launched although it carries the stand-in. output: $OUT" || return 1
+  [ ! -e "$WORK/rustc-$tag.log" ] \
+    || fail "rustc was called: the probe was compiled although the bundle carries the stand-in. output: $OUT" || return 1
+  expect_stderr_exactly "$tag" "$@"
+}
+
+# CP-1326, CP-1328, CP-1329 (case 1): a re-signed copy whose icon is the stand-in is refused, the one
+# path named, before anything is compiled or launched.
+test_stand_in_icon_is_refused_before_launch() {
+  write_entitlements "$WORK/valid.plist" "$APP_SANDBOX_KEY" true "$USER_SELECTED_READ_ONLY_KEY" true
+  copy="$(copy_carrying_stand_in stand-in-ordinary "$WORK/valid.plist" "$STAND_IN_ICON_COPY")" || fail "could not build the copy" || return 1
+  stand_in_rustc_stub stand-in-ordinary
+
+  run_split_unlaunched stand-in-ordinary "$copy"
+
+  expect_stand_in_refusal stand-in-ordinary \
+    "stand-in application icon: $STAND_IN_ICON_COPY" "$STAND_IN_CLOSING_LINE" || return 1
+  expect_no_bundle_process "$copy"
+}
+
+# CP-1326, CP-1329 (case 2): the same on the negative control's path, with an empty entitlement set.
+test_negative_control_refuses_a_bundle_carrying_the_stand_in() {
+  write_entitlements "$WORK/empty.plist"
+  copy="$(copy_carrying_stand_in stand-in-control "$WORK/empty.plist" "$STAND_IN_ICON_COPY")" || fail "could not build the copy" || return 1
+  stand_in_rustc_stub stand-in-control
+
+  run_split_unlaunched stand-in-control --negative-control "$copy"
+
+  expect_stand_in_refusal stand-in-control \
+    "stand-in application icon: $STAND_IN_ICON_COPY" "$STAND_IN_CLOSING_LINE" || return 1
+  expect_no_bundle_process "$copy"
+}
+
+# CP-1326: the rule goes by bytes, under any name and at any depth, and names every path in
+# byte-wise sorted order.
+test_stand_in_at_two_paths_is_named_twice_in_sorted_order() {
+  write_entitlements "$WORK/valid.plist" "$APP_SANDBOX_KEY" true "$USER_SELECTED_READ_ONLY_KEY" true
+  copy="$(copy_carrying_stand_in stand-in-two "$WORK/valid.plist" Contents/Resources/sub/old.icns "$STAND_IN_ICON_COPY")" || fail "could not build the copy" || return 1
+  stand_in_rustc_stub stand-in-two
+
+  run_split_unlaunched stand-in-two "$copy"
+
+  expect_stand_in_refusal stand-in-two \
+    "stand-in application icon: $STAND_IN_ICON_COPY" \
+    "stand-in application icon: Contents/Resources/sub/old.icns" \
+    "$STAND_IN_CLOSING_LINE" || return 1
+  expect_no_bundle_process "$copy"
+}
+
+# CP-1326 under any name, with the drawn icon beside it: the real icon stays in place and only the
+# added path is named (the rule goes by bytes, not by the name icon.icns).
+test_stand_in_beside_the_drawn_icon_is_refused() {
+  write_entitlements "$WORK/valid.plist" "$APP_SANDBOX_KEY" true "$USER_SELECTED_READ_ONLY_KEY" true
+  copy="$(copy_carrying_stand_in stand-in-beside "$WORK/valid.plist" Contents/Resources/previous.bin)" || fail "could not build the copy" || return 1
+  [ -f "$copy/$STAND_IN_ICON_COPY" ] || fail "the copy lost the bundle's own icon at $STAND_IN_ICON_COPY" || return 1
+  stand_in_rustc_stub stand-in-beside
+
+  run_split_unlaunched stand-in-beside "$copy"
+
+  expect_stand_in_refusal stand-in-beside \
+    "stand-in application icon: Contents/Resources/previous.bin" "$STAND_IN_CLOSING_LINE" || return 1
+  expect_no_bundle_process "$copy"
+}
+
+# CP-1326: a symbolic link that resolves to a file with the stand-in's bytes is named. The link
+# points out of the bundle, so it is added after the signature.
+test_symbolic_link_to_the_stand_in_is_refused() {
+  write_entitlements "$WORK/valid.plist" "$APP_SANDBOX_KEY" true "$USER_SELECTED_READ_ONLY_KEY" true
+  copy="$(valid_copy stand-in-link)" || fail "could not re-sign the copy" || return 1
+  ln -s "$STAND_IN_FIXTURE" "$copy/Contents/Resources/old.icns" || fail "could not make the symbolic link at Contents/Resources/old.icns" || return 1
+  stand_in_rustc_stub stand-in-link
+
+  run_split_unlaunched stand-in-link "$copy"
+
+  expect_stand_in_refusal stand-in-link \
+    "stand-in application icon: Contents/Resources/old.icns" "$STAND_IN_CLOSING_LINE" || return 1
+  expect_no_bundle_process "$copy"
+}
+
+# A link to a directory is not followed: a directory holding the stand-in's bytes, outside the
+# bundle, makes no line for the link. The run goes on past the rule, so the launch wait is short.
+test_symbolic_link_to_a_directory_is_not_followed() {
+  copy="$(valid_copy stand-in-dir-link)" || fail "could not re-sign the copy" || return 1
+  mkdir -p "$WORK/stand-in-dir"
+  cp "$STAND_IN_FIXTURE" "$WORK/stand-in-dir/icon.icns" || fail "could not place the stand-in's bytes at $WORK/stand-in-dir/icon.icns" || return 1
+  ln -s "$WORK/stand-in-dir" "$copy/Contents/Resources/linked-folder" || fail "could not make the symbolic link at Contents/Resources/linked-folder" || return 1
+
+  BUNDLE_SH_LAUNCH_TICKS=1 run_split_unlaunched stand-in-dir-link "$copy"
+
+  case "$OUT" in
+    *"stand-in application icon:"*) fail "a link to a directory was followed: a stand-in application icon: line was printed. output: $OUT" || return 1 ;;
+  esac
+  expect_no_bundle_process "$copy"
+}
+
+# A file under Contents/ that the digest tool cannot read refuses the run and names it; the run does
+# not pass the bundle by skipping it. A shasum stand-in forwards to the real tool except for one path.
+test_unreadable_file_is_refused_before_launch() {
+  write_entitlements "$WORK/valid.plist" "$APP_SANDBOX_KEY" true "$USER_SELECTED_READ_ONLY_KEY" true
+  copy="$(copy_carrying_stand_in stand-in-unreadable "$WORK/valid.plist" Contents/Resources/unreadable.bin)" || fail "could not build the copy" || return 1
+  mkdir -p "$WORK/stubs-stand-in-unreadable"
+  make_stub "$WORK/stubs-stand-in-unreadable" shasum "for argument in \"\$@\"; do
+  case \"\$argument\" in
+    */Contents/Resources/unreadable.bin) echo \"shasum: \$argument: Permission denied\" >&2; exit 1 ;;
+  esac
+done
+exec $(command -v shasum) \"\$@\""
+  stand_in_rustc_stub stand-in-unreadable
+
+  run_split_unlaunched stand-in-unreadable "$copy"
+
+  expect_stand_in_refusal stand-in-unreadable \
+    "bundle.sh: cannot read Contents/Resources/unreadable.bin, so it was not compared with the stand-in application icon; the bundle was not launched. Check that the file can be read, then run checks/bundle.sh again." || return 1
+  expect_no_bundle_process "$copy"
+}
+
+# CP-1327: a bundle whose Info.plist names no icon file passes this rule, and the outcome is decided
+# by the other rules: the copy carries one entitlement too many, so the run ends on that refusal.
+test_bundle_naming_no_icon_passes_the_stand_in_rule() {
+  write_entitlements "$WORK/extra.plist" "$APP_SANDBOX_KEY" true "$USER_SELECTED_READ_ONLY_KEY" true "$EXTRA_KEY" true
+  copy="$WORK/no-icon-named/KA-Reader.app"
+  mkdir -p "$WORK/no-icon-named"
+  cp -R "$APP" "$copy" || fail "could not copy the bundle" || return 1
+  /usr/libexec/PlistBuddy -c 'Delete :CFBundleIconFile' "$copy/Contents/Info.plist" > /dev/null 2>&1 || fail "the copy's Info.plist named no CFBundleIconFile to remove" || return 1
+  codesign --force --sign - --entitlements "$WORK/extra.plist" "$copy" > /dev/null 2>&1 || fail "could not re-sign the copy" || return 1
+
+  run_unlaunched "$copy" no-icon-named
+
+  [ "$STATUS" -eq 1 ] || fail "expected the entitlement refusal to end the run with exit 1, got $STATUS. output: $OUT" || return 1
+  expect_output_contains "$STAND_IN_PASS_LINE" || return 1
+  expect_output_contains "extra entitlement: $EXTRA_KEY" || return 1
+  expect_not_launched no-icon-named
 }
 
 # --- the runner ---
