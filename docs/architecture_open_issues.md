@@ -24,42 +24,34 @@ None.
 
 ## 2. Choices to confirm — the Principal Architect drafted a best-effort answer; confirm or override
 
-### 2.1 Does your host-tools ruling also cover the shell and text tools a check script is written in?
-> Raised by the v95 fold, as the residue of cycle-86 § 3.1. Your ruling lets the suites run the
-> host's real `git`, `tar` and `cargo` within three bounds, and its third bound says "every other
-> process the script starts stays a stand-in". Read as worded, that includes `bash`, `sed`, `awk`,
-> `grep` and the rest, and every suite runs those from the host today.
-- **Lands in:** `nfdr.md` QC-72 (and QC-67's "a host tool QC-72 admits")
-- **Drafted into the records:** QC-72 at v95 (RN-105) holds bound (3) as you worded it: every
-  process other than the host's `git`, `tar` and `cargo` is a stand-in, the host's shell and its
-  ordinary text and file tools included. So every suite at `ka-reader@528c152` is recorded as a
-  known gap under bound (3): the built suites link those tools in by name
-  (`checks/tests/support/vm_refusal.sh:L64` lists 37, `checks/tests/test_git_beta_walk.sh:L53`
-  lists 26), and the others take them from the host's `PATH`.
-- **Rationale:** your answer adopted the three-part bound in `self_answer-87.md`. The later drafts
-  (`self_answer-88.md`, `self_answer-89.md`) added a fourth part for "the script's own language",
-  and your answer does not include it. This seat may record a departure from core doctrine that you
-  authorized, but it may not make that departure wider, so it kept your words. Read literally,
-  bound (3) means faking the tools a shell script is made of, and the drafts argued that would
-  test the fakes rather than the script. So the draft is probably not what you meant, but only
-  you can widen it.
-- **If overridden:** QC-72 gains a fourth bound, and the gaps under bound (3) drop to the prepended
-  and host-whole suites QC-67 already names. Under that bound a suite may link the host's shell and
-  its ordinary text and file tools into the `PATH` it builds, by name, and every tool that reaches
-  outside the suite's temporary folder, or whose answer the script refuses on (`open`, `tart`,
-  `uname`, `sysctl`, `ps`, `kill`, `screencapture`), stays a stand-in. No ADR moves. QC-67 is
-  unchanged: it already requires each tool to be linked in by name.
-- **Confirm or override:** override (owner, 2026-11-12): withdraw the host-tools departure — the
-  owner cancels the cycle-86 § 3.1 ruling. The check suites follow `testing_doctrine.md` §
-  *A test reads nothing of the machine it runs on* as written: the host's `git`, `tar` and `cargo`
-  are stand-ins, each replaying a recording taken once from the real tool and committed beside the
-  test as data (that section's *What to do instead*). The host's shell and its ordinary text and
-  file tools count as the suite's own interpreter, which the doctrine already lets a test start;
-  record that reading, not a new bound. The four suites that run a real tool today
-  (`test_git_beta_scene.sh`, `test_git_beta_walk.sh`, `test_entry_points.sh`, `test_no_network.sh`)
-  are known gaps until a change moves them, and that change comes after the first public release,
-  not before it. QC-72 is withdrawn, not widened. What the real tools make of a state stays proven
-  where a real tool runs already: the owner's walk on the Mac and the release build.
+### 2.1 Eleven more suites run the host's `git`, `tar` or `cargo`. Do they wait until after the first public release too, like the four you named?
+> Raised by the v96 fold, as the residue of cycle-87 § 2.1. Your answer withdrew the host-tools
+> departure, and it named four suites that run a real tool today, saying the change that moves them
+> comes after the first public release. A scan at `ka-reader@528c152` finds eleven more. Under the
+> rule you set, the testing doctrine as written, they are known gaps. What your answer does not
+> settle is whether they wait until after the release too, because it did not weigh them.
+- **Lands in:** `nfdr.md` QC-67 (its host-tools paragraph)
+- **Drafted into the records:** QC-67 at v96 (RN-106) lists the eleven as known gaps under the same
+  rule and says it is open whether your release ruling reaches them. The draft answer is yes, the
+  same terms as the four: each is a known gap until a change moves it, that change comes after the
+  first public release, and none of them holds that release. Nine run a tool in their own body, to
+  build a fixture or to read the product's own tree: `test_notices.sh`, `test_own_state.sh`,
+  `test_read_only.sh`, `test_release_version.sh`, `test_renderer.sh`, `test_secret_scan.sh`,
+  `test_secret_scan_planted.sh`, `test_strings.sh` and `test_structure.sh`. Two look up the real tool
+  for the script they run: `test_offline_page.sh` (`cargo`) and `test_readme.sh` (`git`). QC-67 gives
+  each one's line.
+- **Rationale:** these are the same kind of gap as the four. A suite depends on a tool the next
+  machine may lack, and no shipped code is involved. Your answer's reason for waiting, that what the
+  real tools make of a state is already proven by your walk on the Mac and by the release build,
+  holds for these just as much. Most of them read the product's own tree with `git status` to show
+  the suite left it as it found it, or build a throwaway repository with `git init`. But this seat may
+  not take a release allowance you gave four suites and give it to eleven you never weighed. Doing that
+  would widen your call, so it comes back to you.
+- **If overridden:** QC-67 says which of the eleven must move before the first public release. Each
+  one named that way becomes a release precondition, and the change that replaces its real tool with
+  a recorded stand-in, or with a fixture committed as data, comes before the release. No ADR moves,
+  and QC-67's scan and review gate are unchanged.
+- **Confirm or override:** <"confirm", or "override: <what to do instead>">
 
 ## 3. Raised from downstream — an item from a seat that did not write these records
 
