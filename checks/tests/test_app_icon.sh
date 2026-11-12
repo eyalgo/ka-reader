@@ -56,6 +56,9 @@ test_named_icon_file_as_a_symbolic_link_is_refused
 test_second_icns_file_is_refused
 test_asset_catalogue_is_refused
 test_icon_name_key_is_refused
+test_named_icon_file_that_is_a_folder_is_refused
+test_file_without_the_icns_header_is_refused
+test_chunk_that_runs_past_the_file_is_refused
 test_chunk_outside_the_plain_image_set_is_refused
 test_dark_appearance_chunk_is_refused
 test_each_missing_size_is_named
@@ -67,6 +70,9 @@ test_ground_pixel_off_by_one_is_refused
 test_corner_pixel_not_transparent_is_refused
 test_control_on_the_line_is_refused
 test_control_fixture_missing_is_refused
+test_app_that_does_not_exist_is_named
+test_path_without_a_plist_is_named
+test_reply_the_check_cannot_read_is_named
 test_no_argument_prints_the_usage_line
 test_two_arguments_print_the_usage_line
 test_swiftc_absent_is_named
@@ -360,6 +366,44 @@ test_icon_name_key_is_refused() {
   expect_refusal_with "CFBundleIconName in Contents/Info.plist: AppIcon"
 }
 
+# CP-1320: a folder where the named file should be is neither a regular file nor a link.
+test_named_icon_file_that_is_a_folder_is_refused() {
+  new_case
+  rm "$APP/Contents/Resources/icon.icns"
+  mkdir "$APP/Contents/Resources/icon.icns"
+
+  run_on_app
+
+  expect_refusal_with "icon file is not a regular file: Contents/Resources/icon.icns, which CFBundleIconFile names"
+}
+
+# CP-1321: a file that does not start with the icns header is named, and the probe is not asked.
+test_file_without_the_icns_header_is_refused() {
+  new_case
+  printf 'not an icon\n' > "$APP/Contents/Resources/icon.icns"
+
+  run_on_app
+
+  expect_refusal_with "icon file has no icns header: Contents/Resources/icon.icns" || return 1
+  [ "$(grep -c 'ka-reader-icon-probe' "$CALLS")" -eq 1 ] || fail "the probe read a file with no icns header. calls: $(cat "$CALLS")"
+}
+
+# CP-1321: a chunk whose length runs past the end of the file is named at its byte offset.
+test_chunk_that_runs_past_the_file_is_refused() {
+  new_case
+  {
+    printf 'icns'
+    be32 20
+    printf 'ic07'
+    be32 99
+    printf 'abcd'
+  } > "$APP/Contents/Resources/icon.icns"
+
+  run_on_app
+
+  expect_refusal_with "icon file's chunks do not fit its length: Contents/Resources/icon.icns, at byte 8"
+}
+
 # CP-1321: a chunk type outside the plain-image set is named by its four bytes.
 test_chunk_outside_the_plain_image_set_is_refused() {
   new_case
@@ -474,6 +518,48 @@ test_control_fixture_missing_is_refused() {
 
   expect_exit 1 || return 1
   expect_stderr_line "app-icon.sh: the control's icon, checks/fixtures/stand-in-icon.icns, is not a regular file, so the check stopped without a verdict. Restore it with git checkout -- checks/fixtures/stand-in-icon.icns and run the check again."
+}
+
+# QC-70: a path that does not exist, and a folder that is no app, each end in one line and read nothing.
+test_app_that_does_not_exist_is_named() {
+  new_case
+
+  run_check "$CASE/Absent.app"
+
+  expect_exit 1 || return 1
+  expect_stderr_line "app-icon.sh: not found: $CASE/Absent.app. Build the app with ka-reader-mac/assemble.sh, or give the path to a built app." || return 1
+  expect_stdout_empty
+}
+
+test_path_without_a_plist_is_named() {
+  new_case
+  rm "$APP/Contents/Info.plist"
+
+  run_on_app
+
+  expect_exit 1 || return 1
+  expect_stderr_line "app-icon.sh: not an application bundle: $APP has no Contents/Info.plist, so the check stopped without a verdict. Give the path to a built app."
+}
+
+# A reply line the check cannot read ends the run naming the line; a 1024 px representation with no
+# pixel lines after it is named by its own line.
+test_reply_the_check_cannot_read_is_named() {
+  new_case
+  { echo "rep sixteen 16 200"; cat "$CASE/reply.icon"; } > "$CASE/reply.garbled"
+  mv "$CASE/reply.garbled" "$CASE/reply.icon"
+
+  run_on_app
+
+  expect_exit 1 || return 1
+  expect_stderr_line "app-icon.sh: the icon probe's reply on Contents/Resources/icon.icns is not one this check reads, so its pixels were not judged. The line it could not read: rep sixteen 16 200" || return 1
+
+  new_case
+  reply_lines "$GOOD_REPS" | head -n 10 > "$CASE/reply.icon"
+
+  run_on_app
+
+  expect_exit 1 || return 1
+  expect_stderr_line "app-icon.sh: the icon probe's reply on Contents/Resources/icon.icns is not one this check reads, so its pixels were not judged. The line it could not read: rep 1024 1024 150"
 }
 
 # QC-70: a different argument count is exit 2 with the usage line, and nothing is read or run.
