@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.9.0 — a bundle carrying the stand-in application icon's bytes is refused, before the probe is compiled and before anything is launched
 # Version: 1.8.0 — the bundle's licence and notices are the tree's, byte for byte, judged before the probe is compiled
 # Version: 1.7.0 — the launch steps refuse off a VM
 # Version: 1.6.0 — the Tauri build leaves — native bundle assembled, bundle.sh and no-network.sh
@@ -22,7 +23,15 @@
 #   The wall is two things: the bundle asks for exactly the entitlements C-R2 lists, and the
 #   operating system then enforces a sandbox on the running process. A config test can prove the
 #   first only about the source; this proves both about the artifact a user would run.
-#   Entitlements are checked first, and a bundle that fails there is never launched — a wrong
+#   The stand-in application icon is looked for first: no file under Contents/, and no symbolic link
+#   under it that resolves to a file, may have the bytes of the icon the bundle carried before the
+#   icon was drawn, whatever it is named and however deep it sits. Its SHA-256 is a constant below,
+#   and its bytes are kept at checks/fixtures/stand-in-icon.icns as the icon check's control. A bundle
+#   that carries it is refused with each offending path named on stderr, in byte-wise sorted order,
+#   before the probe is compiled and before anything is launched, on the negative control's path too.
+#   A file that cannot be read for the comparison ends the run and is named. A bundle that carries no
+#   copy prints one line on stdout. A symbolic link to a directory is not followed.
+#   Entitlements are checked next, and a bundle that fails there is never launched — a wrong
 #   entitlement set proves nothing by running.
 #   The contents are read next, and also before anything is launched: exactly one executable (a file
 #   with any execute bit, or a Mach-O binary whatever its mode), no font, no byte copy of a file
@@ -47,7 +56,8 @@
 #     C-R2 keys, so it is not a route past the gate above. It
 #     exists because the ordinary path refuses to launch anything but C-R2's set, and a probe that
 #     cannot tell the two builds apart has not run (NFDR QC-25).
-#   Exit 0 only when the entitlement set is exactly the expected one, every value boolean true, the
+#   Exit 0 only when the bundle carries no copy of the stand-in application icon, the entitlement set
+#   is exactly the expected one, every value boolean true, the
 #   bundle's licence and notices are the tree's files, and the operating system reports the launched
 #   process sandboxed, an out-of-grant file read denied and an outbound network connection denied
 #   for it. Every failure names its cause on stderr. On
@@ -109,6 +119,33 @@ app="$(cd "$app" && pwd -P)"
 executable_name="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$app/Contents/Info.plist" 2> /dev/null || true)"
 [ -n "$executable_name" ] && [ -x "$app/Contents/MacOS/$executable_name" ] \
   || die "cannot be launched: $app has no executable at Contents/MacOS/${executable_name:-<CFBundleExecutable unreadable>}"
+
+# --- the stand-in application icon: no file in the bundle has its bytes ---
+
+# The stand-in is the uniform-blue icon the bundle carried before its icon was drawn. Its bytes are
+# kept at checks/fixtures/stand-in-icon.icns, the control of checks/app-icon.sh; this is that file's
+# SHA-256, written once and not read from the fixture at run time.
+STAND_IN_ICON_SHA256="723f0480de348bf60f3ded21c47c7c19f3c1c00bd6bc0132f2d7b19e2bb63a6c"
+
+# Judged before the work directory exists, the probe is compiled or anything is launched. The
+# candidates are every regular file under Contents and every symbolic link there that resolves to a
+# file; a file test follows a link, so a link to a directory or to nothing is not a candidate and a
+# directory is never walked through one. The paths print in byte-wise sorted order.
+stand_in_problems=""
+while IFS= read -r candidate; do
+  [ -n "$candidate" ] || continue
+  [ -f "$candidate" ] || continue
+  candidate_relative="${candidate#"$app"/}"
+  candidate_digest="$(shasum -a 256 "$candidate" 2> /dev/null)" \
+    || die "cannot read $candidate_relative, so it was not compared with the stand-in application icon; the bundle was not launched. Check that the file can be read, then run checks/bundle.sh again."
+  if [ "${candidate_digest%% *}" = "$STAND_IN_ICON_SHA256" ]; then
+    stand_in_problems="${stand_in_problems}stand-in application icon: $candidate_relative
+"
+  fi
+done <<< "$(find "$app/Contents" \( -type f -o -type l \) | LC_ALL=C sort)"
+
+[ -z "$stand_in_problems" ] || { printf '%s' "$stand_in_problems" >&2; die "the bundle carries the stand-in application icon; the bundle was not launched"; }
+echo "application icon: the stand-in is not in the bundle"
 
 # --- the entitlement set is exactly the expected one ---
 
