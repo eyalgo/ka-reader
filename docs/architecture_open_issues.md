@@ -49,7 +49,17 @@ None.
   outside the suite's temporary folder, or whose answer the script refuses on (`open`, `tart`,
   `uname`, `sysctl`, `ps`, `kill`, `screencapture`), stays a stand-in. No ADR moves. QC-67 is
   unchanged: it already requires each tool to be linked in by name.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** override (owner, 2026-11-12): withdraw the host-tools departure — the
+  owner cancels the cycle-86 § 3.1 ruling. The check suites follow `testing_doctrine.md` §
+  *A test reads nothing of the machine it runs on* as written: the host's `git`, `tar` and `cargo`
+  are stand-ins, each replaying a recording taken once from the real tool and committed beside the
+  test as data (that section's *What to do instead*). The host's shell and its ordinary text and
+  file tools count as the suite's own interpreter, which the doctrine already lets a test start;
+  record that reading, not a new bound. The four suites that run a real tool today
+  (`test_git_beta_scene.sh`, `test_git_beta_walk.sh`, `test_entry_points.sh`, `test_no_network.sh`)
+  are known gaps until a change moves them, and that change comes after the first public release,
+  not before it. QC-72 is withdrawn, not widened. What the real tools make of a state stays proven
+  where a real tool runs already: the owner's walk on the Mac and the release build.
 
 ## 3. Raised from downstream — an item from a seat that did not write these records
 
