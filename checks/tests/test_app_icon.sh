@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 # checks/tests/test_app_icon.sh — the tests of checks/app-icon.sh.
+# Version: 1.1.0 — every finding of one run named in order before the closing line, plutil absent, no
+#   temporary folder, a chunk type that is not printable, and the table of contents in the set
 # Version: 1.0.0 — first version: the check over a test-made app, with the compiler and the probe
 #   stood in, every rule it holds and every state in which it cannot judge
 #
@@ -83,6 +85,11 @@ test_int_ends_with_130
 test_term_ends_with_143
 test_temporary_folder_is_removed_after_a_pass
 test_temporary_folder_is_removed_after_a_refusal
+test_every_finding_is_named_in_order_before_the_closing_line
+test_plutil_absent_is_named
+test_temporary_folder_that_cannot_be_made_is_named
+test_chunk_type_that_is_not_printable_is_refused
+test_table_of_contents_chunk_passes
 "
 
 WORK="$(mktemp -d)" || { echo "test_app_icon.sh: cannot create a temporary folder" >&2; exit 1; }
@@ -152,8 +159,8 @@ write_replies() {
 
 # Lays out, in its own folder: a tree holding a byte copy of the real script, the probe's source and
 # the control's fixture; a test-made app whose plist names icon.icns; a bin folder holding the system
-# tools and the two stand-ins (the one named in $1 left out). The probe stand-in's reply is chosen by
-# the file it is handed.
+# tools and the two stand-ins (the one named in $1 left out, `swiftc` or one of the system tools).
+# The probe stand-in's reply is chosen by the file it is handed.
 new_case() {
   local omitted="${1:-}" tool found
   CASE="$(mktemp -d "$WORK/case.XXXXXX")"
@@ -173,6 +180,7 @@ new_case() {
   write_replies
 
   for tool in $SYSTEM_TOOLS; do
+    [ "$tool" != "$omitted" ] || continue
     found="$(command -v "$tool")" || { echo "test_app_icon.sh: no $tool on this machine" >&2; exit 1; }
     ln -s "$found" "$BIN/$tool"
   done
@@ -681,6 +689,113 @@ test_temporary_folder_is_removed_after_a_refusal() {
 
   expect_exit 1 || return 1
   expect_temporary_folder_removed
+}
+
+# The header's USAGE and the plan: a refusal names each finding on stderr, in the order the rules are
+# listed, and then one closing line. Every case above holds one finding, so a check that stopped at
+# its first finding would pass them all; this run reaches ten.
+test_every_finding_is_named_in_order_before_the_closing_line() {
+  local expected
+  new_case
+  expect_real_script_bytes || return 1
+  write_plist "icon.icns" "AppIcon"
+  cp "$APP/Contents/Resources/icon.icns" "$APP/Contents/Resources/extra.icns"
+  printf 'catalogue\n' > "$APP/Contents/Resources/Assets.car"
+  write_icns "$APP/Contents/Resources/icon.icns" $GOOD_CHUNKS icxx
+  REPLY_PUPIL="31 31 34 255"
+  REPLY_GROUND="251 251 249 255"
+  REPLY_CORNER="0 0 0 1"
+  reply_lines "$(without_size "${GOOD_REPS/16x16:200/16x16:201}" 64) 48x40:100" > "$CASE/reply.icon"
+
+  run_on_app
+
+  expect_exit 1 || return 1
+  expected="second .icns file: Contents/Resources/extra.icns
+asset catalogue: Contents/Resources/Assets.car
+CFBundleIconName in Contents/Info.plist: AppIcon
+chunk outside the plain-image set: icxx in Contents/Resources/icon.icns
+size missing: no 64 px square representation in Contents/Resources/icon.icns
+representation not square: representation 10 is 48 by 40 px
+pixel off the drawing's colours: representation 1 (16 px) has a fully opaque pixel 2.01 levels off the #1E1F22–#FBFBFA line (bound: 2 levels)
+pupil pixel: (512, 512) of the 1024 px representation reads 31, 31, 34 at alpha 255; the drawing gives 30, 31, 34 at alpha 255 (#1E1F22)
+ground pixel: (512, 850) of the 1024 px representation reads 251, 251, 249 at alpha 255; the drawing gives 251, 251, 250 at alpha 255 (#FBFBFA)
+corner pixel: (0, 0) of the 1024 px representation has alpha 1; outside the drawing's rounded square it is 0
+$(closing_line)"
+  [ "$STDERR" = "$expected" ] \
+    || fail "expected stderr to be exactly the ten findings, in order, then the closing line. stderr: $STDERR"
+}
+
+# Tier 2 (the shell packet's toolchain.md): plutil is asked for before anything is read or compiled.
+test_plutil_absent_is_named() {
+  new_case plutil
+
+  run_on_app
+
+  expect_exit 1 || return 1
+  expect_stderr_line "app-icon.sh: plutil not found on PATH — the app's Contents/Info.plist is read with it, so the check stopped without a verdict." || return 1
+  expect_stdout_empty || return 1
+  [ "$(grep -c '^swiftc ' "$CALLS")" -eq 0 ] || fail "swiftc was called although plutil is absent. calls: $(cat "$CALLS")"
+}
+
+# The header's USAGE: no temporary folder can be made, so the check cannot judge, and says so in one
+# line. The probe is compiled into that folder, so nothing is compiled or run.
+test_temporary_folder_that_cannot_be_made_is_named() {
+  new_case
+  rmdir "$CASE/tmp"
+
+  run_on_app
+
+  expect_exit 1 || return 1
+  expect_stderr_line "app-icon.sh: cannot create a temporary folder under $CASE/tmp, so the check stopped without a verdict." || return 1
+  expect_stdout_empty || return 1
+  [ ! -s "$CALLS" ] || fail "a stand-in was called although no temporary folder was made. calls: $(cat "$CALLS")"
+}
+
+# CP-1321: a chunk outside the set is refused whatever its four bytes are, printable or not. This
+# case holds that a type with bytes outside the printable range is refused and named in the
+# finding's place; how those bytes are written in the line is not pinned here.
+test_chunk_type_that_is_not_printable_is_refused() {
+  local first_line
+  new_case
+  {
+    printf 'icns'
+    be32 32
+    printf 'ic07'
+    be32 12
+    printf 'abcd'
+    byte 253
+    byte 217
+    byte 47
+    byte 168
+    be32 12
+    printf 'abcd'
+  } > "$APP/Contents/Resources/icon.icns"
+
+  run_on_app
+
+  expect_exit 1 || return 1
+  [ "$(printf '%s\n' "$STDERR" | wc -l | tr -d ' ')" -eq 2 ] \
+    || fail "expected one finding and the closing line on stderr. stderr: $STDERR" || return 1
+  first_line="$(printf '%s\n' "$STDERR" | head -n 1)"
+  case "$first_line" in
+    "chunk outside the plain-image set: "?*" in Contents/Resources/icon.icns") ;;
+    *) fail "expected the unprintable chunk type to be named. stderr: $STDERR" || return 1 ;;
+  esac
+  [ "$(printf '%s\n' "$STDERR" | tail -n 1)" = "$(closing_line)" ] \
+    || fail "expected the closing line to end stderr. stderr: $STDERR"
+}
+
+# The plan's plain-image set is the table of contents plus the image types iconutil writes, so an
+# icon that opens with a table of contents passes.
+test_table_of_contents_chunk_passes() {
+  new_case
+  write_icns "$APP/Contents/Resources/icon.icns" "TOC " $GOOD_CHUNKS
+
+  run_on_app
+
+  expect_exit 0 || return 1
+  expect_stdout_line "$PASS_SIZES_LINE" || return 1
+  expect_stderr_empty
 }
 
 # --- the runner ---
