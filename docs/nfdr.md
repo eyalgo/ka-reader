@@ -1,8 +1,9 @@
 # NFDR — KA-Reader
 
-**Status:** Draft
+**Status:** Settled
 **Owner:** Principal Architect
-**Version:** 96 — Fold cycle-87 § 2.1: the owner withdraws the host-tools departure, so QC-72 is withdrawn and binds nothing, its number kept; QC-67 takes the testing doctrine as written — a tool on a suite's built `PATH` is a stand-in or one of the host's shell and its ordinary text and file tools, the suite's own interpreter on the owner's reading; a stand-in for `git`, `tar` or `cargo` replays a recording committed beside the test as data; the four suites the answer names are known gaps that do not hold the first public release, and what the real tools make of a state stays proven by the owner's walk on the Mac and the release build. Measured at `ka-reader@528c152`, eleven more suites run or look up the host's `git`, `tar` or `cargo`; they are known gaps under the same rule, and whether the release ruling reaches them goes back to the owner as a choice to confirm. § 9 and § 10 follow. Status stays Draft — RN-106.
+**Version:** 97 — Fold cycle-88 § 2.1, the close: the owner confirms the draft with an addition. The eleven suites that run or look up the host's `git`, `tar` or `cargo` at `ka-reader@528c152` are known gaps on the same terms as the four, and none of them holds the first public release; the allowance covers the fifteen measured at that commit and nothing written after it, so a new run or lookup follows the testing doctrine as written, held by `development-design` until the scan lands; and QC-67 names one uncovered case, a `git status` check in a copy of the source that is not a git checkout, which can pass without checking anything. QC-67 also names the notices suite's real-`cargo` case, a locator the v96 scan missed. The companion is removed; Status is Settled — RN-107.
+Version 96 — Fold cycle-87 § 2.1: the owner withdraws the host-tools departure, so QC-72 is withdrawn and binds nothing, its number kept; QC-67 takes the testing doctrine as written — a tool on a suite's built `PATH` is a stand-in or one of the host's shell and its ordinary text and file tools, the suite's own interpreter on the owner's reading; a stand-in for `git`, `tar` or `cargo` replays a recording committed beside the test as data; the four suites the answer names are known gaps that do not hold the first public release, and what the real tools make of a state stays proven by the owner's walk on the Mac and the release build. Measured at `ka-reader@528c152`, eleven more suites run or look up the host's `git`, `tar` or `cargo`; they are known gaps under the same rule, and whether the release ruling reaches them goes back to the owner as a choice to confirm. § 9 and § 10 follow. Status stays Draft — RN-106.
 Version 95 — Fold cycle-86 §§ 2.1 and 3.1: QC-67 makes the built form the rule — every suite under `checks/tests/` that launches a check script launches it under `/usr/bin/env -i` with a `PATH` of directories the suite built, every tool linked in by name, no host directory on it — and re-measures the suites at `ka-reader@528c152` in three forms, six built, fourteen prepended and six on the host's `PATH` whole, each outside the built form a known gap, with a launch-line scan owed; QC-72, new, records the owner's bounded departure from `testing_doctrine.md` § *A test reads nothing of the machine it runs on*: a suite may run the host's `git`, `tar` or `cargo` only where the case asserts what the tool makes of a state it built, on its own temporary copies, with machine `git` configuration shut out, every other process a stand-in. Bound (3) is held as worded, so the host shell and text tools every suite runs are known gaps, and whether the departure reaches them goes back to the owner as a choice to confirm. Status stays Draft — RN-105.
 Version 94 — Fold cycle-85 § 2.1: QC-67 takes the no-seam reading as drafted — a suite hands a check script its tools through `PATH`, the platform's variable — and the answer's addition as a dated reading rather than a rule: at `ka-reader@528c152` five suites, the two Git beta suites among them, build the whole `PATH` from an empty environment, and fourteen put their stand-ins in front of the host's `PATH`, so QC-67 states both forms and requires neither; whether every suite must build its `PATH` is raised to the owner as a new choice to confirm. One item from downstream still awaits the owner — RN-104.
 Version 93 — Fold cycle-84 §§ 3.1–3.4 and draft § 2.1: QC-65's set names `checks/git-beta-scene.sh` beside the tree-scene helper, its suite outside the set, and names the two host walks, `checks/git-beta-walk.sh` and `checks/tree-walk.sh`, as outside it with the reason, at `ka-reader@528c152`; § 9's suites bullet is re-measured at twenty-seven suites with the twenty-five kept as a dated reading, its two counts left behind by earlier re-measurements move with it, and it states that every suite under `checks/tests/` is a bash script that is its own runner, setting aside the Shell packet's pytest line; QC-70's meaning of 2 widens to an argument the script does not take, and it records both new scripts' statuses, the literal scan's `exit 3` and the walk's uncovered lost-guest status; QC-67, drafted, states that a suite hands a check script its tools through `PATH`; § 10's QC-65 row follows. Two items await the owner, so Status is Draft — RN-103.
@@ -2752,7 +2753,7 @@ answer at `docs/trail/architecture/cycle-51.md` § 3.2 — RN-69)*.
   `:L131`) and on the product's own tree (`test_entry_points.sh:L1612`, `:L1617`;
   `test_no_network.sh:L220`, `:L233`). Eleven more suites run or look up one of the three at that
   commit, and each is a known gap under the same rule. In the suite's own body:
-  `checks/tests/test_notices.sh` (`git -C "$ROOT" status`, `:L1074`), `test_own_state.sh` (`tar -xf`,
+  `checks/tests/test_notices.sh` (`git -C "$ROOT" status`, `:L1074`; and, in its last case, `checks/notices.sh` started under the host's `PATH` whole, so the real `cargo` runs on the product's tree, `:L1077` *(added at v97 — RN-107)*), `test_own_state.sh` (`tar -xf`,
   `:L78`, `:L84`, `:L308`), `test_read_only.sh` (`tar -xf`, `:L788`; `cargo test` on the product's
   tree, `:L1116`), `test_release_version.sh` (`cargo metadata` on the product's tree, `:L165`,
   `:L183`), `test_renderer.sh` (`git -C "$ROOT" status`, `:L932`), `test_secret_scan.sh` (`git init`
@@ -2760,8 +2761,20 @@ answer at `docs/trail/architecture/cycle-51.md` § 3.2 — RN-69)*.
   `test_strings.sh` (`git -C "$ROOT" status`, `:L297`) and `test_structure.sh` (`git -C "$ROOT"
   status`, `:L55`, `:L511`; `git init`, `:L1132`). By lookup: `test_offline_page.sh` requires the
   host's `cargo` before it runs (`:L391`), and `test_readme.sh` wraps the real tool it finds with
-  `command -v` (`wrap_failure`, `:L86`), `git` among them (`:L212`). Whether the owner's release ruling
-  reaches these eleven is open with the owner *(the architecture companion's § 2.1 at v96 — RN-106)*
+  `command -v` (`wrap_failure`, `:L86`), `git` among them (`:L212`). None of the eleven holds the first public
+  release either: they are known gaps on the same terms as the four (owner, 2026-11-12). That
+  allowance covers the fifteen suites measured at `ka-reader@528c152` and nothing written after that
+  commit. A run or a lookup of the host's `git`, `tar` or `cargo` written into a suite later follows the
+  testing doctrine as written, and `development-design` holds it there until the scan in this entry's
+  tail lands. One case is uncovered, and named, and it is a known gap that does not hold the release
+  either: in a copy of the source that is not a git checkout, such as a release's source archive, a
+  `git -C "$ROOT" status` check gets no answer from `git` and can pass without checking anything.
+  `test_strings.sh` throws away `git`'s error and compares two empty outputs (`tree_status`, `:L297`);
+  `test_structure.sh` compares the same error text captured before and after (`:L55`, `:L511`);
+  `test_renderer.sh` takes an empty output as a clean tree (`:L932`); and `test_notices.sh` compares
+  two empty outputs while `git`'s error goes to the suite's own error stream (`:L1074`, `:L1086`)
+  *(through v96 "Whether the owner's release ruling reaches these eleven is open with the owner" —
+  RN-107)*
   *(through v95 "Which host tools a suite may link in at all is QC-72's", the owner's bounded
   departure, withdrawn at v96 on the owner's answer at `docs/trail/architecture/cycle-87.md` § 2.1 —
   RN-106; through v94 "Whether a suite may hand a script the host's real tools at all is not settled by
@@ -2797,7 +2810,9 @@ answer at `docs/trail/architecture/cycle-51.md` § 3.2 — RN-69)*.
   realizes the same section as written, its *What to do instead* for the recordings and § *A fake is
   verified against its port's contract* for the interpreter, on the owner's answer at
   `docs/trail/architecture/cycle-87.md` § 2.1, 2026-11-12, which withdraws the cycle-86 § 3.1 ruling —
-  RN-106)*
+  RN-106; the eleven's release terms, the allowance's bound at `528c152` and the uncovered
+  non-checkout case, on the owner's answer at `docs/trail/architecture/cycle-88.md` § 2.1, 2026-11-12
+  — RN-107)*
 - **QC-70:** A check script under `checks/` ends with one of five statuses, and they are the
   product's own. **0** is a pass, and only a pass is 0. **1** is a refusal: a finding, or a
   precondition that failed. **2** is a wrong invocation, an argument count, or an argument, the
@@ -9673,3 +9688,60 @@ of the trait-collaborator line, and the read seam until it is built), QC-13 (the
   inputs' status lines read as in the header, so the `Inputs read:` line stands.
   `docs/trail/architecture/cycle-87.md` holds the answered companion whole. One item is open, the new
   § 2.1, so the companion is rewritten with it alone and `Status:` stays Draft.
+- **RN-107:** *(v97 — the cycle-88 fold, § 2.1, and the close)* The owner's seat's committed answer
+  at `docs/trail/architecture/cycle-88.md` § 2.1, 2026-11-12 (`ka-reader@551bc54`), authorizes every
+  change here; its reasoning is `docs/trail/architecture/self_answer-93.md`. The answer confirms the
+  draft with an addition.
+
+  **§ 2.1 → QC-67, the confirm.** Taken as written. The eleven suites v96 measured at
+  `ka-reader@528c152` are known gaps on the same terms as the four, and none of them holds the first
+  public release. The answer reads the owner's cycle-87 ruling as a description, "the suites that run
+  a real tool today", whose count missed eleven, so applying it to them does not widen it. This seat
+  held that line at v96 because only the owner's seat could draw it, and that seat now has. The
+  sentence saying the question is open is replaced, and kept as a dated reading. As at v96, "after
+  the first public release" schedules no change unit here: it is recorded as what the gaps do not
+  hold.
+
+  **§ 2.1 → QC-67, the addition.** Taken as written, in two parts. (1) The allowance covers the
+  fifteen suites measured at `528c152` and nothing written after it. A run or a lookup of one of the
+  three tools written into a suite later follows the testing doctrine as written, and
+  `development-design` holds it there until the scan lands. QC-67's `verified by:` tail already held "a new run
+  of a host tool in a suite" at `development-design`, so that tail and § 10 are unchanged. The bound is
+  what keeps the tail's gate meaningful: without it, a new gap could have entered under the old
+  ruling. (2) QC-67 names one uncovered case. In a copy of the source that is not a git checkout, a
+  `git -C "$ROOT" status` check gets no answer and can pass without checking anything. That case is a
+  known gap that does not hold the release, as the answer says. The answer's reasoning adds that
+  moving the suites off the host's `git` is the same fix. QC-67 does not repeat that claim, because
+  the answer itself does not state it and a recorded stand-in could close the gap or leave it open
+  depending on how the change builds it. That is the delivery tier's.
+
+  **Beyond the answer's words.** Two things. (1) The answer's reasoning left one suite's case
+  untraced: `test_notices.sh:L1074` was "not traced as far as how it ends in that case". This run
+  traced it. The case captures `git status --porcelain --ignored` with `git`'s error not captured, so
+  both its readings are empty and its comparison at `:L1086` passes. QC-67 lists it with the other
+  three. (2) A locator was missing, and is fixed here under the boy-scout rule. In
+  `test_notices.sh`'s last case, `test_real_tree_passes_and_is_left_as_it_was` (`:L1073-L1088`), the
+  suite starts `checks/notices.sh` under the host's `PATH` whole (`:L1077`). The script then runs the
+  real `cargo` on the product's tree, as the suite's own header says (`:L20`). That is the same use QC-67
+  lists for `test_entry_points.sh` and `test_no_network.sh`. v96's scan read only the suites' own
+  text for the tool's name, so it missed this case. The suite was already one of the fifteen, so the
+  count, the allowance and the release terms do not move. QC-67's line for it gains the locator.
+
+  **Read by this run.** At `ka-reader@551bc54`, whose tree outside `docs/` is `528c152`'s (`git diff
+  --stat 528c152 HEAD -- . ':!docs' ':!features'` prints nothing; `features/` is untracked and is not
+  read): `checks/tests/test_strings.sh:L290-L302` and its `tree_status` callers (`:L1053`, `:L1056`,
+  `:L1083`, `:L1120`); `checks/tests/test_structure.sh:L50-L60`, `:L505-L516`;
+  `checks/tests/test_renderer.sh:L926-L938`; `checks/tests/test_notices.sh:L1-L20`, `:L1068-L1100`,
+  and its `PATH` assignments (`:L239`, `:L332`, `:L464`, `:L470`, `:L490`, `:L640`);
+  `checks/tests/test_entry_points.sh:L1606-L1620` and `checks/tests/test_no_network.sh:L216-L234`
+  for the form QC-67 already uses. No product test ran: nothing under `crates/`, `checks/` or
+  `ka-reader-mac/` is changed by this fold.
+
+  **Limits.** No ADR is written or restatused, so the index is unchanged. Extending an owner's
+  allowance to the suites its description already covered, and naming a test gap, involve no
+  trade-off this product made and touch no shipped code; neither clears the three gates, as RN-105
+  and RN-106 found for the departure and its withdrawal. No `QC` is added, renumbered or reused.
+  QC-67 is the one entry edited. § 9 and § 10 are unchanged, since neither stated the open question.
+  The inputs' status lines read as in the header, so the `Inputs read:` line stands.
+  `docs/trail/architecture/cycle-88.md` holds the answered companion whole. Nothing is left open,
+  so the companion is removed and `Status:` is Settled.
