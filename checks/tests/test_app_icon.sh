@@ -59,6 +59,7 @@ test_icon_name_key_is_refused
 test_named_icon_file_that_is_a_folder_is_refused
 test_file_without_the_icns_header_is_refused
 test_chunk_that_runs_past_the_file_is_refused
+test_chunk_shorter_than_its_header_and_trailing_bytes_are_refused
 test_chunk_outside_the_plain_image_set_is_refused
 test_dark_appearance_chunk_is_refused
 test_each_missing_size_is_named
@@ -385,7 +386,7 @@ test_file_without_the_icns_header_is_refused() {
   run_on_app
 
   expect_refusal_with "icon file has no icns header: Contents/Resources/icon.icns" || return 1
-  [ "$(grep -c 'ka-reader-icon-probe' "$CALLS")" -eq 1 ] || fail "the probe read a file with no icns header. calls: $(cat "$CALLS")"
+  [ "$(grep -c '^ka-reader-icon-probe ' "$CALLS")" -eq 1 ] || fail "the probe read a file with no icns header (only the control may be read). calls: $(cat "$CALLS")"
 }
 
 # CP-1321: a chunk whose length runs past the end of the file is named at its byte offset.
@@ -402,6 +403,35 @@ test_chunk_that_runs_past_the_file_is_refused() {
   run_on_app
 
   expect_refusal_with "icon file's chunks do not fit its length: Contents/Resources/icon.icns, at byte 8"
+}
+
+# CP-1321: a chunk whose length is below its own 8-byte header, and bytes left over that are too few
+# for a header, are each named at their byte offset (the first would otherwise never advance the walk).
+test_chunk_shorter_than_its_header_and_trailing_bytes_are_refused() {
+  new_case
+  {
+    printf 'icns'
+    be32 16
+    printf 'ic07'
+    be32 4
+  } > "$APP/Contents/Resources/icon.icns"
+
+  run_on_app
+
+  expect_refusal_with "icon file's chunks do not fit its length: Contents/Resources/icon.icns, at byte 8" || return 1
+
+  new_case
+  {
+    printf 'icns'
+    be32 17
+    printf 'ic07'
+    be32 8
+    printf 'abcde'
+  } > "$APP/Contents/Resources/icon.icns"
+
+  run_on_app
+
+  expect_refusal_with "icon file's chunks do not fit its length: Contents/Resources/icon.icns, at byte 16"
 }
 
 # CP-1321: a chunk type outside the plain-image set is named by its four bytes.
