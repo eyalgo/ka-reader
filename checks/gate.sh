@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.20.0 — the application icon check joins the list, on the bundle "Build KA-Reader.app" wrote, before its suite
 # Version: 1.19.0 — the suite of the application icon check joins the list, after the entry-points suite
 # Version: 1.18.0 — the suite of the app's build script joins the list, after the entry-points suite
 # Version: 1.17.0 — the suite of the Git beta host walk joins the list, after the scene helper's
@@ -110,6 +111,7 @@ run_step 'Entry-points check suite' 'checks/tests/test_entry_points.sh'
 # checks/fixtures/stand-in-icon.icns: a run without the control has not run the check. It and
 # "Application icon check suite" launch nothing, and their place before "Bundle probe" is a
 # grouping preference.
+run_step 'Application icon check' 'checks/app-icon.sh target/release/bundle/macos/KA-Reader.app'
 run_step 'Application icon check suite' 'checks/tests/test_app_icon.sh'
 # "Build KA-Reader.app suite" runs a byte copy of ka-reader-mac/assemble.sh in a tree of its own,
 # with every program the script runs stood in, so it builds nothing, launches nothing and needs no
