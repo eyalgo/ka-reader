@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.18.0 — the suite of the app's build script joins the list, after the entry-points suite
 # Version: 1.17.0 — the suite of the Git beta host walk joins the list, after the scene helper's
 # Version: 1.16.0 — the suite of the Git beta scene helper joins the list, after the tree-scene helper's
 # Version: 1.15.0 — wording suites ignore inherited case selection
@@ -102,6 +103,10 @@ run_step 'Structure check' 'checks/structure.sh'
 run_step 'Structure check suite' 'checks/tests/test_structure.sh'
 run_step 'Entry-points check' 'checks/entry-points.sh'
 run_step 'Entry-points check suite' 'checks/tests/test_entry_points.sh'
+# "Build KA-Reader.app suite" runs a byte copy of ka-reader-mac/assemble.sh in a tree of its own,
+# with every program the script runs stood in, so it builds nothing, launches nothing and needs no
+# step above it. Its place after the application icon steps is a preference.
+run_step 'Build KA-Reader.app suite' 'checks/tests/test_assemble.sh'
 run_step 'Bundle probe' 'checks/bundle.sh target/release/bundle/macos/KA-Reader.app'
 # The probe's negative control runs here: without it the probe has not run.
 run_step 'Bundle probe suite' 'checks/tests/test_bundle.sh'
