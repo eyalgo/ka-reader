@@ -51,7 +51,7 @@ None.
   one named that way becomes a release precondition, and the change that replaces its real tool with
   a recorded stand-in, or with a fixture committed as data, comes before the release. No ADR moves,
   and QC-67's scan and review gate are unchanged.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm, with one addition. The eleven wait until after the first public release on the same terms as the four, and none of them holds it. Your answer described the suites it covered as "the four suites that run a real tool today"; the count was the measurement, and the rule is the description, which reaches these eleven too. Its reason, that the real tools are proven by your walk on the Mac and by the release build, holds even more for them: most only use the tool to build a throwaway fixture or to confirm the suite left the tree as it found it. **Addition:** the allowance covers the fifteen measured at `ka-reader@528c152` and nothing written after it. A new run or lookup of the host's `git`, `tar` or `cargo` in a suite follows the testing doctrine as written, held by `development-design` until the scan lands. QC-67 should also name one case it does not cover: in a copy of the source that is not a git checkout, the `git -C "$ROOT" status` checks get no answer from `git` and can pass without checking anything. That is a known gap too, and it does not hold the release. Reasoning in `docs/trail/architecture/self_answer-93.md`.
 
 ## 3. Raised from downstream — an item from a seat that did not write these records
 
