@@ -2,7 +2,8 @@
 
 **Status:** Settled
 **Owner:** Principal Architect
-**Version:** 98 — Fold cycle-89 §§ 3.1–3.2, the close: QC-14 lets a program a check compiles into a temporary folder of its own at run time use the platform's own frameworks and system library — AppKit for the idle-shell control, Foundation, ImageIO and CoreGraphics for the icon probe, and `dlsym` and `kill` for the sandbox probe — such a program never shipping and never a dependency of a shipped unit, held by `development-design`; § 9's layer-5 row names the application icon and `checks/app-icon.sh` with its control; § 9's suites bullet is re-measured at `ka-reader@03bb989` — twenty-nine suites, `checks/gate.sh` 1.20.0, with the twenty-seven kept as a dated reading; § 10's review-gate list names QC-14's new clause. No record is owed. The companion is removed; Status is Settled — RN-108.
+**Version:** 99 — Fold cycle-90 § 3.1, the close: § 9 makes the Behave call and picks the way in — `**Behave:** behave` and `**Behave way in:** command` — with four bounds every scenario holds: the program a scenario runs is a test host or a `checks/` script, never the shipped app given an argument; a scenario asserts the projection a view is drawn from, never the drawing; an environment refusal is a run that did not read the change, never a red; and layer 7's row names QA's scenarios under `.behave/features/`, run with `uv run --locked behave` from `.behave/`. The Layers 6–7 bullet follows. No record is owed. The companion is removed; Status is Settled — RN-109.
+Version 98 — Fold cycle-89 §§ 3.1–3.2, the close: QC-14 lets a program a check compiles into a temporary folder of its own at run time use the platform's own frameworks and system library — AppKit for the idle-shell control, Foundation, ImageIO and CoreGraphics for the icon probe, and `dlsym` and `kill` for the sandbox probe — such a program never shipping and never a dependency of a shipped unit, held by `development-design`; § 9's layer-5 row names the application icon and `checks/app-icon.sh` with its control; § 9's suites bullet is re-measured at `ka-reader@03bb989` — twenty-nine suites, `checks/gate.sh` 1.20.0, with the twenty-seven kept as a dated reading; § 10's review-gate list names QC-14's new clause. No record is owed. The companion is removed; Status is Settled — RN-108.
 Version 97 — Fold cycle-88 § 2.1, the close: the owner confirms the draft with an addition. The eleven suites that run or look up the host's `git`, `tar` or `cargo` at `ka-reader@528c152` are known gaps on the same terms as the four, and none of them holds the first public release; the allowance covers the fifteen measured at that commit and nothing written after it, so a new run or lookup follows the testing doctrine as written, held by `development-design` until the scan lands; and QC-67 names one uncovered case, a `git status` check in a copy of the source that is not a git checkout, which can pass without checking anything. QC-67 also names the notices suite's real-`cargo` case, a locator the v96 scan missed. The companion is removed; Status is Settled — RN-107.
 Version 96 — Fold cycle-87 § 2.1: the owner withdraws the host-tools departure, so QC-72 is withdrawn and binds nothing, its number kept; QC-67 takes the testing doctrine as written — a tool on a suite's built `PATH` is a stand-in or one of the host's shell and its ordinary text and file tools, the suite's own interpreter on the owner's reading; a stand-in for `git`, `tar` or `cargo` replays a recording committed beside the test as data; the four suites the answer names are known gaps that do not hold the first public release, and what the real tools make of a state stays proven by the owner's walk on the Mac and the release build. Measured at `ka-reader@528c152`, eleven more suites run or look up the host's `git`, `tar` or `cargo`; they are known gaps under the same rule, and whether the release ruling reaches them goes back to the owner as a choice to confirm. § 9 and § 10 follow. Status stays Draft — RN-106.
 Version 95 — Fold cycle-86 §§ 2.1 and 3.1: QC-67 makes the built form the rule — every suite under `checks/tests/` that launches a check script launches it under `/usr/bin/env -i` with a `PATH` of directories the suite built, every tool linked in by name, no host directory on it — and re-measures the suites at `ka-reader@528c152` in three forms, six built, fourteen prepended and six on the host's `PATH` whole, each outside the built form a known gap, with a launch-line scan owed; QC-72, new, records the owner's bounded departure from `testing_doctrine.md` § *A test reads nothing of the machine it runs on*: a suite may run the host's `git`, `tar` or `cargo` only where the case asserts what the tool makes of a state it built, on its own temporary copies, with machine `git` configuration shut out, every other process a stand-in. Bound (3) is held as worded, so the host shell and text tools every suite runs are known gaps, and whether the departure reaches them goes back to the owner as a choice to confirm. Status stays Draft — RN-105.
@@ -3027,7 +3028,7 @@ left with `ka-reader-ui` at `ka-reader@0aca57e` (RN-22; RN-25).
 | 4 — UI | A view is drawn from a projection and from nothing else — read with the one exception `docs/SDD.md` § 3's `surfaces` row names, that an intent the surface raised has not been answered yet, under that row's four bounds; the gap is no `ItemState`, and the reading adds no test (`docs/SDD.md` RN-82, v24; RN-37) — read too with the same row's two clauses that are not a second exception: what the pointer is over and whether the window is the key window are the shell's own observations, held across no redraw and no state of the folder (`docs/SDD.md` RN-96, RN-98), and from `see-git-status` through `follow-the-tree` the tree's marker join and the Git lists' row order stand in `surfaces`, derived only from projections the bridge sent, until `follow-the-folder` (`docs/SDD.md` § 10 RC-5, RN-94; QC-48 holds the end; RN-53) — and the shell issues no call `SM-4` does not name: nothing drawn from `pending` but the entry's name, its glyph and CONTENT's *Loading* sentence, no marker before `observed`, the Git view empty on `plain`, the failure slot and its route, the text view `isEditable` false and registering no drop type, a *resolved* image drawn from `asset_bytes`' bytes and a placeholder from none, staged told from unstaged by text, both themes | `swift test --package-path ka-reader-mac` — the tests on `main` XCTest, which the Swift packet keeps; a new test Swift Testing (the bullet below) | `ka-reader-mac/Tests/` |
 | 5 — End-to-end | The built bundle: entitlements and sandbox, the shell's run under them, the application icon: one file the bundle names, the seven sizes, no second appearance, the drawing's colours, own-state after a session, churn and kill, the tree following the disk, latency figures; from `v1.0.0` the priced contract against its major's pin; the timed release walk | `checks/bundle.sh`, `checks/renderer.sh` with `checks/fixtures/idle-shell`, `checks/app-icon.sh` with `checks/fixtures/stand-in-icon.icns`, its control (RN-108), `checks/own-state.sh`, `checks/churn.sh`, `checks/latency.sh`, `checks/read-only.sh --kill`, `checks/read-only.sh` and `checks/read-only.sh --kill` over `checks/fixtures/tree-scene`, `checks/contract.sh <tag>`; `docs/SRS.md` AC-10 as a manual timed walk, and QC-66's built-app tree scene as a manual walk with `checks/tree-scene.sh` over `checks/fixtures/tree-scene` (RN-87) | `checks/` |
 | 6 — Architecture | § 1.2's graph, § 1.3's I/O ownership, § 3's reach rules, the linked tree's environment and argument reads against their reviewed list (QC-30), the shell's forbidden set and link list (QC-34), and this section's layer-5 placement (no `CARGO_BIN_EXE_` reference under `crates/*/tests/`) | `checks/structure.sh` (Rust, grep rules over shipped sources — its scope is the bullet below); `checks/entry-points.sh` (the resolved dependency tree); `checks/view.sh` (Swift: the source scan over `ka-reader-mac/Sources` and `otool -L` on the built executable) | `checks/` |
-| 7 — Specification | The SRS's acceptance criteria as scenarios through the real entry point | the SDD's per-slice command bars and the AC walk at release, until a QA seat writes the layer | `checks/` |
+| 7 — Specification | The SRS's acceptance criteria as scenarios through the real entry point — here the command way in, below, since no way in drives the AppKit views | QA's Behave scenarios, run with `uv run --locked behave` from `.behave/`, through the command way in; the SDD's per-slice command bars and the AC walk at release beside them *(through v98 "the SDD's per-slice command bars and the AC walk at release, until a QA seat writes the layer" — RN-109)* | `.behave/features/`; `checks/` |
 
 - **Layer 3 is present**, realized as the harness: it enters inside the boundary by calling
   `SM-4`'s list in-process through `SM-5`, which is `testing_doctrine.md`'s own test for layer 3
@@ -3633,11 +3634,50 @@ left with `ka-reader-ui` at `ka-reader@0aca57e` (RN-22; RN-25).
   this ground read "no command reads which toolchain CI builds with … the review stands until a CI
   log on `main` names the toolchain", true until `ka-reader@d852457`; re-derived at v48 on the
   owner's seat's answer at `docs/trail/architecture/cycle-41.md` § 3.1 — RN-59)*.
-- **Layers 6–7 are QA-role ATDD work.** No QA seat has written either for this product yet; until
-  one does, layer 6 is verified by `checks/structure.sh`, `checks/entry-points.sh` and
+- **Layers 6–7 are QA-role ATDD work.** No QA seat has written layer 6 for this product; until
+  one does, it is verified by `checks/structure.sh`, `checks/entry-points.sh` and
   `checks/view.sh`, run in CI and, from `checks/gate.sh`, at the change (QC-64; through v55 "run in
-  CI" alone — RN-67), and layer 7 by the SDD's per-slice command bars and the acceptance
-  walk at release.
+  CI" alone — RN-67). Layer 7 is QA's: its scenarios live under `.behave/features/`, written by
+  QA's step on a change that alters behaviour, and run with `uv run --locked behave` from `.behave/`
+  through the command way in below. The SDD's per-slice command bars and the acceptance walk at
+  release verify it beside them, and are all that verifies an acceptance criterion no scenario
+  reaches yet. Whether `.behave/` is a step of `checks/gate.sh` is not settled here *(through v98
+  "No QA seat has written either for this product yet; until one does, … layer 7 by the SDD's
+  per-slice command bars and the acceptance walk at release" — RN-109)*.
+
+The Behave call and the way in are this product's, made on the owner's criteria of 2026-11-10: a
+product we own, with code, that a person uses, whose card's test command is `checks/gate.sh`
+*(added at v99, on the owner's seat's answer at `docs/trail/architecture/cycle-90.md` § 3.1 —
+RN-109)*.
+
+**Behave:** behave
+
+**Behave way in:** command
+
+`command` is the one of the three ways in that reaches this product. `browser` reaches nothing: the
+renderer left with `ka-reader-ui` (RN-22), and the product serves no page. `server` reaches
+nothing: the product has no HTTP surface and its executable links no network (QC-3; `docs/fdr.md`
+PD-26). A command reaches it the way the harness already does: a step runs a program and reads its
+exit status and output (`.behave/features/command_way_in.py`), as `checks/read-only.sh` runs the
+in-process driver over `SM-4` through `SM-5` (`crates/ka-reader-core/tests/walk.rs`, layer 3) and
+the `checks/` scripts run the built bundle (layer 5). Four bounds hold every scenario:
+
+1. **The program a scenario runs is a test host or a `checks/` script, never the shipped app given
+   an argument.** The app has no command-line surface and takes no launch argument (`docs/fdr.md`
+   PD-26, OOS-19). A scenario that would need one is a finding for the change's design step, not a
+   new product surface.
+2. **A scenario asserts what the core and the bridge answer — the projection a view is drawn from —
+   never what a view draws.** The views are not driven from outside the process (`docs/SDD.md` § 4
+   C-I3; § 9 TO-7). The drawing stays layer 4, and `docs/SRS.md` AC-10 stays a manual walk.
+3. **A scenario that runs the built bundle reads under this section's preconditions** — the bridge
+   assembled from this checkout first, and a session in which the window server places windows. An
+   environment refusal, a VM admission refusal or a window the window server did not place, is a
+   run that did not read the change, never a red.
+4. **Layer 7's row above names the scenarios**, under `.behave/features/`, run with
+   `uv run --locked behave` from `.behave/`, through this way in.
+
+The call and the pick change only with a fresh authorization; a change's design step makes its
+behaviour testable through this way in and picks none of its own.
 
 ## 10. Verification map
 
@@ -9828,3 +9868,40 @@ of the trait-collaborator line, and the read seam until it is built), QC-13 (the
   `ka-reader-mac/` is changed by this fold. The inputs' status lines read as in the header, so the
   `Inputs read:` line stands. `docs/trail/architecture/cycle-89.md` holds the answered companion
   whole. Nothing is left open, so the companion is removed and `Status:` is Settled.
+- **RN-109:** *(v99 — the cycle-90 fold, § 3.1, and the close)* The owner's seat's committed
+  answer at `docs/trail/architecture/cycle-90.md` § 3.1, 2026-11-13 (`ka-reader@2640108`),
+  authorizes every change here; its reasoning is `docs/trail/architecture/self_answer-95.md`. The
+  item was raised from downstream, on the owner's direction, because the change walk halts before
+  QA's step on an NFDR with no `**Behave:**` and no `**Behave way in:**` line, and this one had
+  neither.
+
+  **§ 3.1 → § 9.** Taken as written. The call is `behave`: ka-reader is a product we own, with code,
+  that a person uses, the first of the owner's criteria of 2026-11-10, and the card's test command is
+  `checks/gate.sh`, not `none`. The way in is `command`, the one of the three that reaches the
+  product; the reasons for `browser` and `server` reaching nothing are stated beside the lines. The
+  two lines stand at the start of a line each, in the template's form, below the Layers 6–7 bullet.
+  The four bounds are carried as the answer numbers them. Layer 7's row now names QA's scenarios
+  under `.behave/features/`, run with `uv run --locked behave` from `.behave/`, through the command
+  way in, and keeps the per-slice command bars and the acceptance walk beside them; the old reading
+  is kept.
+
+  **Beyond the answer's words.** Two things, each a projection the answer implies. (1) The Layers
+  6–7 bullet said no QA seat had written either layer and that layer 7 was verified by the command
+  bars and the acceptance walk; with the row moved, the bullet would have said two things at once,
+  so it now says layer 7 is QA's, through the way in, with the bars and the walk beside it and
+  covering any acceptance criterion no scenario reaches yet. Layer 6's half is unchanged. (2) The
+  section ends on the rule the prompt sets, that the call and the pick change only with a fresh
+  authorization and a change's design step picks no way in of its own. The answer's locators were
+  read and hold: `.behave/features/command_way_in.py`, `crates/ka-reader-core/tests/walk.rs`, run by
+  `checks/read-only.sh`, and `uv run --locked behave` in `.behave/README.md`.
+
+  **Limits.** No ADR is written or restatused, so the index is unchanged: the call applies a standing
+  rule of the owner's, is cheap to reverse and involves no trade-off this product made, so it clears
+  none of the three gates. No `QC` is added, renumbered or reused, and § 10 takes no row, because the
+  two lines are the test strategy's realization, not an entry. Whether `.behave/` joins
+  `checks/gate.sh` as a step is not settled here, as the answer says. § 9's layer-7 row, the Layers
+  6–7 bullet and the Behave lines with their bounds are the only text edited. No product test ran:
+  nothing under `crates/`, `checks/`, `ka-reader-mac/` or `.behave/` is changed by this fold. The
+  inputs' status lines read as in the header, so the `Inputs read:` line stands.
+  `docs/trail/architecture/cycle-90.md` holds the answered companion whole. Nothing is left open, so
+  the companion is removed and `Status:` is Settled.
