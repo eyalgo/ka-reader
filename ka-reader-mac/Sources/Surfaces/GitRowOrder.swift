@@ -6,16 +6,30 @@
 /// `localizedStandardCompare` compares digits as numbers, and each breaks one of the two clauses.
 package nonisolated enum GitRowOrder {
     /// `entries` in row order. The result does not depend on the order they arrive in.
+    ///
+    /// Each entry's key is built once, before the sort, so the sort's many comparisons read keys and
+    /// do not lowercase and map a path each time.
     package static func ordered(_ entries: [GitEntry]) -> [GitEntry] {
-        entries.sorted { precedes($0.path, $1.path) }
+        entries.map { (entry: $0, key: RowKey($0.path)) }
+            .sorted { $0.key.precedes($1.key) }
+            .map(\.entry)
     }
 
-    private static func precedes(_ left: String, _ right: String) -> Bool {
-        let leftScalars = left.lowercased().unicodeScalars.map(\.value)
-        let rightScalars = right.lowercased().unicodeScalars.map(\.value)
-        if leftScalars != rightScalars {
-            return leftScalars.lexicographicallyPrecedes(rightScalars)
+    /// One path's two comparison keys: its lowercased Unicode scalar values, then its UTF-8 bytes.
+    private struct RowKey {
+        let lowercasedScalars: [UInt32]
+        let utf8Bytes: [UInt8]
+
+        init(_ path: String) {
+            lowercasedScalars = path.lowercased().unicodeScalars.map(\.value)
+            utf8Bytes = Array(path.utf8)
         }
-        return left.utf8.lexicographicallyPrecedes(right.utf8)
+
+        func precedes(_ other: RowKey) -> Bool {
+            if lowercasedScalars != other.lowercasedScalars {
+                return lowercasedScalars.lexicographicallyPrecedes(other.lowercasedScalars)
+            }
+            return utf8Bytes.lexicographicallyPrecedes(other.utf8Bytes)
+        }
     }
 }
