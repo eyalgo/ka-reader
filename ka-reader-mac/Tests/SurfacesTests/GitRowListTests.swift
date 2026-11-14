@@ -1,7 +1,7 @@
 import AppKit
 import Testing
 
-@testable import Surfaces
+import Surfaces
 
 /// The Git view realizes a list's rows only for the part of the list in view (CP-1335, CP-1336), and
 /// every row, its letter, selection, hover, tooltip and activation stay what the view always drew

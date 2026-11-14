@@ -12,9 +12,9 @@ import AppKit
 /// next one to come into view. Whatever a row shows, its path, its letter and its selection, is set
 /// from the list's state each time it is realized, never from what its view showed last.
 @MainActor
-final class GitRowList: NSView {
+package final class GitRowList: NSView {
     /// How many rows are kept realized past each edge of the visible rect.
-    static let overscan = 4
+    package static let overscan = 4
 
     /// A row's three views: the row, and the path and the letter it holds.
     private struct RowViews {
@@ -43,7 +43,7 @@ final class GitRowList: NSView {
     required init?(coder: NSCoder) { preconditionFailure("GitRowList is built in code only") }
 
     /// A list reads from its top, as the scroll view's document does.
-    override var isFlipped: Bool { true }
+    override package var isFlipped: Bool { true }
 
     /// How many rows the list has.
     var count: Int { entries.count }
@@ -81,7 +81,8 @@ final class GitRowList: NSView {
         if realizeVisibleRows() { needsLayout = true }
     }
 
-    override func layout() {
+    /// Realizes the rows to hold, then places each realized row by its index at the list's width.
+    override package func layout() {
         _ = realizeVisibleRows()
         for (index, views) in realized { views.row.frame = rowFrame(index) }
         super.layout()
