@@ -224,10 +224,12 @@ struct GitRowListTests {
         let selected = untrackedPath(3)
         try click(centre(of: try #require(rowView(selected, in: fixture.view)), in: fixture.view),
             in: fixture)
-        let pointer = NSPoint(x: 40, y: 300)
+        // The pointer rests on the middle of a row that is not the selected one, found by its path,
+        // so no font or heading height of the machine decides which row it lands on.
+        let hoveredPath = untrackedPath(8)
+        let pointer = centre(of: try #require(rowView(hoveredPath, in: fixture.view)), in: fixture.view)
         try PointerDelivery.move(to: pointer, in: fixture.view)
-        let hovered = fixture.view.hoverPaths()
-        #expect(hovered.count == 1)
+        #expect(fixture.view.hoverPaths() == [hoveredPath])
 
         try scroll(fixture.view, to: try lastScrollPosition(of: fixture.view))
 
