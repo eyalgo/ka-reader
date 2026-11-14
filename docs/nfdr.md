@@ -1,8 +1,9 @@
 # NFDR — KA-Reader
 
-**Status:** Draft
+**Status:** Settled
 **Owner:** Principal Architect
-**Version:** 100 — Fold cycle-91 §§ 3.1–3.2: § 8 quotes the test gate as `checks/gate.sh` 1.22.0 holds it at `ka-reader@21f611f` — its `swift test` skips `ShellTests.GitViewMemoryBoundTests` — and names the *Git view memory bound* step and its suite after it, with the unskipped command and the `f25fdbb` locators kept as a dated reading; § 9's runner paragraph states that each case of that suite runs alone, in a `swift test` of its own; § 9's suites bullet is re-measured at `ka-reader@21f611f` — thirty suites, every locator re-pinned, the twenty-nine at `03bb989` kept as a dated reading. No obligation and no record changes. One choice awaits the owner — § 2.1, § 5's silence on the Git view's memory ceiling — so Status is Draft — RN-110.
+**Version:** 101 — Fold cycle-92 § 2.1, the close: § 5 names the Git view's memory ceiling beside QC-45 as a dated reading and not a rule — it points at `GitViewMemoryBoundTests.swift:L18` (`riseBound`) and `checks/gate.sh:L104`, quotes 154,000,000 bytes as the constant at `ka-reader@21f611f`, says why the figure sits outside QC-45's three named kinds of number, and names a later suite's figure as an uncovered case for QC-45's review; § 5 still asserts no number of its own. No obligation and no record changes. The companion is removed; Status is Settled — RN-111.
+Version 100 — Fold cycle-91 §§ 3.1–3.2: § 8 quotes the test gate as `checks/gate.sh` 1.22.0 holds it at `ka-reader@21f611f` — its `swift test` skips `ShellTests.GitViewMemoryBoundTests` — and names the *Git view memory bound* step and its suite after it, with the unskipped command and the `f25fdbb` locators kept as a dated reading; § 9's runner paragraph states that each case of that suite runs alone, in a `swift test` of its own; § 9's suites bullet is re-measured at `ka-reader@21f611f` — thirty suites, every locator re-pinned, the twenty-nine at `03bb989` kept as a dated reading. No obligation and no record changes. One choice awaits the owner — § 2.1, § 5's silence on the Git view's memory ceiling — so Status is Draft — RN-110.
 Version 99 — Fold cycle-90 § 3.1, the close: § 9 makes the Behave call and picks the way in — `**Behave:** behave` and `**Behave way in:** command` — with four bounds every scenario holds: the program a scenario runs is a test host or a `checks/` script, never the shipped app given an argument; a scenario asserts the projection a view is drawn from, never the drawing; an environment refusal is a run that did not read the change, never a red; and layer 7's row names QA's scenarios under `.behave/features/`, run with `uv run --locked behave` from `.behave/`. The Layers 6–7 bullet follows. No record is owed. The companion is removed; Status is Settled — RN-109.
 Version 98 — Fold cycle-89 §§ 3.1–3.2, the close: QC-14 lets a program a check compiles into a temporary folder of its own at run time use the platform's own frameworks and system library — AppKit for the idle-shell control, Foundation, ImageIO and CoreGraphics for the icon probe, and `dlsym` and `kill` for the sandbox probe — such a program never shipping and never a dependency of a shipped unit, held by `development-design`; § 9's layer-5 row names the application icon and `checks/app-icon.sh` with its control; § 9's suites bullet is re-measured at `ka-reader@03bb989` — twenty-nine suites, `checks/gate.sh` 1.20.0, with the twenty-seven kept as a dated reading; § 10's review-gate list names QC-14's new clause. No record is owed. The companion is removed; Status is Settled — RN-108.
 Version 97 — Fold cycle-88 § 2.1, the close: the owner confirms the draft with an addition. The eleven suites that run or look up the host's `git`, `tar` or `cargo` at `ka-reader@528c152` are known gaps on the same terms as the four, and none of them holds the first public release; the allowance covers the fifteen measured at that commit and nothing written after it, so a new run or lookup follows the testing doctrine as written, held by `development-design` until the scan lands; and QC-67 names one uncovered case, a `git status` check in a copy of the source that is not a git checkout, which can pass without checking anything. QC-67 also names the notices suite's real-`cargo` case, a locator the v96 scan missed. The companion is removed; Status is Settled — RN-107.
@@ -1802,6 +1803,24 @@ binds the *process*, and asserts no number of its own.
   — *verified by:* review at `development-design` — a review gate, because no number exists to
   assert against; the entry becomes a layer-5 timing assertion the day the SRS folds the numbers
   in *(traces to: SDD § 4 C-I4; SRS NFR-1, NFR-2, NFR-10, RN-4; FDR PD-30)*
+
+  *The Git view's memory ceiling — a reading beside QC-45, not a rule.* One gated suite asserts a
+  memory figure: `ka-reader-mac/Tests/ShellTests/GitViewMemoryBoundTests.swift:L18` (`riseBound`),
+  run at every change by the gate's *Git view memory bound* step (`checks/gate.sh:L104`). At
+  `ka-reader@21f611f` the constant reads 154,000,000 bytes: the most the process's peak resident
+  size may rise while the Git view is driven over a large repository. The figure is the suite's,
+  not this section's. A later change to the constant leaves this reading dated, not false, and § 5
+  still asserts no number of its own. The figure sits outside QC-45 because QC-45's ban names three
+  kinds of number — file-switch latency, refresh latency and a reference folder size — and a rise
+  in resident memory is none of them. It is a regression bound the delivery tier set from the
+  owner's walk of a large repository. It guards the fix for the defect the suite's own comment
+  names (`GitViewMemoryBoundTests.swift:L8-L13`), and the repository shape it drives is that
+  defect's reproduction, not a reference size. It is not a product requirement and binds no
+  change's bar beyond that suite; making it one is the SRS's, by revision, under QC-45's rule.
+  **Uncovered case:** this reading covers this one suite's figure only. A later suite that asserts
+  another memory or time figure is read by QC-45's review at `development-design`, and § 5 names it
+  only on a later round. *(traces to: SDD § 3 `read-only-harness` row, SDD RN-175;
+  `docs/trail/architecture/cycle-92.md` § 2.1 — RN-111)*
 - **QC-46:** `checks/latency.sh` prints file-switch and refresh p95 in milliseconds over the
   reference fixtures `checks/fixtures/scale-small`, `scale-medium` and `scale-large`, beginning
   with the first `follow-the-folder` build with every refresh path and on every CI build
@@ -9988,3 +10007,34 @@ of the trait-collaborator line, and the read seam until it is built), QC-13 (the
   holds the answered companion whole. § 2.1, raised on the companion by the answering run — whether
   § 5 names the Git view's 154,000,000-byte memory ceiling beside QC-45 — still awaits the owner, so
   the companion stays and `Status:` is Draft.
+- **RN-111:** *(v101 — the cycle-92 fold, § 2.1, and the close)* The owner's seat's committed
+  answer at `docs/trail/architecture/cycle-92.md` § 2.1, 2026-11-14 (`ka-reader@f8072f7`), authorizes
+  every change here; its reasoning is `docs/trail/architecture/self_answer-97.md`. The item was raised
+  by the answering run of cycle-91, and the answer confirms the draft with three additions.
+
+  **§ 2.1 → § 5, beside QC-45.** Taken as drafted, on the answer's corrected reason: the cold reader
+  meets "asserts no number of its own" and "A performance number is measured, never asserted"
+  beside a memory figure the gate asserts at every change, and without a sentence cannot tell a
+  breach of QC-45 from a figure the NFDR has not seen. The draft's cost argument is dropped, as the
+  answer says. Addition 1 makes the sentence a pointer: it names `riseBound` at
+  `GitViewMemoryBoundTests.swift:L18` and the step at `checks/gate.sh:L104`, pinned at
+  `ka-reader@21f611f`, and quotes 154,000,000 bytes as a reading at that commit. Addition 2 states
+  why the figure sits outside QC-45's three named kinds of number. Addition 3 names the uncovered
+  case, a later suite's figure, for QC-45's existing review at `development-design`.
+
+  **Locators read.** At `ka-reader@21f611f`: `GitViewMemoryBoundTests.swift:L18` reads
+  `private static let riseBound = 154_000_000`, its comment at `:L16-L17` naming the rise of peak
+  resident size; `:L8-L13` names the defect and says each case runs alone; `checks/gate.sh:L104`
+  reads `run_step 'Git view memory bound' 'checks/git-view-memory.sh'`.
+  `git diff --stat 21f611f HEAD -- . ':!docs'` at `ka-reader@f8072f7` prints nothing, so the pin is
+  also the tree's state when the answer was committed.
+
+  **Limits.** No ADR is written or restatused, so the index is unchanged: naming a figure a suite
+  already holds is cheap to reverse and involves no trade-off this product made, so it clears none
+  of the three gates. No `QC` is added, renumbered or reused, and § 10 takes no row: the sentence is
+  a reading beside QC-45, not an entry, and QC-45 is already on § 10's review-gate list. The one
+  paragraph under QC-45 is the only text edited in the body. No product test ran: nothing under
+  `crates/`, `checks/` or `ka-reader-mac/` is changed by this fold. The inputs' status lines read as
+  in the header, so the `Inputs read:` line stands. `docs/trail/architecture/cycle-92.md` holds the
+  answered companion whole. Nothing is left open, so the companion is removed and `Status:` is
+  Settled.
