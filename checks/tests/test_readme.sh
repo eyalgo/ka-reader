@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.2.2 — the pinned gate list names the two Git view memory steps, after "Test gate"
 # Version: 1.2.1 — the pinned gate list names the two Git beta suites
 # Version: 1.2.0 — conditional beta prose and entire wording suites
 # Version: 1.1.0 — gate ordering includes the beta catalogue pair
@@ -511,7 +512,9 @@ run_step '"'"'Secret scan'"'"' '"'"'checks/secret-scan.sh gitleaks git'"'"'
 run_step '"'"'Build the workspace'"'"' '"'"'cargo build --workspace --locked'"'"'
 run_step '"'"'Planted secret suite'"'"' '"'"'checks/tests/test_secret_scan_planted.sh'"'"'
 run_step '"'"'Build KA-Reader.app'"'"' '"'"'ka-reader-mac/assemble.sh'"'"'
-run_step '"'"'Test gate'"'"' '"'"'cargo test --workspace --locked && swift test --package-path ka-reader-mac'"'"'
+run_step '"'"'Test gate'"'"' '"'"'cargo test --workspace --locked && swift test --package-path ka-reader-mac --skip "^ShellTests\.GitViewMemoryBoundTests/"'"'"'
+run_step '"'"'Git view memory bound'"'"' '"'"'checks/git-view-memory.sh'"'"'
+run_step '"'"'Git view memory bound suite'"'"' '"'"'checks/tests/test_git_view_memory.sh'"'"'
 run_step '"'"'Bridge tests under the address sanitizer'"'"' '"'"'set -o pipefail && export RUSTUP_AUTO_INSTALL=1 RUSTUP_TOOLCHAIN=nightly-2026-10-21 && rustc -V && T=$(rustc -vV | sed -n "s/^host: //p") && F="\"-Zsanitizer=address\",\"-Cllvm-args=-asan-globals=0\"" && cargo test --locked -p ka-reader-bridge --config "build.target=\"$T\"" --config "target.$T.rustflags=[$F]" --config "build.rustdocflags=[$F]"'"'"'
 run_step '"'"'Structure check'"'"' '"'"'checks/structure.sh'"'"'
 run_step '"'"'Structure check suite'"'"' '"'"'checks/tests/test_structure.sh'"'"'

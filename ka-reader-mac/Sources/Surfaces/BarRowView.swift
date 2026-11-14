@@ -4,7 +4,7 @@ import AppKit
 /// § Elevation & Depth, "Selection is a fill and a bar"). A selected row draws `{colors.selection}`
 /// itself, under the bar, from one state (`drawsSelection`): the Git view's selected row does, and so
 /// does the tree's open-file row. The table's own selection drawing is not used.
-final class BarRowView: NSTableRowView {
+package final class BarRowView: NSTableRowView {
     private static let barWidth: CGFloat = 2
 
     /// `{colors.primary}`: `#1E1F22` in the light theme, `#E7E7E4` in the dark one (`docs/DESIGN.md`
@@ -34,7 +34,7 @@ final class BarRowView: NSTableRowView {
     private var barRequested = false
 
     /// The row draws the bar: asked for on its own, or because the row is drawn as selected.
-    var drawsBar: Bool {
+    package var drawsBar: Bool {
         get { barRequested || drawsSelection }
         set {
             barRequested = newValue
@@ -44,7 +44,7 @@ final class BarRowView: NSTableRowView {
 
     /// The selected drawing: the selection fill edge to edge with the bar over it. It is one
     /// state, so no row shows one without the other, and the hover fill never shows over it.
-    var drawsSelection = false {
+    package var drawsSelection = false {
         didSet { needsDisplay = true }
     }
 
@@ -61,7 +61,7 @@ final class BarRowView: NSTableRowView {
     /// The fill shows: the pointer is over the row, the row draws no bar, and it is not selected
     /// where selection outranks hover. Read when the row is drawn, so a selection or a bar that
     /// arrives under a still pointer redraws correctly with no pointer event.
-    var showsHover: Bool {
+    package var showsHover: Bool {
         pointerIsOver && !drawsBar && !(isSelected && selectionOutranksHover)
     }
 
@@ -69,9 +69,11 @@ final class BarRowView: NSTableRowView {
     /// the platform answers a selected, emphasized row with a different one, so selection or key
     /// status would re-ink the row (CP-632). `NSTableRowView.h` names it as the property to override
     /// beside custom selection drawing.
-    override var interiorBackgroundStyle: NSView.BackgroundStyle { .normal }
+    override package var interiorBackgroundStyle: NSView.BackgroundStyle { .normal }
 
-    override func draw(_ dirtyRect: NSRect) {
+    /// Draws the selection fill, or else the hover fill, and the bar over either, from the row's
+    /// state alone.
+    override package func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
         if drawsSelection {
             Self.selectionColor.setFill()
