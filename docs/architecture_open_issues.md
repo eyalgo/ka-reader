@@ -52,7 +52,23 @@ None.
   fold, so naming the ceiling costs no extra run.
 - **If overridden:** § 5 stays silent on the ceiling. The suite stays as it is, and QC-45's opening
   sentence keeps reading against a number it does not name.
-- **Confirm or override:** <"confirm", or "override: <what to do instead>">
+- **Confirm or override:** confirm, with an addition. § 5 names the ceiling beside QC-45, as
+  drafted, on a corrected reason: this item alone now keeps the companion open, so a round is owed
+  whichever way it is answered and cost decides nothing; what decides it is the cold reader, who
+  meets "asserts no number of its own" and "A performance number is measured, never asserted"
+  beside a memory figure the gate asserts at every change. **Addition 1:** § 5 points at the figure
+  and does not own it — it names `ka-reader-mac/Tests/ShellTests/GitViewMemoryBoundTests.swift:L18`
+  (`riseBound`) and `checks/gate.sh:L104`, pinned at `ka-reader@21f611f`, and quotes
+  154,000,000 bytes as a reading at that commit, so a later change to the constant leaves § 5
+  dated and not false, and § 5 itself still asserts no number. **Addition 2:** the sentence says
+  why the figure sits outside QC-45: QC-45's ban names three kinds of number — file-switch
+  latency, refresh latency and a reference folder size — and a rise in resident memory is none of
+  them; the figure guards the fix for the defect the suite's own comment names
+  (`GitViewMemoryBoundTests.swift:L8-L13`), and its repository is that defect's reproduction, not
+  a reference size. **Addition 3, a named uncovered case:** the sentence covers this suite's figure
+  only; a later suite that asserts another memory or time figure is read by QC-45's existing review
+  at `development-design`, and § 5 names it only on a later round. No obligation and no ADR
+  changes. Reasoning: `docs/trail/architecture/self_answer-97.md`.
 
 ## 3. Raised from downstream — an item from a seat that did not write these records
 
