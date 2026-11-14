@@ -31,8 +31,8 @@ SCRIPT="$ROOT/checks/git-view-memory.sh"
 
 TWO_ID="ShellTests.GitViewMemoryBoundTests/twoThousandFilesStayWithinTheBound()"
 TWENTY_ID="ShellTests.GitViewMemoryBoundTests/twentyThousandFilesStayWithinTheBound()"
-TWO_FILTER='^ShellTests\.GitViewMemoryBoundTests/twoThousandFilesStayWithinTheBound\(\)$'
-TWENTY_FILTER='^ShellTests\.GitViewMemoryBoundTests/twentyThousandFilesStayWithinTheBound\(\)$'
+TWO_FILTER='^ShellTests\.GitViewMemoryBoundTests/twoThousandFilesStayWithinTheBound\(\)/'
+TWENTY_FILTER='^ShellTests\.GitViewMemoryBoundTests/twentyThousandFilesStayWithinTheBound\(\)/'
 LIST_CALL="test --package-path ka-reader-mac list"
 TWO_CALL="test --package-path ka-reader-mac --filter $TWO_FILTER"
 TWENTY_CALL="test --package-path ka-reader-mac --filter $TWENTY_FILTER"
@@ -60,8 +60,10 @@ fail() {
 # PATH (BIN), the folder the stand-in keeps its answers and its record in (DATA), and the TMPDIR
 # (TMP). The list holds both cases and a case of another suite. The stand-in's files in DATA are
 # `list` (the lines `swift test list` prints), `list_status` (to make the list call end non-zero),
-# `status_two` and `status_twenty` (the status of that case's run) and `signal` (a signal name the
-# stand-in sends its parent on a case's run). Its record is `args`, one line for each call.
+# `status_two` and `status_twenty` (the status of that case's run), `selects_nothing` (a case's run
+# reports the warning `swift test` prints for a filter that matched no test, and ends 0) and
+# `signal` (a signal name the stand-in sends its parent on a case's run). Its record is `args`, one
+# line for each call.
 make_world() {
   CWD="$WORK/$1/tree"
   BIN="$WORK/$1/bin"
@@ -69,7 +71,7 @@ make_world() {
   TMP="$WORK/$1/tmp"
   mkdir -p "$CWD/ka-reader-mac" "$BIN" "$DATA" "$TMP" "$WORK/home"
   : > "$CWD/ka-reader-mac/Package.swift"
-  for program in bash mktemp grep rm; do
+  for program in bash mktemp grep rm tee; do
     ln -s "$(command -v "$program")" "$BIN/$program"
   done
   printf '%s\n' "ShellTests.OtherTests/aCase()" "$TWO_ID" "$TWENTY_ID" > "$DATA/list"
@@ -91,6 +93,11 @@ case "\$*" in
       kill -"\$signal" "\$PPID"
     fi
     case "\$*" in *twentyThousand*) which=twenty ;; *) which=two ;; esac
+    if [ -f "\$data/selects_nothing" ]; then
+      echo "warning: No matching test cases were run"
+      exit 0
+    fi
+    echo "Test run with 1 test in 1 suite passed after 0.100 seconds."
     status=0
     if [ -f "\$data/status_\$which" ]; then read -r status < "\$data/status_\$which"; fi
     exit "\$status" ;;
@@ -148,7 +155,10 @@ test_both_cases_listed_and_passing_exits_zero_with_one_filtered_run_each() {
   expect_calls "$LIST_CALL
 $TWO_CALL
 $TWENTY_CALL" || return 1
-  [ "$(grep -c . "$WORK/stdout")" -eq 1 ] || fail "stdout is not one line: $(cat "$WORK/stdout")" || return 1
+  [ "$(tail -n 1 "$WORK/stdout")" = "git-view-memory.sh: 2 cases, each passed in a process of its own" ] \
+    || fail "the last line of stdout is not the pass line: $(cat "$WORK/stdout")" || return 1
+  [ "$(grep -c '^Test run with 1 test ' "$WORK/stdout")" -eq 2 ] \
+    || fail "stdout does not hold both runs' own output: $(cat "$WORK/stdout")" || return 1
   expect_tmp_empty
 }
 
@@ -189,7 +199,8 @@ test_a_case_missing_from_the_list_is_named_and_nothing_is_run() {
 }
 
 # A case that fails is named and ends the run: when the first fails the second is not run, and when
-# the second fails the first has run once and the second once.
+# the second fails the first has run once and the second once. A run whose filter selected no test
+# ends 0 in `swift test`, and is a failure of its case here.
 test_a_failing_case_exits_one_naming_it_and_the_second_case_is_not_run() {
   make_world first-fails
   echo 1 > "$DATA/status_two"
@@ -207,7 +218,17 @@ $TWO_CALL" || return 1
   expect_stderr_names "$TWENTY_ID" || return 1
   expect_calls "$LIST_CALL
 $TWO_CALL
-$TWENTY_CALL"
+$TWENTY_CALL" || return 1
+  expect_tmp_empty || return 1
+
+  make_world selects-nothing
+  : > "$DATA/selects_nothing"
+  run_script
+  expect_status 1 || return 1
+  expect_stderr_names "$TWO_ID" || return 1
+  expect_stderr_names "was not run" || return 1
+  expect_calls "$LIST_CALL
+$TWO_CALL"
 }
 
 # Any argument is a usage error: exit 2, the usage line on stderr, nothing on stdout, and the
