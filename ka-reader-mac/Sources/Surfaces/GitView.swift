@@ -3,7 +3,7 @@ import AppKit
 /// The row a click on the Git view activates: the row's folder-relative path.
 package typealias GitRowActivated = @MainActor (_ path: String) -> Void
 
-private enum GitViewLayout {
+enum GitViewLayout {
     /// `docs/DESIGN.md` `{spacing.row}`: every list row's height.
     static let rowHeight: CGFloat = 24
     /// `docs/DESIGN.md` `{spacing.md}`: a row's and a heading's inner padding.
@@ -25,14 +25,6 @@ private enum GitViewLayout {
 /// does (CP-586, CP-597). A view that has been shown nothing is pending.
 @MainActor
 package final class GitView: NSView {
-    private struct DrawnRow {
-        let entry: GitEntry
-        let view: BarRowView
-        let letter: NSTextField
-
-        var path: String { entry.path }
-    }
-
     private let gitReadPolicy: GitReadPolicy
     private let statusGlyphs: StatusGlyphs
     private let tooltipRest: TooltipRest
@@ -49,12 +41,13 @@ package final class GitView: NSView {
     private lazy var rowHover = RowHover(
         host: self, keyWindow: keyWindow,
         rowAt: { [weak self] point in
-            guard let self, let index = self.rowIndex(at: point) else { return nil }
-            return self.rows[index].view
+            self?.rowView(at: point)
         })
     private let scrollView = NSScrollView()
     private let stack = NSStackView()
-    private var rows: [DrawnRow] = []
+    /// The Git view's lists, top to bottom: *Staged*, then *Changes*, each only when it has rows.
+    /// Rows are numbered across them in that order, and the selection is such an index.
+    private var lists: [GitRowList] = []
     private var selectedIndex: Int?
 
     /// Set by the view's owner, and called once per click on a row.
@@ -87,6 +80,14 @@ package final class GitView: NSView {
         NotificationCenter.default.addObserver(
             self, selector: #selector(listScrolled), name: NSView.boundsDidChangeNotification,
             object: clip)
+        // The rows in view change when the visible rect does, with the view's size, and when a list
+        // moves in the document, as the read-at-open notice above it takes its height at a new width.
+        for sized in [clip, document] {
+            sized.postsFrameChangedNotifications = true
+            NotificationCenter.default.addObserver(
+                self, selector: #selector(listResized), name: NSView.frameDidChangeNotification,
+                object: sized)
+        }
         NSLayoutConstraint.activate([
             scrollView.leadingAnchor.constraint(equalTo: leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: trailingAnchor),
@@ -111,7 +112,19 @@ package final class GitView: NSView {
 
     @objc private func listScrolled(_ notification: Notification) {
         letterTooltip.dismiss()
+        tileLists()
         rowHover.refresh()
+    }
+
+    @objc private func listResized(_ notification: Notification) {
+        for list in lists { list.needsLayout = true }
+    }
+
+    /// Realizes each list's rows for the visible rect, and lays the new rows out so the hover and the
+    /// tooltip read them where they are.
+    private func tileLists() {
+        for list in lists { list.tile() }
+        layoutSubtreeIfNeeded()
     }
 
     /// A hidden view gets no exit event, so it lets go of the pointer and its fill itself (CP-602).
@@ -125,14 +138,14 @@ package final class GitView: NSView {
     /// element and every message are on none (CP-587, CP-588). The text is built from that row's
     /// own printed path and category, so a path listed twice gives each row its own word (CP-594).
     private func letter(at point: NSPoint) -> LetterUnderPointer? {
-        guard
-            let row = rows.first(where: {
-                $0.letter.bounds.contains($0.letter.convert(point, from: self))
-            })
-        else { return nil }
-        return LetterUnderPointer(
-            letter: row.letter,
-            text: GitSentences.letterTooltip(name: row.entry.path, category: row.entry.category))
+        for list in lists {
+            guard let hit = list.letter(at: point, in: self) else { continue }
+            let entry = list.entries[hit.index]
+            return LetterUnderPointer(
+                letter: hit.letter,
+                text: GitSentences.letterTooltip(name: entry.path, category: entry.category))
+        }
+        return nil
     }
 
     /// Replaces what is drawn with `item`, and drops the selection.
@@ -142,7 +155,7 @@ package final class GitView: NSView {
             stack.removeArrangedSubview(view)
             view.removeFromSuperview()
         }
-        rows = []
+        lists = []
         selectedIndex = nil
         if gitReadPolicy.showsNotice(for: item) { pin(GitReadNotice()) }
         switch item {
@@ -157,9 +170,10 @@ package final class GitView: NSView {
         case .stopped:
             add(message: GitSentences.faultBeforeRepository, glyph: statusGlyphs.failure)
         }
-        // Auto Layout places the rows, so they have no frames until the view is laid out; the row
-        // under a still pointer is found against the frames they are about to have.
+        // The rows are realized after the layout, for the visible rect it gives the lists; the row
+        // under a still pointer is found against the rows that are then in view.
         layoutSubtreeIfNeeded()
+        tileLists()
         rowHover.refresh()
     }
 
@@ -171,39 +185,69 @@ package final class GitView: NSView {
 
     /// The `path` of every row that draws the bar, top to bottom.
     package func barPaths() -> [String] {
-        rows.filter(\.view.drawsBar).map(\.path)
+        selectedPath.map { [$0] } ?? []
     }
 
     /// The `path` of every row that draws the selection fill, top to bottom.
     package func selectionFillPaths() -> [String] {
-        rows.filter(\.view.drawsSelection).map(\.path)
+        selectedPath.map { [$0] } ?? []
+    }
+
+    /// The selected row's path. A selected row scrolled out of view is still the selected row.
+    private var selectedPath: String? {
+        selectedIndex.flatMap { located($0) }.map { $0.list.entries[$0.row].path }
+    }
+
+    /// The list and the row in it that the numbering across the lists gives `index`.
+    private func located(_ index: Int) -> (list: GitRowList, row: Int)? {
+        var first = 0
+        for list in lists {
+            if index < first + list.count { return (list, index - first) }
+            first += list.count
+        }
+        return nil
     }
 
     /// A click on a row, or on its letter, activates that row. Nothing else in the view acts on a
     /// click: a heading and a status message are not rows (`docs/DESIGN.md` § Rows).
     override package func mouseDown(with event: NSEvent) {
-        guard let index = rowIndex(at: convert(event.locationInWindow, from: nil)) else { return }
+        guard let index = rowIndex(at: convert(event.locationInWindow, from: nil)),
+            let hit = located(index)
+        else { return }
         selectedIndex = index
         applySelection()
-        rowActivated?(rows[index].path)
+        rowActivated?(hit.list.entries[hit.row].path)
     }
 
     /// The index of the row a click at `point` (in this view's coordinates) acts on, or nil for a
-    /// heading, a message and the space between. The hover reads the same answer, so it lands
-    /// exactly where a click acts (CP-600, CP-609).
+    /// heading, a message and the space between. A click lands only on a realized row, which is a
+    /// row in view. The hover reads the same answer, so it lands exactly where a click acts
+    /// (CP-600, CP-609).
     private func rowIndex(at point: NSPoint) -> Int? {
-        rows.firstIndex { $0.view.convert($0.view.bounds, to: self).contains(point) }
+        var first = 0
+        for list in lists {
+            if let row = list.rowIndex(at: point, in: self) { return first + row }
+            first += list.count
+        }
+        return nil
     }
 
-    /// The `path` of every drawn row that shows the hover fill, top to bottom.
+    private func rowView(at point: NSPoint) -> BarRowView? {
+        rowIndex(at: point).flatMap { located($0) }.flatMap { $0.list.row(at: $0.row) }
+    }
+
+    /// The `path` of every realized row that shows the hover fill, top to bottom.
     package func hoverPaths() -> [String] {
-        rows.filter(\.view.showsHover).map(\.path)
+        lists.flatMap { list in
+            list.realizedIndices.compactMap { index in
+                list.row(at: index)?.showsHover == true ? list.entries[index].path : nil
+            }
+        }
     }
 
     private func applySelection() {
-        for (index, row) in rows.enumerated() {
-            row.view.drawsSelection = index == selectedIndex
-        }
+        let selected = selectedIndex.flatMap { located($0) }
+        for list in lists { list.select(selected?.list === list ? selected?.row : nil) }
     }
 
     private func draw(_ repository: GitRepository) {
@@ -229,11 +273,9 @@ package final class GitView: NSView {
     private func add(list entries: [GitEntry], heading: String) {
         guard !entries.isEmpty else { return }
         pin(makeHeading(heading, count: entries.count))
-        for entry in GitRowOrder.ordered(entries) {
-            let (row, letter) = makeRow(entry)
-            rows.append(DrawnRow(entry: entry, view: row, letter: letter))
-            pin(row)
-        }
+        let list = GitRowList(entries: entries)
+        lists.append(list)
+        pin(list)
     }
 
     private func add(message: String, glyph: NSImage) {
@@ -289,33 +331,6 @@ package final class GitView: NSView {
             number.centerYAnchor.constraint(equalTo: holder.centerYAnchor),
         ])
         return holder
-    }
-
-    private func makeRow(_ entry: GitEntry) -> (BarRowView, NSTextField) {
-        let row = BarRowView()
-        let path = NSTextField(labelWithString: entry.path)
-        path.identifier = NSUserInterfaceItemIdentifier("gitRowPath")
-        path.lineBreakMode = .byClipping
-        path.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
-        let letter = NSTextField(labelWithString: GitSentences.letter(for: entry.category))
-        letter.identifier = NSUserInterfaceItemIdentifier("gitRowLetter")
-        letter.setContentHuggingPriority(.required, for: .horizontal)
-        for label in [path, letter] {
-            label.translatesAutoresizingMaskIntoConstraints = false
-            row.addSubview(label)
-        }
-        NSLayoutConstraint.activate([
-            row.heightAnchor.constraint(equalToConstant: GitViewLayout.rowHeight),
-            path.leadingAnchor.constraint(
-                equalTo: row.leadingAnchor, constant: GitViewLayout.padding),
-            path.centerYAnchor.constraint(equalTo: row.centerYAnchor),
-            letter.trailingAnchor.constraint(
-                equalTo: row.trailingAnchor, constant: -GitViewLayout.padding),
-            letter.centerYAnchor.constraint(equalTo: row.centerYAnchor),
-            path.trailingAnchor.constraint(
-                lessThanOrEqualTo: letter.leadingAnchor, constant: -GitViewLayout.gap),
-        ])
-        return (row, letter)
     }
 }
 
