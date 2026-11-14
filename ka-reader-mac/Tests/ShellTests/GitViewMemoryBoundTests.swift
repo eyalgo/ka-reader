@@ -81,9 +81,12 @@ struct GitViewMemoryBoundTests {
         view.subviews + view.subviews.flatMap { descendants(of: $0) }
     }
 
-    /// Each realized Git row as its path and its letter, in the order the views are held.
+    /// Each realized Git row as its path and its letter, top to bottom as the window shows them,
+    /// whatever order the views are held in.
     private func realizedRows(in view: NSView) -> [(path: String, letter: String)] {
-        texts(in: view).filter { $0.identifier?.rawValue == "gitRowPath" }.compactMap { path in
+        texts(in: view).filter { $0.identifier?.rawValue == "gitRowPath" }
+            .sorted { $0.convert($0.bounds, to: nil).midY > $1.convert($1.bounds, to: nil).midY }
+            .compactMap { path in
             let letter = unsafe path.superview?.subviews.compactMap { $0 as? NSTextField }
                 .first { $0.identifier?.rawValue == "gitRowLetter" }
             return letter.map { (path.stringValue, $0.stringValue) }
@@ -186,6 +189,12 @@ struct GitViewMemoryBoundTests {
         #expect(drawn.filter { $0 == Self.readAtOpenNotice }.count == 1)
         #expect(
             strings(in: workbench.rootItemsView).filter { $0 == Self.readAtOpenNotice }.count == 1)
+        // The base marks a tree row whose path the Git state lists. No root row's path is listed,
+        // only files under `bulk`, so the base draws no letter beside any of them (CP-1334, CP-1337).
+        #expect(
+            !texts(in: workbench.rootItemsView).contains {
+                $0.identifier?.rawValue == "treeRowLetter" && !$0.stringValue.isEmpty
+            })
         #expect(bridge.gitReadCount == 1)
         return Session(flow: flow, bridge: bridge, workbench: workbench, window: window)
     }

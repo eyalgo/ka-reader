@@ -118,6 +118,21 @@ struct GitRowListTests {
         return document.frame.height - scrollView.contentView.bounds.height
     }
 
+    /// The realized rows cover the list down to the bottom of what the view shows, each at the
+    /// list's full width, so no row in view is missing and none is cut short (CP-1337).
+    private func expectRowsFillTheView(_ view: GitView) throws {
+        let scrollView = try scrollView(of: view)
+        let document = try #require(scrollView.documentView)
+        let visible = scrollView.documentVisibleRect
+        #expect(!visible.isEmpty, "the view shows nothing")
+        let frames = rowViews(view).map { $0.convert($0.bounds, to: document) }
+        let lowest = try #require(frames.map(\.maxY).max())
+        #expect(lowest >= visible.maxY, "the rows stop at \(lowest), the view shows to \(visible.maxY)")
+        for frame in frames {
+            #expect(frame.width == visible.width, "a row is \(frame.width) wide in \(visible.width)")
+        }
+    }
+
     private func click(_ point: NSPoint, in fixture: Fixture) throws {
         let made = NSEvent.mouseEvent(
             with: .leftMouseDown, location: fixture.view.convert(point, to: nil),
@@ -202,6 +217,7 @@ struct GitRowListTests {
 
         try scroll(fixture.view, to: try lastScrollPosition(of: fixture.view))
 
+        #expect(rowView(selected, in: fixture.view) == nil, "the selected row is out of view")
         #expect(fixture.view.barPaths() == [selected])
         #expect(fixture.view.selectionFillPaths() == [selected])
 
@@ -233,6 +249,8 @@ struct GitRowListTests {
 
         try scroll(fixture.view, to: try lastScrollPosition(of: fixture.view))
 
+        #expect(rowView(selected, in: fixture.view) == nil, "the selected row is out of view")
+        #expect(rowView(hoveredPath, in: fixture.view) == nil, "the hovered row is out of view")
         let underPointer = rowViews(fixture.view).filter {
             $0.convert($0.bounds, to: fixture.view).contains(pointer)
         }
@@ -248,7 +266,7 @@ struct GitRowListTests {
 
     // MARK: A view that gets its size late, a view shown another item, a row scrolled to
 
-    @Test func aListShownBeforeTheViewHasASizeRealizesItsRowsWhenItGetsOne() {
+    @Test func aListShownBeforeTheViewHasASizeRealizesItsRowsWhenItGetsOne() throws {
         let fixture = makeFixture(inWindow: false)
         fixture.view.show(repository(changed: untracked(500)))
         #expect(fixture.view.frame.size == .zero)
@@ -260,6 +278,19 @@ struct GitRowListTests {
         let first = rowView(untrackedPath(0), in: fixture.view)
         #expect(first != nil)
         #expect(first.map { $0.convert($0.bounds, to: fixture.view).height } == Self.rowHeight)
+        try expectRowsFillTheView(fixture.view)
+    }
+
+    @Test func aViewMadeTallerAndWiderRealizesTheRowsItNowShowsAtItsWidth() throws {
+        let fixture = makeFixture(showing: repository(changed: untracked(500)))
+        try expectRowsFillTheView(fixture.view)
+
+        fixture.window.setContentSize(NSSize(width: 400, height: 900))
+        fixture.window.layoutIfNeeded()
+        fixture.window.layoutIfNeeded()
+
+        #expect(try scrollView(of: fixture.view).documentVisibleRect.height > Self.windowHeight)
+        try expectRowsFillTheView(fixture.view)
     }
 
     @Test func showingAnotherItemLeavesNoRowOfTheFirst() {
