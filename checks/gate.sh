@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.21.0 — "Test gate" skips the Git view memory suite, which runs one case at a time in a process of its own
 # Version: 1.20.0 — the application icon check joins the list, on the bundle "Build KA-Reader.app" wrote, before its suite
 # Version: 1.19.0 — the suite of the application icon check joins the list, after the entry-points suite
 # Version: 1.18.0 — the suite of the app's build script joins the list, after the entry-points suite
@@ -93,7 +94,7 @@ run_step 'Planted secret suite' 'checks/tests/test_secret_scan_planted.sh'
 # The app build comes before "Test gate": it writes the bridge artifact the Swift package links,
 # which a fresh checkout does not have, so "Test gate" cannot run before it.
 run_step 'Build KA-Reader.app' 'ka-reader-mac/assemble.sh'
-run_step 'Test gate' 'cargo test --workspace --locked && swift test --package-path ka-reader-mac'
+run_step 'Test gate' 'cargo test --workspace --locked && swift test --package-path ka-reader-mac --skip "^ShellTests\.GitViewMemoryBoundTests/"'
 # "Bridge tests under the address sanitizer" comes after "Test gate", so the ordinary build and
 # tests have passed first, and ahead of "Own state", which stays last. It names its nightly inside
 # its own command and nowhere else: the pin in rust-toolchain.toml stays "stable" for every other
