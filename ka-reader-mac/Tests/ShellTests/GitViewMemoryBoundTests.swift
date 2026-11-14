@@ -26,6 +26,11 @@ struct GitViewMemoryBoundTests {
     /// The root listing the E3 folder shows: `README.md`, `docs`, `notes`, `src` and `bulk`.
     private static let rootAnswer = Data(rootEntries.joined().utf8)
 
+    /// What expanding `docs` answers: one file.
+    private static let docsAnswer = Data(
+        #"{"state":"observed","entries":[{"name":"guide.md","path":"docs/guide.md","kind":"file","state":"observed","language":"plain"}]}"#
+            .utf8)
+
     private static let rootEntries: [String] = [
         #"{"state":"observed","entries":["#,
         #"{"name":"README.md","path":"README.md","kind":"file","state":"observed","language":"plain"},"#,
@@ -100,14 +105,24 @@ struct GitViewMemoryBoundTests {
         window.displayIfNeeded()
     }
 
-    @Test func twoThousandFilesStayWithinTheBound() throws {
-        let files = 2_000
+    /// What a case holds while it runs: the launch and the window the product's view is in.
+    private struct Session {
+        let flow: LaunchFlow
+        let bridge: RecordingBridge
+        let workbench: WorkbenchView
+        let window: NSWindow
+    }
+
+    /// Runs the E3 shape at `files` untracked files (in folders of 100) through `LaunchFlow` into a
+    /// window, and asserts the bound and the drawn state. Returns the session for what a case adds.
+    private func exercise(files: Int) throws -> Session {
         let wire = Self.answer(files: files)
 
         createTheSharedApplication()
         let log = EventLog()
         let bridge = RecordingBridge(log: log)
         bridge.listAnswer = Self.rootAnswer
+        bridge.listAnswers = ["docs": Self.docsAnswer]
         bridge.gitAnswer = wire
         let presenter = FakeWindowPresenter()
         let reader = HoldingReadRunner()
@@ -167,11 +182,64 @@ struct GitViewMemoryBoundTests {
         settle(window)
         let last = try #require(
             realizedRows(in: workbench.gitView).first { $0.path == Self.untrackedPath(files - 1) })
-        #expect(last.path == "bulk/d00019/f01999.txt")
         #expect(last.letter == "U")
         #expect(drawn.filter { $0 == Self.readAtOpenNotice }.count == 1)
-        #expect(strings(in: workbench.rootItemsView).filter { $0 == Self.readAtOpenNotice }.count == 1)
+        #expect(
+            strings(in: workbench.rootItemsView).filter { $0 == Self.readAtOpenNotice }.count == 1)
         #expect(bridge.gitReadCount == 1)
-        withExtendedLifetime((window, flow)) {}
+        return Session(flow: flow, bridge: bridge, workbench: workbench, window: window)
+    }
+
+    @Test func twoThousandFilesStayWithinTheBound() throws {
+        let session = try exercise(files: 2_000)
+        let last = try #require(realizedRows(in: session.workbench.gitView).last)
+        #expect(last.path == "bulk/d00019/f01999.txt")
+        withExtendedLifetime(session) {}
+    }
+
+    @Test func twentyThousandFilesStayWithinTheBound() throws {
+        let files = 20_000
+        let session = try exercise(files: files)
+        let workbench = session.workbench
+        let window = session.window
+        let lastPath = Self.untrackedPath(files - 1)
+        let last = try #require(realizedRows(in: workbench.gitView).last)
+        #expect(last.path == "bulk/d00199/f19999.txt")
+
+        // A click on the last row, scrolled to, sends its path to `select_file`.
+        let row = try #require(
+            texts(in: workbench.gitView).first { $0.stringValue == lastPath })
+        let frame = row.convert(row.bounds, to: workbench.gitView)
+        let event = NSEvent.mouseEvent(
+            with: .leftMouseDown,
+            location: workbench.gitView.convert(NSPoint(x: frame.midX, y: frame.midY), to: nil),
+            modifierFlags: [], timestamp: 0, windowNumber: window.windowNumber, context: nil,
+            eventNumber: 0, clickCount: 1, pressure: 1)
+        workbench.gitView.mouseDown(with: try #require(event))
+        #expect(session.bridge.selectedPaths.last == lastPath)
+
+        // A scroll changes the first realized row.
+        let firstBefore = try #require(realizedRows(in: workbench.gitView).first).path
+        try scroll(workbench.gitView, toEnd: false)
+        settle(window)
+        let firstAfter = try #require(realizedRows(in: workbench.gitView).first).path
+        #expect(firstAfter == "bulk/d00000/f00000.txt")
+        #expect(firstAfter != firstBefore)
+
+        // A sidebar switch takes effect.
+        workbench.rail.entryChosen?(.files)
+        settle(window)
+        #expect(workbench.gitView.isHiddenOrHasHiddenAncestor)
+        #expect(!workbench.rootItemsView.isHiddenOrHasHiddenAncestor)
+
+        // Expanding `docs` in the tree shows its entries.
+        let tree = workbench.rootItemsView
+        let docsRow = try #require(
+            (0..<tree.outlineView.numberOfRows).first { tree.entry(atRow: $0)?.name == "docs" })
+        tree.outlineView.expandItem(tree.outlineView.item(atRow: docsRow))
+        settle(window)
+        #expect(session.bridge.listedPaths.contains("docs"))
+        #expect(strings(in: tree).contains("guide.md"))
+        withExtendedLifetime(session) {}
     }
 }
