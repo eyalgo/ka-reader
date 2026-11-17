@@ -253,4 +253,44 @@ struct RootItemsViewNamesTests {
         #expect(expectNamesWhole(root) == plan.shown)
         withExtendedLifetime(window) {}
     }
+
+    @Test func aRootChangeKeepsTheReadersPlaceAndEveryNameWhole() throws {
+        let root = tree()
+        let src = entry("src", .folder)
+        let notes = entry("notes", .folder)
+        let readme = entry("README.md", .file)
+        root.show(.observed([src, notes, readme]))
+        let listings: [String: RootListing] = [
+            "src": .observed([entry(path: "src/a.swift", .file)]),
+            "notes": .observed([entry(path: "notes/n.md", .file)]),
+        ]
+        root.listTree = { path, act, answer in
+            if act == .expand { answer(listings[path]) }
+        }
+        let view = workbench(root)
+        let window = host(view)
+        view.readGit = { $0(.plain) }
+        let outline = root.outlineView
+        func item(_ path: String) throws -> Any {
+            let row = try #require(
+                (0..<outline.numberOfRows).first { root.entry(atRow: $0)?.path == path })
+            return try #require(outline.item(atRow: row))
+        }
+        outline.expandItem(try item("src"))
+        outline.expandItem(try item("notes"))
+        outline.collapseItem(try item("notes"))
+        root.markOpenFile(path: "README.md")
+        root.showOpenFile(path: "README.md")
+
+        root.apply(changes: [
+            (path: "", listing: .observed([src, notes, readme, entry("NEW.md", .file)]))
+        ])
+        #expect(outline.isItemExpanded(try item("src")))
+        #expect(!outline.isItemExpanded(try item("notes")))
+        #expect(root.selectionFillPaths() == ["README.md"])
+        #expect(view.rail.active == .files)
+        #expect(
+            expectNamesWhole(root) == ["src", "a.swift", "notes", "README.md", "NEW.md"])
+        withExtendedLifetime(window) {}
+    }
 }
