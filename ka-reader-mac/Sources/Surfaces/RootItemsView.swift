@@ -44,7 +44,12 @@ package final class RootItemsView: NSScrollView {
     private let fileCodeGlyph: NSImage
     private let statusGlyphs: StatusGlyphs
     private var rows: [Row] = []
-    private var isReloading = false
+    /// True while the view redraws its own rows. Every path that redraws them (`show`, a listing
+    /// change, a marker or Git redraw, an expansion, a read's answer) runs under this guard, so the
+    /// moment it ends is the one seam the column's width is held at.
+    private var isReloading = false {
+        didSet { if oldValue && !isReloading { holdColumnToVisibleWidth() } }
+    }
     private var isShowingOpenFile = false
     /// The paths the reader's own acts left expanded: inserted on the reader's expansion, removed on
     /// the reader's collapse, and never changed while the view reloads its own rows. A returning row
@@ -174,11 +179,17 @@ package final class RootItemsView: NSScrollView {
             clip.size.height = max(0, clip.height - reserved)
             contentView.frame = clip
         }
-        // Keep names readable after a plain-tree listing update; the regression is
-        // GitBetaNoticeTests.plainTreeKeepsReadableNamesAfterAListingUpdate.
-        // https://developer.apple.com/documentation/appkit/nstableview/sizelastcolumntofit()
-        outlineView.sizeLastColumnToFit()
+        holdColumnToVisibleWidth()
         rootMessageTop?.constant = rootMessageInset + reserved
+    }
+
+    /// Holds the tree's one column at the scroll view's visible width, so a name is never squeezed
+    /// and never cut off by the clip. A reload leaves the column at its minimum width, so this runs
+    /// where every redraw ends (`isReloading`) and in `tile()`; the regressions are
+    /// RootItemsViewNamesTests and GitBetaNoticeTests.plainTreeKeepsReadableNamesAfterAListingUpdate.
+    /// https://developer.apple.com/documentation/appkit/nstableview/sizelastcolumntofit()
+    private func holdColumnToVisibleWidth() {
+        outlineView.sizeLastColumnToFit()
     }
 
     /// The `path` of every row that draws the selection fill, top to bottom.
