@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Version: 1.6.1 — integrity review: E3's five instruction lines stand directly after one another
+#   and the quote check reads what the scene printed; E3's hold case checks the walk's own end named
+#   only the launched pid to kill; and a launch that starts no process ends E3's hold and cleans up
 # Version: 1.6.0 — E3's held Git read: the snapshot runs no git on a copy that holds a named pipe and
 #   records its pipes, `mkfifo` is linked into the built PATH, and the E3 cases play the product's read
 #   on the copy's pipes (the hold, every way out while it is up, a hold that cannot be set up, and
@@ -101,6 +104,7 @@ test_each_e2_member_leaves_its_operation_in_progress_as_git_status_names_it
 test_e3_holds_the_git_read_for_the_scenes_own_time
 test_e3_ending_while_its_hold_is_up_cleans_up_as_at_the_base
 test_e3_whose_hold_cannot_be_set_up_ends_with_one_and_launches_nothing
+test_e3_whose_launch_starts_no_process_ends_its_hold_and_cleans_up
 test_e3_says_what_to_read_before_the_first_wait
 test_e3_entry_names_the_hold_and_its_floor
 test_e4_is_a_plain_folder_walked_right_after_a_repository_launch
@@ -613,9 +617,11 @@ read_e3_hold_constants() {
 # so the case types each Enter and can end the input. Its standard output is a fifo a background
 # reader copies to $SCENE/out: that reader reaches the end of the fifo, and writes $SCENE/out_ended,
 # only once nothing the helper started holds the fifo open. Job control is on while the helper starts,
-# so INT is not left ignored. Leaves HELPER_PID and OUT_READER_PID.
+# so INT is not left ignored. Leaves HELPER_PID and OUT_READER_PID. $1, when given, names a file
+# made in the scene before the helper starts, as a stand-in reads it (no_new_process).
 start_e3_helper() {
   new_scene
+  [ -z "${1:-}" ] || : > "$SCENE/$1"
   mkfifo "$SCENE/enter" "$SCENE/outpipe"
   ( cat "$SCENE/outpipe" > "$SCENE/out"; : > "$SCENE/out_ended" ) > /dev/null 2>&1 < /dev/null &
   OUT_READER_PID=$!
@@ -725,6 +731,8 @@ check_e3_hold_for_its_own_time() {
   send_enter
   await_the_e3_helper
   [ "$STATUS" -eq 0 ] || fail "E3: after Enter, expected exit 0, got $STATUS. stderr: $(cat "$SCENE/err")" || return 1
+  # The walk's own end is a way out too: the hold ended without naming the holder to kill.
+  assert_only_the_launched_pid_was_stopped || return 1
   [ "$(ls -A "$SCENE/home/Desktop")" = "git-beta-scene-captures" ] \
     || fail "E3: after the walk, its folder or its note is still on the Desktop: $(ls -A "$SCENE/home/Desktop")" || return 1
   wait_for_file "$SCENE/out_ended" 100 \
@@ -797,6 +805,27 @@ test_e3_whose_hold_cannot_be_set_up_ends_with_one_and_launches_nothing() {
   [ ! -s "$SCENE/out" ] || fail "E3's hold not set up: stdout carries an entry for a state not walked to its end: $(cat "$SCENE/out")" || return 1
   [ "$(ls -A "$SCENE/home/Desktop")" = "git-beta-scene-captures" ] \
     || fail "E3's hold not set up: the state's folder or its note is still on the Desktop: $(ls -A "$SCENE/home/Desktop")"
+}
+
+# CP-1360: a launch that starts no process is a way out of E3 taken once its hold is set up, with the
+# holder waiting at the start pipe. It ends as at the base: exit 1, kill called for nothing, the copy
+# and its note removed, and nothing the helper started left running. The messages are the base's
+# no-process case's and the E3 case's own.
+test_e3_whose_launch_starts_no_process_ends_its_hold_and_cleans_up() {
+  start_e3_helper no_new_process
+  check_e3_launch_that_starts_no_process || { abandon_e3_helper; return 1; }
+}
+
+check_e3_launch_that_starts_no_process() {
+  await_the_e3_helper
+  [ "$STATUS" -eq 1 ] || fail "no new process: expected exit 1, got $STATUS. stderr: $(cat "$SCENE/err")" || return 1
+  grep -q 'no new process of .* appeared within 20 seconds of open' "$SCENE/err" \
+    || fail "stderr does not say no process appeared. stderr: $(cat "$SCENE/err")" || return 1
+  [ ! -s "$SCENE/kill_log" ] || fail "kill was called though no process was recorded: $(cat "$SCENE/kill_log")" || return 1
+  [ "$(ls -A "$SCENE/home/Desktop")" = "git-beta-scene-captures" ] \
+    || fail "the state's folder is still on the Desktop: $(ls -A "$SCENE/home/Desktop")" || return 1
+  wait_for_file "$SCENE/out_ended" 100 \
+    || fail "E3: the helper's standard output stayed open after the helper exited, so something it started is still running."
 }
 
 # CP-1306: E4 is a folder with no repository, and the launch right before it is a repository's.
@@ -1315,16 +1344,22 @@ test_e3_says_what_to_read_before_the_first_wait() {
   e3_lines="$(grep 'E3' "$SCENE/err")"
   launch_end="$(grep -n -F -e 'git-beta-scene.sh: E3: click KA-Reader in the Dock' "$SCENE/err" | head -n 1 | cut -d: -f1)"
   first_wait="$(grep -n -x -F -e 'git-beta-scene.sh: E3: press Enter here when you have looked.' "$SCENE/err" | head -n 1 | cut -d: -f1)"
+  # The five lines replace the base's two, so each stands directly after the one before it: the
+  # first right after the launch lines and the last right before the first wait, with no other line
+  # between them.
   previous=${launch_end:-0}
   while IFS= read -r line; do
     at="$(grep -n -x -F -e "$line" "$SCENE/err" | head -n 1 | cut -d: -f1)"
     [ -n "$at" ] \
       || fail "E3: stderr does not carry this instruction line, word for word: $line stderr: $e3_lines" || return 1
-    { [ -n "$launch_end" ] && [ -n "$first_wait" ] && [ "$at" -gt "$previous" ] && [ "$at" -lt "$first_wait" ]; } \
+    { [ -n "$launch_end" ] && [ -n "$first_wait" ] && [ "$at" -eq $((previous + 1)) ] && [ "$at" -lt "$first_wait" ]; } \
       || fail "E3: the instruction lines do not come after E3's launch lines and before its first press Enter here line. stderr: $e3_lines" || return 1
     previous="$at"
   done < <(e3_instruction_lines "$E3_FLOOR")
-  quoted="$(e3_instruction_lines "$E3_FLOOR" | grep -o '"[^"]*"' | grep -v -x -F -e '"Reading Git status."' || true)"
+  [ "$first_wait" -eq $((previous + 1)) ] \
+    || fail "E3: the instruction lines do not come after E3's launch lines and before its first press Enter here line. stderr: $e3_lines" || return 1
+  # What the scene printed is read for quotes, not the expected lines above.
+  quoted="$(sed -n "$((launch_end + 1)),$((first_wait - 1))p" "$SCENE/err" | grep -o '"[^"]*"' | grep -v -x -F -e '"Reading Git status."' || true)"
   [ -z "$quoted" ] || fail "E3: the instruction lines quote something other than \"Reading Git status.\": $quoted"
 }
 
