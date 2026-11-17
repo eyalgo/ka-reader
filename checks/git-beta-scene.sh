@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Version: 1.4.0 — E3 holds the product's own Git read open for a time the scene sets, and lets it go on
-#   by itself on every way out
+#   by itself on every way out; E3's instructions and Done line say what to read and name the hold
 # Version: 1.3.2 — an argument holding two ids with a space between them is no state id (exit 2)
 # Version: 1.3.1 — E12's entry names both rules the spec assigns it, CP-1306 and CP-1309
 # Version: 1.3.0 — the in-window disk changes E9 - E13: each waits for Enter, then changes its copy from outside
@@ -63,6 +63,9 @@
 #   yet past the start pipe skips its wait; the start pipe is opened for reading and writing, which
 #   lets go a holder blocked there; and the holder is waited for. A holder already in its wait is
 #   waited for, at most E3_HOLD_SECONDS. The holder is never named to kill.
+#   E3's instructions and the Done line of its entry give the floor, E3_HOLD_FLOOR_SECONDS, in
+#   seconds, and say what to read while the pending line is up and once it has changed. The only
+#   product sentence they quote is the pending line itself.
 #
 # STATUSES (docs/nfdr.md QC-70)
 #   0 once every requested state was walked to its end. 1 on a refusal: off a macOS virtual machine;
@@ -412,7 +415,7 @@ on_disk_of() {
 # The state's account of what the scene did, never of what the person did.
 done_of() {
   case "$1" in
-    E3) echo "The scene launched KA-Reader and asked for the folder above to be chosen in the Open panel, and for Git to be chosen as soon as the file tree appeared." ;;
+    E3) echo "The scene launched KA-Reader and asked for the folder above to be chosen in the Open panel, and for Git to be chosen as soon as the file tree appeared. Before the launch, it set up the folder to hold KA-Reader's Git read open for at least $E3_HOLD_FLOOR_SECONDS seconds after the file tree appeared." ;;
     E4) echo "The scene launched KA-Reader right after the launch for $previous_walked_id, and asked for the folder above to be chosen in the Open panel." ;;
     E9|E10|E11|E12) echo "The scene launched KA-Reader and asked for the folder above to be chosen in the Open panel. After the first look, it made the change above from outside KA-Reader and asked for a second look." ;;
     E13) echo "The scene launched KA-Reader and asked for the folder above to be chosen in the Open panel, then for Git, Files and Git to be chosen in turn. Between Files and the second Git, it changed a tracked file from outside KA-Reader." ;;
@@ -765,8 +768,11 @@ capture_screen() {
 say_the_look() {
   case "$1" in
     E3)
-      say "E3: as soon as the file tree appears, choose Git in the sidebar and read what the Git view shows first, before it changes. Then choose Files and read what the head of the file tree shows, and whether letters stand beside its entries."
-      say "E3: if the Git view already showed the repository's state when you first saw it, this state was not seen: write not seen in its verdicts, with what you did."
+      say "E3: as soon as the file tree appears, choose Git in the sidebar."
+      say "E3: the scene has set up this folder to hold KA-Reader's Git read open for at least $E3_HOLD_FLOOR_SECONDS seconds after the file tree appears, so that the Git view's line \"Reading Git status.\" can be read. After that, the scene lets the read go on by itself: you take no step in KA-Reader to end the hold, and KA-Reader stays open."
+      say "E3: while \"Reading Git status.\" is up, read every word the Git view shows. Then choose Files and read what the head of the file tree shows, and whether letters stand beside its entries."
+      say "E3: then choose Git again. If the Git view still shows \"Reading Git status.\", stay on it until that line changes. Then read what the Git view shows."
+      say "E3: if the Git view already showed the repository's state when you first saw it, this state was not seen: write not seen in its verdict, with what you did."
       ;;
     *)
       say "$1: choose Git in the sidebar and read every sentence the Git view shows, word for word. Then choose Files and read what the head of the file tree shows, and whether letters stand beside its entries."
