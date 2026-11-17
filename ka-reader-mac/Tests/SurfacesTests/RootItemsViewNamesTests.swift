@@ -10,6 +10,9 @@ import Surfaces
 struct RootItemsViewNamesTests {
     private var glyph: NSImage { NSImage(size: NSSize(width: 3, height: 3)) }
     private var glyphs: StatusGlyphs { StatusGlyphs(empty: glyph, failure: glyph) }
+    /// The folder image this file's trees are given, kept so a row can be checked for it: a folder
+    /// row draws it and a file row does not.
+    private let folderGlyph = NSImage(size: NSSize(width: 3, height: 3))
 
     private func entry(_ name: String, _ kind: EntryKind) -> Entry {
         Entry(name: name, path: name, kind: kind, state: .observed)
@@ -24,7 +27,7 @@ struct RootItemsViewNamesTests {
 
     private func tree() -> RootItemsView {
         RootItemsView(
-            folderGlyph: glyph, fileGlyph: glyph, fileCodeGlyph: glyph, statusGlyphs: glyphs,
+            folderGlyph: folderGlyph, fileGlyph: glyph, fileCodeGlyph: glyph, statusGlyphs: glyphs,
             tooltipRest: TooltipRestDouble().rest, keyWindow: KeyWindowDouble().source)
     }
 
@@ -61,8 +64,9 @@ struct RootItemsViewNamesTests {
         }
     }
 
-    /// The names the tree draws, each asserted whole: its glyph is set, its label reads the entry's
-    /// name, the label is at least as wide as its text, and it lies inside the clip's visible rect.
+    /// The names the tree draws, each asserted whole: its glyph is set, and is the folder's exactly
+    /// for a folder row, its label reads the entry's name, the label is at least as wide as its text,
+    /// and it lies inside the clip's visible rect.
     @discardableResult
     private func expectNamesWhole(_ root: RootItemsView) -> [String] {
         root.layoutSubtreeIfNeeded()
@@ -71,6 +75,7 @@ struct RootItemsViewNamesTests {
         for (shown, cell) in entryCells(root) {
             let glyphImage = unsafe cell.imageView?.image
             #expect(glyphImage != nil)
+            #expect((glyphImage === folderGlyph) == (shown.kind == .folder))
             guard let label = unsafe cell.textField else {
                 Issue.record("a row of \(shown.name) has no name label")
                 continue
@@ -111,8 +116,10 @@ struct RootItemsViewNamesTests {
         let expected = appeared.map(\.name)
         #expect(expectNamesWhole(root) == expected)
         #expect(root.entry(atRow: 0)?.kind == .folder)
+        #expect(root.outlineView.isExpandable(root.outlineView.item(atRow: 0)))
         #expect(letters(root).isEmpty)
-        #expect(fields(root).filter { $0.stringValue.contains("Git") }.isEmpty)
+        // No statement at the tree's head, and no root message: nothing stands outside the rows.
+        #expect(standingFields(root).isEmpty)
 
         view.rail.entryChosen?(.git)
         #expect(fields(view.gitView).isEmpty)
@@ -130,12 +137,15 @@ struct RootItemsViewNamesTests {
         case failedFolderListingClears
         case failedGitItemThenRootChange
         case gitFilesChangeGitFiles
+        case changeArrivesWhileGitShowsInARepository
 
         var testDescription: String { String(describing: self) }
     }
 
     /// What a scenario's open state and change read: the Git item answered, the listings the
     /// expansions are answered with, the folders the reader expands (in order) and the one change.
+    /// `markedAtOpen` names the rows that show a letter or a sentence beside their name at open, so
+    /// the check that they keep it after the change cannot pass on a row that never showed one.
     private struct Plan {
         var git: GitItem = .plain
         var root: [Entry]
@@ -144,7 +154,16 @@ struct RootItemsViewNamesTests {
         var change: (path: String, listing: RootListing)
         var shown: [String]
         var lettersClear = false
-        var switchesAroundTheChange = false
+        var markedAtOpen: [String] = []
+        var changeArrivesWhileGitShows = false
+
+        /// A folder read as a repository, or one whose Git read observed a condition, shows the
+        /// statement once at the tree's head and something on the Git view; a plain one shows
+        /// neither (CP-1346, CP-1347).
+        var showsGitAtOpen: Bool {
+            if case .plain = git { return false }
+            return true
+        }
     }
 
     private func plan(for scenario: Scenario) -> Plan {
@@ -154,16 +173,23 @@ struct RootItemsViewNamesTests {
                 changed: [GitEntry(path: "README.md", category: .modified)]))
         let readme = entry("README.md", .file)
         switch scenario {
-        case .rootGainsAFileInARepository, .gitFilesChangeGitFiles:
+        case .rootGainsAFileInARepository, .changeArrivesWhileGitShowsInARepository:
             let added = [readme, entry("NOTES.md", .file)]
             return Plan(
                 git: repository, root: [readme], change: ("", .observed(added)),
-                shown: added.map(\.name), switchesAroundTheChange: scenario == .gitFilesChangeGitFiles)
+                shown: added.map(\.name), markedAtOpen: ["README.md"],
+                changeArrivesWhileGitShows: scenario == .changeArrivesWhileGitShowsInARepository)
+        case .gitFilesChangeGitFiles:
+            // E13: between Files and the second Git a tracked file is changed, so the root's
+            // listing arrives again with the same entries.
+            return Plan(
+                git: repository, root: [readme], change: ("", .observed([readme])),
+                shown: [readme.name], markedAtOpen: ["README.md"])
         case .rootLosesItsGitFolder:
             let kept = [entry("docs", .folder), readme]
             return Plan(
                 git: repository, root: [entry(".git", .folder)] + kept,
-                change: ("", .observed(kept)), shown: kept.map(\.name))
+                change: ("", .observed(kept)), shown: kept.map(\.name), markedAtOpen: ["README.md"])
         case .changeBeneathAnExpandedFolder:
             let docs = entry("docs", .folder)
             let added = [entry(path: "docs/a.md", .file), entry(path: "docs/b.md", .file)]
@@ -188,7 +214,7 @@ struct RootItemsViewNamesTests {
             return Plan(
                 root: [docs], listings: ["docs": .failed(.unreadable)], expands: ["docs"],
                 change: ("docs", .observed([child])), shown: ["docs", "a.md"],
-                lettersClear: true)
+                lettersClear: true, markedAtOpen: ["docs"])
         case .failedGitItemThenRootChange:
             let added = [readme, entry("NOTES.md", .file)]
             return Plan(
@@ -236,8 +262,13 @@ struct RootItemsViewNamesTests {
         expectNamesWhole(root)
         let openLetters = lettersByName(root)
         let openStanding = standingFields(root)
+        for name in plan.markedAtOpen { #expect(openLetters[name]?.isEmpty == false) }
+        #expect(openStanding.count == (plan.showsGitAtOpen ? 1 : 0))
+        #expect(openGitFields.isEmpty == !plan.showsGitAtOpen)
 
+        if plan.changeArrivesWhileGitShows { view.rail.entryChosen?(.git) }
         root.apply(changes: [plan.change])
+        if plan.changeArrivesWhileGitShows { view.rail.entryChosen?(.files) }
         #expect(expectNamesWhole(root) == plan.shown)
         if plan.lettersClear {
             #expect(lettersByName(root).values.allSatisfy { $0.isEmpty })
