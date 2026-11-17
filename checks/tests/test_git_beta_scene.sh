@@ -1318,7 +1318,7 @@ test_e3_says_what_to_read_before_the_first_wait() {
   while IFS= read -r line; do
     at="$(grep -n -x -F -e "$line" "$SCENE/err" | head -n 1 | cut -d: -f1)"
     [ -n "$at" ] \
-      || fail "E3: stderr does not carry this instruction line, word for word: ${line#git-beta-scene.sh: } stderr: $e3_lines" || return 1
+      || fail "E3: stderr does not carry this instruction line, word for word: $line stderr: $e3_lines" || return 1
     { [ -n "$launch_end" ] && [ -n "$first_wait" ] && [ "$at" -gt "$previous" ] && [ "$at" -lt "$first_wait" ]; } \
       || fail "E3: the instruction lines do not come after E3's launch lines and before its first press Enter here line. stderr: $e3_lines" || return 1
     previous="$at"
@@ -1327,8 +1327,8 @@ test_e3_says_what_to_read_before_the_first_wait() {
   [ -z "$quoted" ] || fail "E3: the instruction lines quote something other than \"Reading Git status.\": $quoted"
 }
 
-# CP-1355: E3's entry names the hold and its floor in its Done line, keeps its On disk line and its
-# verdict line, and is the only entry whose Done line says anything of a hold.
+# CP-1355: E3's entry names the hold and its floor in its Done line, and keeps the base's other fields,
+# its On disk line and its verdict line.
 test_e3_entry_names_the_hold_and_its_floor() {
   new_scene
   read_e3_hold_constants || return 1
@@ -1338,6 +1338,13 @@ test_e3_entry_names_the_hold_and_its_floor() {
   done_line="- Done: The scene launched KA-Reader and asked for the folder above to be chosen in the Open panel, and for Git to be chosen as soon as the file tree appeared. Before the launch, it set up the folder to hold KA-Reader's Git read open for at least $E3_FLOOR seconds after the file tree appeared."
   grep -q -x -F -e "$done_line" "$SCENE/out" \
     || fail "E3: its entry's Done line is not the one this change sets, word for word. got: $(grep -e '^- Done:' "$SCENE/out")" || return 1
+  for base_line in "## E3" "- Built from: $BUILT_FROM" \
+    "- The Git view showed: <to fill from the look>" \
+    "- The head of the file tree showed: <to fill from the look>" \
+    "- Letters beside the file tree's entries: <to fill from the look>"; do
+    grep -q -x -F -e "$base_line" "$SCENE/out" \
+      || fail "E3: its entry lacks the base's line $base_line. got: $(cat "$SCENE/out")" || return 1
+  done
   on_disk_line="- On disk: A repository with $file_count_set files in its working tree."
   grep -q -x -F -e "$on_disk_line" "$SCENE/out" \
     || fail "E3: its entry's On disk line is not the base's. got: $(grep -e '^- On disk:' "$SCENE/out")" || return 1
