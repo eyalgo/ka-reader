@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
-# Version: 1.6.0 — the snapshot runs no git on a copy that holds a named pipe and records its pipes,
-#   and `mkfifo` is linked into the built PATH: the plumbing E3's held Git read needs
+# Version: 1.6.0 — E3's held Git read: the snapshot runs no git on a copy that holds a named pipe and
+#   records its pipes, `mkfifo` is linked into the built PATH, and the E3 cases play the product's read
+#   on the copy's pipes (the hold, every way out while it is up, a hold that cannot be set up, and
+#   no other state staging one)
 # Version: 1.5.0 — integrity review: an argument holding two ids is a wrong invocation, every usage
 #   sub-case can fail the case, and a state whose setup fails ends the run with 1
 # Version: 1.4.0 — the entries' verdict lines: each state names the rules the spec's Examples table assigns it
@@ -95,7 +97,9 @@ test_nothing_under_the_fixtures_changes_and_no_write_leaves_the_copies
 test_e1_stages_one_changed_file_and_one_staged_file
 test_e2_clean_is_clean
 test_each_e2_member_leaves_its_operation_in_progress_as_git_status_names_it
-test_e3_working_tree_is_above_its_size_floor
+test_e3_holds_the_git_read_for_the_scenes_own_time
+test_e3_ending_while_its_hold_is_up_cleans_up_as_at_the_base
+test_e3_whose_hold_cannot_be_set_up_ends_with_one_and_launches_nothing
 test_e4_is_a_plain_folder_walked_right_after_a_repository_launch
 test_e4_given_alone_walks_e2_clean_first_and_the_printed_lines_say_so
 test_a_repository_state_uses_no_config_of_the_guest
@@ -116,6 +120,7 @@ test_e13_changes_a_tracked_file_between_switches_and_captures_each_look
 test_a_full_walk_of_every_id_exits_zero
 test_each_entry_prints_a_verdict_for_every_rule_the_specs_examples_assign_its_state
 test_the_walk_writes_nothing_outside_its_copies_the_captures_and_the_temporary_home
+test_no_state_but_e3_stages_a_hold
 "
 
 # --- helpers ---
@@ -578,22 +583,208 @@ assert_status_names() {
     || fail "$1: git status does not name a $2 in progress. git status reads: $(seen_of "$1" status)"
 }
 
-# CP-1306: E3 is a repository large enough that its status read is still under way when the person
-# opens the Git view. The floor is the script's own constant, never a number written here.
-test_e3_working_tree_is_above_its_size_floor() {
-  new_scene
-  floor="$(sed -n 's/^E3_FILE_COUNT=//p' "$GIT_BETA_SCENE_SH")"
-  case "$floor" in
-    '' | *[!0-9]*) fail "E3: the script states no numeric E3_FILE_COUNT (it reads: $floor)"; return 1 ;;
+# --- E3's held Git read ---
+
+# The value of the constant $1 as the script states it on a line of its own, empty if it states none.
+script_constant() {
+  sed -n "s/^$1=//p" "$GIT_BETA_SCENE_SH"
+}
+
+# Reads E3's two hold constants from the script into E3_FLOOR and E3_HOLD, and fails unless the floor
+# is a whole number of at least 10 and the hold time a whole number above it. The numbers are the
+# script's own, never written here.
+read_e3_hold_constants() {
+  E3_FLOOR="$(script_constant E3_HOLD_FLOOR_SECONDS)"
+  case "$E3_FLOOR" in
+    '' | *[!0-9]*) fail "E3: the script states no whole-number E3_HOLD_FLOOR_SECONDS of at least 10 (it reads: $E3_FLOOR)"; return 1 ;;
   esac
-  walk_ids E3 || return 1
+  [ "$E3_FLOOR" -ge 10 ] || fail "E3: the script states no whole-number E3_HOLD_FLOOR_SECONDS of at least 10 (it reads: $E3_FLOOR)" || return 1
+  E3_HOLD="$(script_constant E3_HOLD_SECONDS)"
+  case "$E3_HOLD" in
+    '' | *[!0-9]*) fail "E3: the script states no whole-number E3_HOLD_SECONDS above its floor of $E3_FLOOR (it reads: $E3_HOLD)"; return 1 ;;
+  esac
+  [ "$E3_HOLD" -gt "$E3_FLOOR" ] || fail "E3: the script states no whole-number E3_HOLD_SECONDS above its floor of $E3_FLOOR (it reads: $E3_HOLD)"
+}
+
+# Starts the helper on E3 alone. Its standard input is a fifo the case holds open for writing on fd 7,
+# so the case types each Enter and can end the input. Its standard output is a fifo a background
+# reader copies to $SCENE/out: that reader reaches the end of the fifo, and writes $SCENE/out_ended,
+# only once nothing the helper started holds the fifo open. Job control is on while the helper starts,
+# so INT is not left ignored. Leaves HELPER_PID and OUT_READER_PID.
+start_e3_helper() {
+  new_scene
+  mkfifo "$SCENE/enter" "$SCENE/outpipe"
+  ( cat "$SCENE/outpipe" > "$SCENE/out"; : > "$SCENE/out_ended" ) > /dev/null 2>&1 < /dev/null &
+  OUT_READER_PID=$!
+  PLAYER_PID=""
+  set -m
+  (
+    cd "$SCENE/cwd" || exit 99
+    exec /usr/bin/env -i PATH="$SCENE/bin:$SCENE/ordinary" HOME="$SCENE/home" TMPDIR="$SCENE/tmp" \
+      "$GIT_BETA_SCENE_SH" "$APP" "$BUILT_FROM" E3
+  ) > "$SCENE/outpipe" 2> "$SCENE/err" < "$SCENE/enter" &
+  HELPER_PID=$!
+  set +m
+  exec 7> "$SCENE/enter"
+}
+
+# Ends what start_e3_helper started, by the helper's own TERM so it cleans up, after a case failed.
+abandon_e3_helper() {
+  [ -z "$PLAYER_PID" ] || kill -KILL "$PLAYER_PID" 2> /dev/null
+  kill -TERM "$HELPER_PID" 2> /dev/null
+  exec 7>&-
+  wait "$HELPER_PID" 2> /dev/null
+  kill -KILL "$OUT_READER_PID" 2> /dev/null
+  return 0
+}
+
+# Waits, up to $2 ticks of 0.05 s, until the file $1 exists.
+wait_for_file() {
+  waited=0
+  until [ -e "$1" ]; do
+    waited=$((waited + 1))
+    [ "$waited" -lt "$2" ] || return 1
+    /bin/sleep 0.05
+  done
+}
+
+# Waits until the helper's standard error shows it is waiting for Enter.
+wait_for_the_wait_for_enter() {
+  waited=0
+  until grep -q 'press Enter here' "$SCENE/err" 2> /dev/null; do
+    waited=$((waited + 1))
+    [ "$waited" -lt 1200 ] || return 1
+    /bin/sleep 0.05
+  done
+}
+
+# Plays the product's read on E3's copy with plain shell redirections, so the suite runs no git. The
+# read opens the copy's .gitignore for reading, then its .git/info/exclude; each open returns only
+# once a writer has opened the pipe. $1 is how many of the two the case plays (1 or 2). The player
+# leaves $SCENE/read_started once the first is open and, once the second is open, $SCENE/read_released
+# with what sleep and kill had been called with by then.
+play_the_read() {
+  played_copy="$(scene_copy E3)"
+  rm -f "$SCENE/read_started" "$SCENE/read_released"
+  (
+    : < "$played_copy/.gitignore" || exit 1
+    : > "$SCENE/read_started"
+    [ "$1" -ge 2 ] || exit 0
+    : < "$played_copy/.git/info/exclude" || exit 1
+    cp "$SCENE/sleeps" "$SCENE/sleeps_at_release"
+    cp "$SCENE/kill_log" "$SCENE/kill_at_release"
+    : > "$SCENE/read_released"
+  ) > /dev/null 2>&1 < /dev/null &
+  PLAYER_PID=$!
+}
+
+# CP-1351, CP-1352, CP-1355, CP-1356: E3 holds the product's Git read open for a time the script sets,
+# counted from the read's own start and ended by the script alone: no Enter, no signal. The floor and
+# the hold time are the script's own constants. The case plays the product's read on the copy's two
+# pipes and reads, at the moment the second one opens, what sleep had been called with.
+test_e3_holds_the_git_read_for_the_scenes_own_time() {
+  read_e3_hold_constants || return 1
+  file_floor="$(script_constant E3_FILE_COUNT)"
+  case "$file_floor" in
+    '' | *[!0-9]*) fail "E3: the script states no numeric E3_FILE_COUNT (it reads: $file_floor)"; return 1 ;;
+  esac
+  start_e3_helper
+  check_e3_hold_for_its_own_time || { abandon_e3_helper; return 1; }
+}
+
+check_e3_hold_for_its_own_time() {
+  await_prompts 1 1200 || return 1
+  pipes="$(seen_of E3 pipes)"
+  { printf '%s\n' "$pipes" | grep -q -x -F -e .gitignore && printf '%s\n' "$pipes" | grep -q -x -F -e .git/info/exclude; } \
+    || fail "E3: at its launch the folder does not hold a named pipe at .gitignore and one at .git/info/exclude. The named pipes it holds: ${pipes:-none}" || return 1
+  play_the_read 2
+  wait_for_file "$SCENE/read_started" 200 \
+    || fail "E3: .gitignore did not open for reading before the case stopped waiting, so the helper's hold never saw a read start." || return 1
+  wait_for_file "$SCENE/read_released" 200 \
+    || fail "E3: .git/info/exclude did not open for reading before the case stopped waiting, so the helper never ended its hold. sleep saw: $(cat "$SCENE/sleeps")" || return 1
+  grep -q -x -F -e "$E3_HOLD" "$SCENE/sleeps_at_release" \
+    || fail "E3: .git/info/exclude opened before sleep was called with $E3_HOLD, so the hold's length is not the one the helper sets. sleep saw: $(cat "$SCENE/sleeps_at_release")" || return 1
+  [ ! -s "$SCENE/kill_at_release" ] \
+    || fail "E3: kill was called before the hold ended, so ending the hold took a signal. kill saw: $(cat "$SCENE/kill_at_release")" || return 1
+  send_enter
+  wait "$HELPER_PID"
+  STATUS=$?
+  exec 7>&-
+  [ "$STATUS" -eq 0 ] || fail "E3: after Enter, expected exit 0, got $STATUS. stderr: $(cat "$SCENE/err")" || return 1
+  [ "$(ls -A "$SCENE/home/Desktop")" = "git-beta-scene-captures" ] \
+    || fail "E3: after the walk, its folder or its note is still on the Desktop: $(ls -A "$SCENE/home/Desktop")" || return 1
+  wait_for_file "$SCENE/out_ended" 100 \
+    || fail "E3: the helper's standard output stayed open after the helper exited, so something it started is still running." || return 1
   file_count="$(seen_of E3 files)"
-  [ "${file_count:-0}" -ge "$floor" ] \
-    || fail "E3: the working tree's file count is ${file_count:-0}, below the floor of $floor" || return 1
-  grep -q -x -F -e "git-beta-scene.sh: E3: writing $floor files into the working tree." "$SCENE/err" \
+  [ "${file_count:-0}" -ge "$file_floor" ] \
+    || fail "E3: the working tree's file count is ${file_count:-0}, below the floor of $file_floor" || return 1
+  grep -q -x -F -e "git-beta-scene.sh: E3: writing $file_floor files into the working tree." "$SCENE/err" \
     || fail "E3: stderr does not say how many files were written. stderr: $(grep 'E3' "$SCENE/err")" || return 1
   grep -q -x -F -e '- Verdict against CP-1306: <to fill from the look>' "$SCENE/out" \
     || fail "E3: its entry has no verdict line for CP-1306. got: $(cat "$SCENE/out")"
+}
+
+# CP-1360: every way out of E3 while its hold is up cleans up as at the base: the status, the one pid
+# stopped, the copy and its note removed, and nothing the helper started left running. The case
+# plays the start pipe only, so the holder waits at the hold pipe, where the product's read would be
+# waiting; the fourth way out comes before any read reached the helper's pipes.
+test_e3_ending_while_its_hold_is_up_cleans_up_as_at_the_base() {
+  assert_e3_ends_with_its_hold_up "end of input while the hold is up" 1 1 end-of-input || return 1
+  assert_e3_ends_with_its_hold_up "INT while the hold is up" 130 1 INT || return 1
+  assert_e3_ends_with_its_hold_up "TERM while the hold is up" 143 1 TERM || return 1
+  assert_e3_ends_with_its_hold_up "end of input before the read reached the hold" 1 0 end-of-input
+}
+
+# $1 is the way out as the messages name it, $2 the status it must end with, $3 how many of the read's
+# two pipe opens the case plays (0 or 1), $4 what ends the helper: end-of-input, INT or TERM.
+assert_e3_ends_with_its_hold_up() {
+  way="$1"
+  start_e3_helper
+  check_e3_way_out "$@" || { abandon_e3_helper; return 1; }
+}
+
+check_e3_way_out() {
+  way="$1"
+  expected="$2"
+  wait_for_the_wait_for_enter || fail "E3, $way: the helper never reached its wait for Enter" || return 1
+  if [ "$3" -ge 1 ]; then
+    play_the_read 1
+    wait_for_file "$SCENE/read_started" 200 \
+      || fail "E3, $way: .gitignore did not open for reading before the case stopped waiting" || return 1
+  fi
+  case "$4" in
+    end-of-input) exec 7>&- ;;
+    *)
+      /bin/sleep 0.2
+      kill -"$4" "$HELPER_PID"
+      ;;
+  esac
+  wait "$HELPER_PID"
+  STATUS=$?
+  exec 7>&-
+  [ "$STATUS" -eq "$expected" ] || fail "E3, $way: expected exit $expected, got $STATUS. stderr: $(cat "$SCENE/err")" || return 1
+  assert_only_the_launched_pid_was_stopped || return 1
+  [ "$(ls -A "$SCENE/home/Desktop")" = "git-beta-scene-captures" ] \
+    || fail "E3, $way: its folder or its note is still on the Desktop: $(ls -A "$SCENE/home/Desktop")" || return 1
+  wait_for_file "$SCENE/out_ended" 100 \
+    || fail "E3, $way: the helper's standard output stayed open after the helper exited, so something it started is still running."
+}
+
+# CP-1360: a hold the helper cannot set up is a setup that failed: exit 1, nothing launched, no entry,
+# nothing left on the Desktop. Here mkfifo exits 7.
+test_e3_whose_hold_cannot_be_set_up_ends_with_one_and_launches_nothing() {
+  new_scene
+  rm -f "$SCENE/ordinary/mkfifo"
+  printf '#!/bin/bash\nexit 7\n' > "$SCENE/ordinary/mkfifo"
+  chmod +x "$SCENE/ordinary/mkfifo"
+  run_helper "$APP" "$BUILT_FROM" E3
+  [ "$STATUS" -eq 1 ] || fail "E3's hold not set up: expected exit 1, got $STATUS. stderr: $(cat "$SCENE/err")" || return 1
+  grep -q -E "^git-beta-scene.sh: E3: setting up this state's folder stopped when mkfifo (\.gitignore|\.git/info/exclude) exited with status 7, so KA-Reader was not launched for it and the walk ends here\.\$" "$SCENE/err" \
+    || fail "E3's hold not set up: stderr does not name mkfifo and its status 7. stderr: $(cat "$SCENE/err")" || return 1
+  [ ! -s "$SCENE/open_calls" ] || fail "E3's hold not set up: open was called: $(cat "$SCENE/open_calls")" || return 1
+  [ ! -s "$SCENE/out" ] || fail "E3's hold not set up: stdout carries an entry for a state not walked to its end: $(cat "$SCENE/out")" || return 1
+  [ "$(ls -A "$SCENE/home/Desktop")" = "git-beta-scene-captures" ] \
+    || fail "E3's hold not set up: the state's folder or its note is still on the Desktop: $(ls -A "$SCENE/home/Desktop")"
 }
 
 # CP-1306: E4 is a folder with no repository, and the launch right before it is a repository's.
@@ -831,12 +1022,13 @@ start_held_helper() {
   HELPER_PID=$!
 }
 
-# Waits until the helper has printed $1 lines asking for Enter, which is when it is waiting.
+# Waits until the helper has printed $1 lines asking for Enter, which is when it is waiting. $2 is the
+# bound in ticks of 0.05 s, 400 when it is not given (E3 writes twenty thousand files first).
 await_prompts() {
   waited=0
   until [ "$(grep -c 'press Enter here' "$SCENE/err" 2> /dev/null)" -ge "$1" ]; do
     waited=$((waited + 1))
-    if [ "$waited" -ge 400 ]; then
+    if [ "$waited" -ge "${2:-400}" ]; then
       kill -KILL "$HELPER_PID" 2> /dev/null
       exec 7>&-
       fail "the helper never reached its wait number $1. stderr: $(cat "$SCENE/err")"
@@ -1066,6 +1258,24 @@ test_the_walk_writes_nothing_outside_its_copies_the_captures_and_the_temporary_h
   [ "$(ls -A "$SCENE/home")" = "Desktop" ] || fail "the walk wrote into the home beside the Desktop: $(ls -A "$SCENE/home")" || return 1
   [ "$(ls -A "$SCENE/home/Desktop")" = "git-beta-scene-captures" ] \
     || fail "the walk left something on the Desktop besides the captures folder: $(ls -A "$SCENE/home/Desktop")"
+}
+
+# CP-1355: no state but E3 stages a hold. In a full walk with no read played, the snapshot records a
+# named pipe in no copy but E3's, and sleep is never called with E3's hold time: the holder was let go
+# before its sleep.
+test_no_state_but_e3_stages_a_hold() {
+  new_scene
+  read_e3_hold_constants || return 1
+  run_helper "$APP" "$BUILT_FROM"
+  [ "$STATUS" -eq 0 ] || fail "full walk: expected exit 0, got $STATUS. stderr: $(cat "$SCENE/err")" || return 1
+  for held in "$SCENE"/seen/*.pipes; do
+    [ -e "$held" ] || continue
+    id="${held##*/}"
+    id="${id%.pipes}"
+    [ "$id" = E3 ] || fail "$id: its folder held a named pipe at its launch: $(cat "$held")" || return 1
+  done
+  ! grep -q -x -F -e "$E3_HOLD" "$SCENE/sleeps" \
+    || fail "sleep was called with $E3_HOLD, E3's hold time, though no read was played. sleep saw: $(cat "$SCENE/sleeps")"
 }
 
 # --- the runner ---
