@@ -334,7 +334,6 @@ struct GitBetaNoticeTests {
             )
         ])
         view.rail.entryChosen?(.files)
-        root.tile()
         view.layoutSubtreeIfNeeded()
         for row in 0..<2 {
             let cell = try #require(
