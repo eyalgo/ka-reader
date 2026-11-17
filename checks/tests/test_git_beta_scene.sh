@@ -2,7 +2,8 @@
 # Version: 1.6.0 — E3's held Git read: the snapshot runs no git on a copy that holds a named pipe and
 #   records its pipes, `mkfifo` is linked into the built PATH, and the E3 cases play the product's read
 #   on the copy's pipes (the hold, every way out while it is up, a hold that cannot be set up, and
-#   no other state staging one)
+#   no other state staging one), and two cases pin the words E3 says and prints (its five
+#   instruction lines before the first wait, and its entry's Done line naming the hold and its floor)
 # Version: 1.5.0 — integrity review: an argument holding two ids is a wrong invocation, every usage
 #   sub-case can fail the case, and a state whose setup fails ends the run with 1
 # Version: 1.4.0 — the entries' verdict lines: each state names the rules the spec's Examples table assigns it
