@@ -632,10 +632,23 @@ start_e3_helper() {
 abandon_e3_helper() {
   [ -z "$PLAYER_PID" ] || kill -KILL "$PLAYER_PID" 2> /dev/null
   kill -TERM "$HELPER_PID" 2> /dev/null
-  exec 7>&-
-  wait "$HELPER_PID" 2> /dev/null
+  await_the_e3_helper
   kill -KILL "$OUT_READER_PID" 2> /dev/null
   return 0
+}
+
+# Waits for the E3 helper to end, then leaves its status in STATUS. A helper still running after 20 s
+# is killed and reads as 137, so a missing release fails the case and never hangs the runner.
+await_the_e3_helper() {
+  waited=0
+  while kill -0 "$HELPER_PID" 2> /dev/null && [ "$waited" -lt 400 ]; do
+    waited=$((waited + 1))
+    /bin/sleep 0.05
+  done
+  kill -KILL "$HELPER_PID" 2> /dev/null
+  wait "$HELPER_PID" 2> /dev/null
+  STATUS=$?
+  exec 7>&-
 }
 
 # Waits, up to $2 ticks of 0.05 s, until the file $1 exists.
@@ -707,9 +720,7 @@ check_e3_hold_for_its_own_time() {
   [ ! -s "$SCENE/kill_at_release" ] \
     || fail "E3: kill was called before the hold ended, so ending the hold took a signal. kill saw: $(cat "$SCENE/kill_at_release")" || return 1
   send_enter
-  wait "$HELPER_PID"
-  STATUS=$?
-  exec 7>&-
+  await_the_e3_helper
   [ "$STATUS" -eq 0 ] || fail "E3: after Enter, expected exit 0, got $STATUS. stderr: $(cat "$SCENE/err")" || return 1
   [ "$(ls -A "$SCENE/home/Desktop")" = "git-beta-scene-captures" ] \
     || fail "E3: after the walk, its folder or its note is still on the Desktop: $(ls -A "$SCENE/home/Desktop")" || return 1
@@ -759,9 +770,7 @@ check_e3_way_out() {
       kill -"$4" "$HELPER_PID"
       ;;
   esac
-  wait "$HELPER_PID"
-  STATUS=$?
-  exec 7>&-
+  await_the_e3_helper
   [ "$STATUS" -eq "$expected" ] || fail "E3, $way: expected exit $expected, got $STATUS. stderr: $(cat "$SCENE/err")" || return 1
   assert_only_the_launched_pid_was_stopped || return 1
   [ "$(ls -A "$SCENE/home/Desktop")" = "git-beta-scene-captures" ] \
