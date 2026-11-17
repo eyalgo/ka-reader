@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Version: 1.6.0 — the snapshot runs no git on a copy that holds a named pipe and records its pipes,
+#   and `mkfifo` is linked into the built PATH: the plumbing E3's held Git read needs
 # Version: 1.5.0 — integrity review: an argument holding two ids is a wrong invocation, every usage
 #   sub-case can fail the case, and a state whose setup fails ends the run with 1
 # Version: 1.4.0 — the entries' verdict lines: each state names the rules the spec's Examples table assigns it
@@ -38,13 +40,20 @@
 #                  seen/ in the scene: seen/order (id and whether it holds a repository, one line per
 #                  launch), and per id its git status, its porcelain status, its file count outside
 #                  .git and its listing. The copy is gone once the state is walked, so this is how a
-#                  case reads the staged shape.
+#                  case reads the staged shape. A copy that holds a named pipe is recorded as held:
+#                  its pipes are listed, one path below the copy per line, in seen/<id>.pipes, and
+#                  its git status and porcelain status are not written, because the real git would
+#                  block on a pipe the product's read is meant to wait at. A copy with no pipe is
+#                  read as it always was and gets no .pipes file.
 #   ps             lists a bystander, another instance of the same executable (pid 4243) and an
 #                  unrelated process; once `open` has run it lists the one launched (pid 4242) until
 #                  it has been told to stop.
 #   kill           records its arguments; once told to stop a pid it reports that pid gone.
 #   sleep          records its argument and returns at once.
 #   screencapture  records its arguments and writes the file it was named.
+#   mkfifo         is the host's own tool, linked by name into the built PATH beside git and tar. It
+#                  is an ordinary file tool and not one of QC-67's three (git, tar, cargo): it makes
+#                  the path it is handed and answers nothing about the machine.
 #   Enter          is a newline on standard input; the signal case holds standard input open and
 #                  empty, so the script waits there until it is sent the signal.
 #
@@ -134,6 +143,8 @@ new_scene() {
   # The real git and tar are the scene's own tools, not stand-ins: the states are built with them.
   ln -sf "$(command -v git)" "$SCENE/ordinary/git"
   ln -sf "$(command -v tar)" "$SCENE/ordinary/tar"
+  # mkfifo makes the pipes E3's hold stages; it is an ordinary file tool, linked by name like git and tar.
+  ln -sf "$(command -v mkfifo)" "$SCENE/ordinary/mkfifo"
   vmr_install_admission "$SCENE/bin"
   write_snapshot
   write_open
@@ -157,7 +168,11 @@ for folder in "$scene"/home/Desktop/git-beta-scene-*; do
   kind=plain
   if [ -e "$folder/.git" ] || [ -L "$folder/.git" ]; then kind=repo; fi
   printf '%s %s\n' "$id" "$kind" >> "$scene/seen/order"
-  if [ "$kind" = repo ]; then
+  # A copy that holds a named pipe is held: git would block on it, so none runs there. `find -type p`
+  # never opens a pipe.
+  pipes="$(find "$folder" -type p -print 2> /dev/null | LC_ALL=C sort | while IFS= read -r entry; do printf '%s\n' "${entry#"$folder"/}"; done)"
+  if [ -n "$pipes" ]; then printf '%s\n' "$pipes" > "$scene/seen/$id.pipes"; fi
+  if [ "$kind" = repo ] && [ -z "$pipes" ]; then
     env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 git -C "$folder" status > "$scene/seen/$id.status" 2>&1
     env GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1 git -C "$folder" status --porcelain > "$scene/seen/$id.porcelain" 2>&1
   fi
