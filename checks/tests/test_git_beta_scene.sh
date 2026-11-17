@@ -100,6 +100,8 @@ test_each_e2_member_leaves_its_operation_in_progress_as_git_status_names_it
 test_e3_holds_the_git_read_for_the_scenes_own_time
 test_e3_ending_while_its_hold_is_up_cleans_up_as_at_the_base
 test_e3_whose_hold_cannot_be_set_up_ends_with_one_and_launches_nothing
+test_e3_says_what_to_read_before_the_first_wait
+test_e3_entry_names_the_hold_and_its_floor
 test_e4_is_a_plain_folder_walked_right_after_a_repository_launch
 test_e4_given_alone_walks_e2_clean_first_and_the_printed_lines_say_so
 test_a_repository_state_uses_no_config_of_the_guest
@@ -1285,6 +1287,62 @@ test_no_state_but_e3_stages_a_hold() {
   done
   ! grep -q -x -F -e "$E3_HOLD" "$SCENE/sleeps" \
     || fail "sleep was called with $E3_HOLD, E3's hold time, though no read was played. sleep saw: $(cat "$SCENE/sleeps")"
+}
+
+# --- E3's words ---
+
+# E3's five instruction lines as the change's text sets them, word for word, with the floor $1 in
+# numerals. The expected lines are literals because this repository cannot read the instance's
+# change folder.
+e3_instruction_lines() {
+  cat <<EOF
+git-beta-scene.sh: E3: as soon as the file tree appears, choose Git in the sidebar.
+git-beta-scene.sh: E3: the scene has set up this folder to hold KA-Reader's Git read open for at least $1 seconds after the file tree appears, so that the Git view's line "Reading Git status." can be read. After that, the scene lets the read go on by itself: you take no step in KA-Reader to end the hold, and KA-Reader stays open.
+git-beta-scene.sh: E3: while "Reading Git status." is up, read every word the Git view shows. Then choose Files and read what the head of the file tree shows, and whether letters stand beside its entries.
+git-beta-scene.sh: E3: then choose Git again. If the Git view still shows "Reading Git status.", stay on it until that line changes. Then read what the Git view shows.
+git-beta-scene.sh: E3: if the Git view already showed the repository's state when you first saw it, this state was not seen: write not seen in its verdict, with what you did.
+EOF
+}
+
+# CP-1354: E3's instructions say, on stderr and before the first wait, each thing the change's text
+# sets, in order, after E3's launch lines; the only product sentence they quote is the pending line.
+test_e3_says_what_to_read_before_the_first_wait() {
+  new_scene
+  read_e3_hold_constants || return 1
+  run_helper "$APP" "$BUILT_FROM" E3
+  [ "$STATUS" -eq 0 ] || fail "E3: after Enter, expected exit 0, got $STATUS. stderr: $(cat "$SCENE/err")" || return 1
+  e3_lines="$(grep 'E3' "$SCENE/err")"
+  launch_end="$(grep -n -F -e 'git-beta-scene.sh: E3: click KA-Reader in the Dock' "$SCENE/err" | head -n 1 | cut -d: -f1)"
+  first_wait="$(grep -n -x -F -e 'git-beta-scene.sh: E3: press Enter here when you have looked.' "$SCENE/err" | head -n 1 | cut -d: -f1)"
+  previous=${launch_end:-0}
+  while IFS= read -r line; do
+    at="$(grep -n -x -F -e "$line" "$SCENE/err" | head -n 1 | cut -d: -f1)"
+    [ -n "$at" ] \
+      || fail "E3: stderr does not carry this instruction line, word for word: ${line#git-beta-scene.sh: } stderr: $e3_lines" || return 1
+    { [ -n "$launch_end" ] && [ -n "$first_wait" ] && [ "$at" -gt "$previous" ] && [ "$at" -lt "$first_wait" ]; } \
+      || fail "E3: the instruction lines do not come after E3's launch lines and before its first press Enter here line. stderr: $e3_lines" || return 1
+    previous="$at"
+  done < <(e3_instruction_lines "$E3_FLOOR")
+  quoted="$(e3_instruction_lines "$E3_FLOOR" | grep -o '"[^"]*"' | grep -v -x -F -e '"Reading Git status."' || true)"
+  [ -z "$quoted" ] || fail "E3: the instruction lines quote something other than \"Reading Git status.\": $quoted"
+}
+
+# CP-1355: E3's entry names the hold and its floor in its Done line, keeps its On disk line and its
+# verdict line, and is the only entry whose Done line says anything of a hold.
+test_e3_entry_names_the_hold_and_its_floor() {
+  new_scene
+  read_e3_hold_constants || return 1
+  file_count_set="$(script_constant E3_FILE_COUNT)"
+  run_helper "$APP" "$BUILT_FROM" E3
+  [ "$STATUS" -eq 0 ] || fail "E3: after Enter, expected exit 0, got $STATUS. stderr: $(cat "$SCENE/err")" || return 1
+  done_line="- Done: The scene launched KA-Reader and asked for the folder above to be chosen in the Open panel, and for Git to be chosen as soon as the file tree appeared. Before the launch, it set up the folder to hold KA-Reader's Git read open for at least $E3_FLOOR seconds after the file tree appeared."
+  grep -q -x -F -e "$done_line" "$SCENE/out" \
+    || fail "E3: its entry's Done line is not the one this change sets, word for word. got: $(grep -e '^- Done:' "$SCENE/out")" || return 1
+  on_disk_line="- On disk: A repository with $file_count_set files in its working tree."
+  grep -q -x -F -e "$on_disk_line" "$SCENE/out" \
+    || fail "E3: its entry's On disk line is not the base's. got: $(grep -e '^- On disk:' "$SCENE/out")" || return 1
+  grep -q -x -F -e '- Verdict against CP-1306: <to fill from the look>' "$SCENE/out" \
+    || fail "E3: its entry has no verdict line for CP-1306. got: $(cat "$SCENE/out")"
 }
 
 # --- the runner ---
