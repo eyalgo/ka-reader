@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Version: 1.4.0 — E3 holds the product's own Git read open for a time the scene sets, and lets it go on
-#   by itself on every way out; E3's instructions and Done line say what to read and name the hold
+# Version: 1.4.0 — E3 holds the product's own Git read open for a time the scene sets, and lets it
+#   go on by itself on every way out; E3's instructions and Done line say what to read and name the
+#   hold
 # Version: 1.3.2 — an argument holding two ids with a space between them is no state id (exit 2)
 # Version: 1.3.1 — E12's entry names both rules the spec assigns it, CP-1306 and CP-1309
 # Version: 1.3.0 — the in-window disk changes E9 - E13: each waits for Enter, then changes its copy from outside
@@ -45,24 +46,24 @@
 #      and removes the copy it made.
 #   A folder of a state's copy name that this script did not make (it has no note beside it) is never
 #   touched: the run stops there. A copy a killed run left behind has its note, and is replaced.
-#   4. E3 also holds the product's own Git read open (see E3'S HOLD below), and ends that hold itself
-#      on every way out, before the copy is removed.
+#   4. E3 also holds the product's own Git read open (see E3'S HOLD below), and ends that hold
+#      itself on every way out, before the copy is removed.
 #
 # E3'S HOLD
 #   The product reads E3's twenty thousand files in about 70 ms, so its Git view's pending line is
 #   gone before anyone can choose Git. So E3's copy holds two named pipes, and one background holder
 #   makes the read wait on them for E3_HOLD_SECONDS, counted from the read's own start. The status
 #   read opens the root's .gitignore first and .git/info/exclude next, and a named pipe's open
-#   returns only when a writer opens it, so: the first pipe (the start pipe, at .gitignore) tells the
-#   holder the read has started, and the second (the hold pipe, at .git/info/exclude) keeps the read
-#   waiting until the holder opens it, E3_HOLD_SECONDS later. The read's status walk skips a pipe, so
-#   neither reaches the Git view, and once the hold ends the read finds no ignore rule, which is what
-#   the copy without the hold gives it. The holder needs no Enter and no signal. On every way out the
-#   hold is ended before the copy is removed, also without a signal: the hold pipe is opened for
-#   reading and writing, which lets go a holder blocked there; its path is removed, so a holder not
-#   yet past the start pipe skips its wait; the start pipe is opened for reading and writing, which
-#   lets go a holder blocked there; and the holder is waited for. A holder already in its wait is
-#   waited for, at most E3_HOLD_SECONDS. The holder is never named to kill.
+#   returns only when a writer opens it, so: the first pipe (the start pipe, at .gitignore) tells
+#   the holder the read has started, and the second (the hold pipe, at .git/info/exclude) keeps the
+#   read waiting until the holder opens it, E3_HOLD_SECONDS later. The read's status walk skips a
+#   pipe, so neither reaches the Git view, and once the hold ends the read finds no ignore rule,
+#   which is what the copy without the hold gives it. The holder needs no Enter and no signal. On
+#   every way out the hold is ended before the copy is removed, also without a signal: the hold pipe
+#   is opened for reading and writing, which lets go a holder blocked there; its path is removed, so
+#   a holder not yet past the start pipe skips its wait; the start pipe is opened for reading and
+#   writing, which lets go a holder blocked there; and the holder is waited for. A holder already in
+#   its wait is waited for, at most E3_HOLD_SECONDS. The holder is never named to kill.
 #   E3's instructions and the Done line of its entry give the floor, E3_HOLD_FLOOR_SECONDS, in
 #   seconds, and say what to read while the pending line is up and once it has changed. The only
 #   product sentence they quote is the pending line itself.
@@ -143,9 +144,9 @@ STOP_POLL_TICKS=20
 # E3_FILES_PER_FOLDER. The count does not give the Git view's pending line its time: a faster guest
 # reads the files faster. What gives it the time is the hold (see E3'S HOLD in the header): the
 # scene keeps the product's Git read waiting for E3_HOLD_SECONDS, counted from the read's own start.
-# E3_HOLD_FLOOR_SECONDS is the time E3's instructions and entry promise, counted from the file tree's
-# appearance. The hold is longer than the floor, because the app asks for its Git read a moment
-# before the tree is drawn.
+# E3_HOLD_FLOOR_SECONDS is the time E3's instructions and entry promise, counted from the file
+# tree's appearance. The hold is longer than the floor, because the app asks for its Git read a
+# moment before the tree is drawn.
 E3_FILE_COUNT=20000
 E3_FILES_PER_FOLDER=100
 E3_HOLD_FLOOR_SECONDS=10
@@ -293,8 +294,8 @@ hold_pipe=""
 
 # Ends E3's hold, if one is up, without a signal, so the holder is never named to kill. Opening a
 # named pipe for reading and writing never blocks, and lets go a holder blocked at it. Descriptors 8
-# and 9 are used nowhere else in this script. A pipe is opened only where it is found, so a path that
-# is gone never ends the cleanup.
+# and 9 are used nowhere else in this script. A pipe is opened only where it is found, so a path
+# that is gone never ends the cleanup.
 end_the_hold() {
   [ -n "$holder_pid" ] || return 0
   if [ -p "$hold_pipe" ]; then
@@ -546,15 +547,15 @@ write_bulk_files() {
 # E3's hold (see E3'S HOLD in the header). Makes the start pipe at the copy's .gitignore, which the
 # fixture does not hold, and puts the hold pipe in the place of .git/info/exclude. Both come after
 # init_repository and write_bulk_files, so git add -A never meets one. Then starts the one holder in
-# the background and records its pid. The holder opens the start pipe for writing, which returns once
-# the product's read opens it, and so is its wait for that read. It then checks that the hold pipe is
-# still there: if it is not, the scene is ending, and it goes without waiting. Otherwise it waits
-# E3_HOLD_SECONDS and opens the hold pipe for writing, which lets the read go on. It writes nothing
-# and reads nothing, and its errors go nowhere. It keeps this script's standard output as it was
-# given, on purpose: a holder that outlived the script would then keep the caller's pipe open, which
-# is how a caller sees that something the script started is still running. It does not run this
-# script's cleanup on its way out. Started in the background, it ignores INT, so only the release
-# ends it.
+# the background and records its pid. The holder opens the start pipe for writing, which returns
+# once the product's read opens it, and so is its wait for that read. It then checks that the hold
+# pipe is still there: if it is not, the scene is ending, and it goes without waiting. Otherwise it
+# waits E3_HOLD_SECONDS and opens the hold pipe for writing, which lets the read go on. It writes
+# nothing and reads nothing, and its errors go nowhere. It keeps this script's standard output as it
+# was given, on purpose: a holder that outlived the script would then keep the caller's pipe open,
+# which is how a caller sees that something the script started is still running. It does not run
+# this script's cleanup on its way out. Started in the background, it ignores INT, so only the
+# release ends it.
 start_the_hold() {
   start_pipe="$copy/.gitignore"
   hold_pipe="$copy/.git/info/exclude"
