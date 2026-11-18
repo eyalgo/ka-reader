@@ -85,6 +85,18 @@ FIXTURE_COMMIT_MESSAGE="KA-Reader fixture"
 FIXTURE_UNTRACKED_FILE="CHANGELOG.md"
 # Where the clone's own assembly puts the bundle, relative to the clone.
 BUNDLE_IN_CLONE="target/release/bundle/macos/KA-Reader.app"
+# The window probe the capture compiles, and where it writes what it makes in the repository.
+PROBE_SOURCE="checks/window_probe/main.swift"
+PICTURE_PATH="docs/readme/shell.png"
+RECORD_PATH="docs/readme/shell.record"
+# The bounds, in ticks of 0.25 s, are constants (docs/nfdr.md QC-67): the wait for the new process
+# is LAUNCH_POLL_TICKS of them, which is LAUNCH_WAIT_SECONDS, and the wait for a process to end
+# after TERM is STOP_POLL_TICKS.
+LAUNCH_WAIT_SECONDS=20
+LAUNCH_POLL_TICKS=80
+STOP_POLL_TICKS=20
+# How long one read of the person's Enter lasts before the script looks for a signal.
+ENTER_POLL_SECONDS=1
 
 # The version, read as text as checks/readme-picture.sh reads it: Cargo.toml's one version line in
 # its [workspace.package] table, and Info.plist's one <string> after its one
@@ -129,7 +141,35 @@ END { if (keys != 1 || strings != 1) exit 3; print found }
 # Empty until the folder is made, so a run that stops before then has nothing to remove.
 work=""
 
-# Removes the work folder, and says so when it cannot. Runs on every way out.
+# The one pid this run launched. Empty until it has been found and recorded, so a run that never
+# recorded one has nothing of its own to stop. kill_tool is the program, since `kill` alone is the
+# shell's builtin.
+launched_pid=""
+kill_tool=""
+# 1 from the moment the first file is written into docs/readme/, so an interruption says which.
+writing=0
+
+# Stops the process this run launched, with TERM and then KILL, and says so when it cannot.
+stop_launched_process() {
+  [ -n "$launched_pid" ] || return 0
+  stopping_pid="$launched_pid"
+  launched_pid=""
+  "$kill_tool" -TERM "$stopping_pid" 2> /dev/null || true
+  stop_ticks=0
+  while "$kill_tool" -0 "$stopping_pid" 2> /dev/null && [ "$stop_ticks" -lt "$STOP_POLL_TICKS" ]; do
+    sleep 0.25
+    stop_ticks=$((stop_ticks + 1))
+  done
+  if "$kill_tool" -0 "$stopping_pid" 2> /dev/null; then
+    "$kill_tool" -KILL "$stopping_pid" 2> /dev/null || true
+    sleep 0.25
+  fi
+  if "$kill_tool" -0 "$stopping_pid" 2> /dev/null; then
+    say "could not stop KA-Reader (pid $stopping_pid). Quit KA-Reader with Command-Q in its window."
+  fi
+}
+
+# Removes the work folder, and says so when it cannot.
 remove_work_folder() {
   [ -n "$work" ] && [ "$work" != "/" ] || return 0
   if [ -e "$work" ] || [ -L "$work" ]; then
@@ -140,11 +180,20 @@ remove_work_folder() {
   fi
 }
 
-# The status stands: a cleanup that ends the run on its own would hide the status that did.
-trap remove_work_folder EXIT
+# Runs on every way out: the process first, so nothing is left running over a removed folder. The
+# status stands: a cleanup that ends the run on its own would hide the status that did.
+cleanup() {
+  stop_launched_process
+  remove_work_folder
+}
+trap cleanup EXIT
 
 interrupted() {
-  say "interrupted by $1 before anything was written into the repository. Run checks/readme-capture.sh from the product root to capture again."
+  if [ "$writing" -eq 1 ]; then
+    say "interrupted by $1 after it began writing into docs/readme/, so $PICTURE_PATH and $RECORD_PATH may not agree. Run checks/readme-capture.sh from the product root to write both again."
+  else
+    say "interrupted by $1 before anything was written into the repository. Run checks/readme-capture.sh from the product root to capture again."
+  fi
   exit "$2"
 }
 trap 'interrupted INT 130' INT
@@ -158,6 +207,8 @@ for tool in $REQUIRED_TOOLS; do
   type -P "$tool" > /dev/null 2>&1 \
     || die "$tool was not found on PATH, so nothing was cloned, built or launched. Put $tool on PATH, then run checks/readme-capture.sh from the product root."
 done
+
+kill_tool="$(type -P kill)"
 
 [ -n "${HOME:-}" ] \
   || die "HOME is not set, so nothing was cloned, built or launched. Run checks/readme-capture.sh from a login shell, where HOME is set."
@@ -215,6 +266,18 @@ CARGO_NET_OFFLINE=true "$build/ka-reader-mac/assemble.sh" 1>&2 < /dev/null || as
 bundle="$build/$BUNDLE_IN_CLONE"
 [ -d "$bundle" ] \
   || die "ka-reader-mac/assemble.sh finished, and $bundle is not there, so nothing was launched or written. Check where ka-reader-mac/assemble.sh puts KA-Reader.app at commit $commit, then run checks/readme-capture.sh from the product root."
+# Absolute and with links resolved, because `ps` names a process by its physical executable path.
+bundle="$(cd "$bundle" && pwd -P)"
+# The bundle's one executable, found by its absolute path and never by a pattern over command lines.
+bundle_executable=""
+executable_count=0
+for candidate in "$bundle"/Contents/MacOS/*; do
+  [ -e "$candidate" ] || continue
+  bundle_executable="$candidate"
+  executable_count=$((executable_count + 1))
+done
+[ "$executable_count" -eq 1 ] \
+  || die "$bundle does not hold exactly one executable under Contents/MacOS, so nothing was launched or written. Check what ka-reader-mac/assemble.sh built at commit $commit, then run checks/readme-capture.sh from the product root."
 say "built $bundle, version $version."
 
 # --- the fixture ---
@@ -238,3 +301,172 @@ fixture_step "git symbolic-ref HEAD refs/heads/main" git_isolated -C "$fixture" 
 fixture_step "git add" git_isolated -C "$fixture" add -- . ":(exclude)$FIXTURE_UNTRACKED_FILE"
 fixture_step "git commit" git_isolated -C "$fixture" commit --quiet -m "$FIXTURE_COMMIT_MESSAGE"
 say "the fixture repository is ready at $fixture, with $FIXTURE_UNTRACKED_FILE left untracked."
+
+# --- the window probe ---
+
+# Compiled into the work folder with the flags checks/app-icon.sh uses for checks/icon_probe/main.swift.
+# The compiler's output is kept for the refusal line, and the compile reads no input.
+probe="$work/window-probe"
+say "compiling $PROBE_SOURCE into $work."
+compile_status=0
+compile_output="$(swiftc -swift-version 6 -warnings-as-errors -strict-memory-safety "$root/$PROBE_SOURCE" -o "$probe" 2>&1 < /dev/null)" || compile_status=$?
+[ "$compile_status" -eq 0 ] \
+  || die "swiftc could not compile checks/window_probe/main.swift, so nothing was launched or written. Check the Swift toolchain with swift --version, then run checks/readme-capture.sh from the product root. swiftc printed: $compile_output"
+
+# --- the launch ---
+
+# The pids of the bundle's executable now running, by its absolute path. An unreadable listing reads
+# as none found.
+executable_pids() {
+  { ps -axo pid=,comm= 2> /dev/null || true; } | while read -r candidate_pid candidate_path; do
+    if [ "$candidate_path" = "$bundle_executable" ]; then
+      echo "$candidate_pid"
+    fi
+  done
+}
+
+say "launching $bundle with open -n."
+before="$(executable_pids)"
+open_status=0
+open -n "$bundle" < /dev/null > /dev/null 2>&1 || open_status=$?
+[ "$open_status" -eq 0 ] \
+  || die "open -n $bundle exited with status $open_status, so nothing was captured or written. Run checks/readme-capture.sh again from a terminal in the guest's own window, where KA-Reader's Open panel can be seen."
+
+# The one new pid: a process of the same executable that was running before open is not this run's.
+poll_ticks=0
+while [ -z "$launched_pid" ] && [ "$poll_ticks" -lt "$LAUNCH_POLL_TICKS" ]; do
+  for candidate in $(executable_pids); do
+    case "
+$before
+" in
+      *"
+$candidate
+"*) ;;
+      *) launched_pid="$candidate"; break ;;
+    esac
+  done
+  if [ -z "$launched_pid" ]; then
+    sleep 0.25
+    poll_ticks=$((poll_ticks + 1))
+  fi
+done
+[ -n "$launched_pid" ] \
+  || die "no new KA-Reader process appeared within $LAUNCH_WAIT_SECONDS seconds of open -n, so nothing was captured or written. Run checks/readme-capture.sh again from a terminal in the guest's own window, where KA-Reader's Open panel can be seen."
+
+say "KA-Reader is running (pid $launched_pid). If its window is not in front, click KA-Reader in the Dock."
+say "in its Open panel, press Shift-Command-G, type $fixture, press Return, then click Open."
+say "keep Files chosen in the sidebar, and select a file in the file tree so its content is in the reading panel. The file, the theme and the window's size are yours to choose: once the picture is committed, the README's opening shows it."
+say "when the window shows what the picture should show, press Enter here. Only KA-Reader's window is captured, without its shadow."
+# The wait is a read of one second at a time: a signal that has a trap is not acted on while a read
+# blocks (the shell's own rule), so the trap runs between the slices and the run ends at once. A read
+# that times out ends with a status above 128, and a line or the end of the input ends the loop.
+while :; do
+  enter_status=0
+  IFS= read -r -t "$ENTER_POLL_SECONDS" _ || enter_status=$?
+  [ "$enter_status" -gt 128 ] || break
+done
+[ "$enter_status" -eq 0 ] \
+  || die "the input ended before Enter, so nothing was captured or written. Run checks/readme-capture.sh again from a terminal where you can press Enter."
+
+# --- the capture ---
+
+# The probe prints the window number, or on stderr how many windows the process owns, and exits 1.
+window_status=0
+window="$("$probe" window "$launched_pid" 2> "$work/window-probe.err" < /dev/null)" || window_status=$?
+if [ "$window_status" -ne 0 ]; then
+  window_count="$(sed -n 's/.* owns \([0-9][0-9]*\) on-screen windows.*/\1/p' "$work/window-probe.err")"
+  case "$window_count" in
+    0) die "KA-Reader (pid $launched_pid) has no window on screen, so nothing was captured or written. Run checks/readme-capture.sh again, and keep KA-Reader's window on screen, not minimized, when you press Enter." ;;
+    "") die "the window probe could not read the list of windows on screen, so nothing was captured or written. Run checks/readme-capture.sh again from a terminal in the guest's own window." ;;
+    *) die "KA-Reader (pid $launched_pid) has $window_count windows on screen, and the capture takes one, so nothing was captured or written. Run checks/readme-capture.sh again, and keep one KA-Reader window open when you press Enter." ;;
+  esac
+fi
+case "$window" in
+  "" | *[!0-9]*)
+    die "the window probe could not read the list of windows on screen, so nothing was captured or written. Run checks/readme-capture.sh again from a terminal in the guest's own window."
+    ;;
+esac
+
+say "capturing window $window of KA-Reader (pid $launched_pid)."
+picture="$work/shell.png"
+capture_status=0
+screencapture -x -o -l"$window" "$picture" < /dev/null > /dev/null 2>&1 || capture_status=$?
+[ "$capture_status" -eq 0 ] \
+  || die "screencapture exited with status $capture_status, so nothing was written into the repository. Check that this terminal may record the screen in System Settings › Privacy & Security › Screen & System Audio Recording, then run checks/readme-capture.sh from the product root."
+[ -s "$picture" ] \
+  || die "screencapture wrote an empty file, so nothing was written into the repository. Check that this terminal may record the screen in System Settings › Privacy & Security › Screen & System Audio Recording, then run checks/readme-capture.sh from the product root."
+printf '\211PNG\r\n\032\n' > "$work/png-signature"
+head -c 8 "$picture" | cmp -s - "$work/png-signature" \
+  || die "the file screencapture wrote is not a PNG, so nothing was written into the repository. Run checks/readme-capture.sh again from the product root."
+
+# --- the metadata ---
+
+# The decoded properties only, never the raw file: compressed pixel data can hold any short byte
+# string by chance. Every name is read before any is compared, so an unreadable one refuses the run.
+say "checking the picture's metadata for this machine's names."
+metadata_status=0
+"$probe" metadata "$picture" > "$work/metadata.txt" 2> /dev/null < /dev/null || metadata_status=$?
+[ "$metadata_status" -eq 0 ] \
+  || die "the window probe could not read the picture's metadata, so nothing was written into the repository. Run checks/readme-capture.sh again from the product root."
+
+login_name="$(id -un 2> /dev/null)" && [ -n "$login_name" ] \
+  || die "could not read this account's login name, so the picture's metadata cannot be checked for it and nothing was written into the repository. Run checks/readme-capture.sh from a login shell of this guest's account."
+# An empty full name is no refusal: there is nothing to look for.
+full_name="$(id -F 2> /dev/null)" \
+  || die "could not read this account's full name, so the picture's metadata cannot be checked for it and nothing was written into the repository. Run checks/readme-capture.sh from a login shell of this guest's account."
+host_name="$(hostname 2> /dev/null)" && [ -n "$host_name" ] \
+  || die "could not read this machine's host name, so the picture's metadata cannot be checked for it and nothing was written into the repository. Give this guest a host name with sudo scutil --set HostName <name>, then run checks/readme-capture.sh from the product root."
+computer_name="$(scutil --get ComputerName 2> /dev/null)" && [ -n "$computer_name" ] \
+  || die "could not read this machine's computer name, so the picture's metadata cannot be checked for it and nothing was written into the repository. Give this guest a computer name with sudo scutil --set ComputerName <name>, then run checks/readme-capture.sh from the product root."
+local_host_name="$(scutil --get LocalHostName 2> /dev/null)" && [ -n "$local_host_name" ] \
+  || die "could not read this machine's local host name, so the picture's metadata cannot be checked for it and nothing was written into the repository. Give this guest a local host name with sudo scutil --set LocalHostName <name>, then run checks/readme-capture.sh from the product root."
+
+# True when the decoded properties hold $1 as a fixed string. An empty name holds nothing to look for.
+metadata_holds() {
+  [ -n "$1" ] && grep -F -q -e "$1" "$work/metadata.txt"
+}
+
+if metadata_holds "$login_name"; then
+  die "the picture's metadata holds this account's login name, $login_name, so nothing was written into the repository. Run checks/readme-capture.sh again from an account whose login name is not in it."
+fi
+if metadata_holds "$full_name"; then
+  die "the picture's metadata holds this account's full name, $full_name, so nothing was written into the repository. Run checks/readme-capture.sh again from an account whose full name is not in it."
+fi
+if metadata_holds "$HOME"; then
+  die "the picture's metadata holds this account's home folder, $HOME, so nothing was written into the repository. Run checks/readme-capture.sh again from an account whose home folder is not in it."
+fi
+if metadata_holds "$host_name"; then
+  die "the picture's metadata holds this machine's host name, $host_name, so nothing was written into the repository. Give this guest another host name with sudo scutil --set HostName <name>, then run checks/readme-capture.sh from the product root."
+fi
+if metadata_holds "$computer_name"; then
+  die "the picture's metadata holds this machine's computer name, $computer_name, so nothing was written into the repository. Give this guest another computer name with sudo scutil --set ComputerName <name>, then run checks/readme-capture.sh from the product root."
+fi
+if metadata_holds "$local_host_name"; then
+  die "the picture's metadata holds this machine's local host name, $local_host_name, so nothing was written into the repository. Give this guest another local host name with sudo scutil --set LocalHostName <name>, then run checks/readme-capture.sh from the product root."
+fi
+say "the picture's metadata holds none of this machine's names."
+
+# --- the write ---
+
+# The record is made in the work folder first, so the two writes into the repository are each a
+# copy: the picture, then the record. A run interrupted between them leaves a picture with no
+# matching record, which checks/readme-picture.sh names.
+picture_digest="$(shasum -a 256 "$picture" 2> /dev/null)" || picture_digest=""
+picture_digest="${picture_digest%% *}"
+[ "${#picture_digest}" -eq 64 ] \
+  || die "shasum could not read the picture $picture, so neither the picture nor the record was written. Run checks/readme-capture.sh again from the product root."
+printf 'picture: %s\nversion: %s\ncommit: %s\nsha256: %s\n' "$PICTURE_PATH" "$version" "$commit" "$picture_digest" > "$work/shell.record"
+
+writing=1
+{ mkdir -p "$root/docs/readme" && cp "$picture" "$root/$PICTURE_PATH"; } 2> /dev/null \
+  || die "could not write $PICTURE_PATH, so neither the picture nor the record was written. Check that docs/readme/ in $root can be written, then run checks/readme-capture.sh from the product root."
+cp "$work/shell.record" "$root/$RECORD_PATH" 2> /dev/null \
+  || die "wrote $PICTURE_PATH, and could not write $RECORD_PATH, so the picture has no record written with it. Check that docs/readme/ in $root can be written, then run checks/readme-capture.sh from the product root to write both again."
+writing=0
+
+# --- the close ---
+
+# The script stages nothing: staging writes the index, and inside the repository it writes the
+# picture and the record only.
+echo "readme-capture.sh: wrote $PICTURE_PATH and $RECORD_PATH, captured from KA-Reader $version built at commit $commit."
+say "look at $PICTURE_PATH before you commit it: once it is committed, the README's opening shows it. If the README's opening has no image line naming $PICTURE_PATH, add one after the description sentence. Then commit $PICTURE_PATH, $RECORD_PATH and the README's image line together: checks/readme-picture.sh exits 1 on a tree that holds only some of them."

@@ -720,6 +720,22 @@ sha256: $digest"
   [ ! -e "$work_folder/build" ] && [ ! -e "$work_folder/ka-reader" ] || fail "a clone or the fixture is still there" || return 1
   expect_launched_process_stopped || return 1
 
+  # The programs were asked what the task states: the probe compiled with the icon probe's flags, the
+  # bundle opened as a new instance, the one window of the recorded pid captured alone and without its
+  # shadow, and the picture read back through the probe's metadata mode.
+  grep -F -q -e "-swift-version 6 -warnings-as-errors -strict-memory-safety" "$logs/swiftc.log" \
+    || fail "swiftc was not run with the icon probe's flags: $(cat "$logs/swiftc.log")" || return 1
+  grep -F -q -e "checks/window_probe/main.swift" "$logs/swiftc.log" \
+    || fail "swiftc was not given checks/window_probe/main.swift: $(cat "$logs/swiftc.log")" || return 1
+  grep -q -E -e '^-n .*/ka-reader-picture\.[^/]+/build/target/release/bundle/macos/KA-Reader\.app$' "$logs/open.log" \
+    || fail "open was not run with -n on the built bundle: $(cat "$logs/open.log")" || return 1
+  grep -F -x -q -e "window 4242" "$logs/probe.log" \
+    || fail "the probe was not asked for the window of the launched pid: $(cat "$logs/probe.log")" || return 1
+  grep -F -q -e "metadata $work_folder/shell.png" "$logs/probe.log" \
+    || fail "the probe was not asked for the picture's metadata: $(cat "$logs/probe.log")" || return 1
+  grep -F -x -q -e "-x -o -l31337 $work_folder/shell.png" "$logs/screencapture.log" \
+    || fail "screencapture was not run on window 31337 alone, with no shadow: $(cat "$logs/screencapture.log")" || return 1
+
   # The real check, on the tree the capture wrote, with the README line and the picture tracked.
   cp "$ROOT/checks/readme-picture.sh" "$tree/checks/readme-picture.sh"
   chmod +x "$tree/checks/readme-picture.sh"
@@ -741,42 +757,47 @@ sha256: $digest"
   SUB=""
 }
 
+# One signal sent to the run while it waits for Enter, in a shell of its own so job control, which
+# the background job needs for INT to reach it, is on for this run alone. $1 is the signal and $2 the
+# status it ends a run with.
+interrupt_while_waiting_for_enter() {
+  signal_name="$1"
+  allowed="$2"
+  SUB="$signal_name while waiting for Enter"
+  fixture
+  mkfifo "$scene/stdin_pipe"
+  exec 3<> "$scene/stdin_pipe"
+  before="$(snapshot "$tree")"
+  cd "$tree" || return 1
+  # One simple command in the background, so $! is the script's own pid. The fifo's write end is held
+  # open, so standard input does not end.
+  set -m
+  /usr/bin/env -i PATH="$bin" HOME="$home" "$tree/checks/readme-capture.sh" < "$scene/stdin_pipe" > "$scene/out" 2> "$scene/err" &
+  pid=$!
+  waited=0
+  while ! grep -q -F "press Enter here" "$scene/err" && [ "$waited" -lt 1200 ]; do
+    sleep 0.05
+    waited=$((waited + 1))
+  done
+  kill -s "$signal_name" "$pid" 2> /dev/null
+  status=0
+  wait "$pid" || status=$?
+  set +m
+  exec 3>&-
+  stderr="$(cat "$scene/err")"
+  after="$(snapshot "$tree")"
+  if [ "$status" -ne "$allowed" ] && [ "$status" -ne 1 ]; then
+    fail "ended with $status, expected $allowed or 1, never 0. stderr: $stderr" || return 1
+  fi
+  expect_launched_process_stopped && expect_work_folders_gone && expect_nothing_written
+}
+
 # QC-70: TERM and INT while the script waits for Enter end it with 143 and 130 (or 1, never 0), with
 # the launched process stopped, the work folder gone and nothing in docs/readme/. A process that will
 # not stop is named to the person.
 test_an_interrupted_run_removes_everything_it_made() {
-  for signal in TERM:143 INT:130; do
-    name="${signal%%:*}"
-    allowed="${signal##*:}"
-    SUB="$name while waiting for Enter"
-    fixture
-    mkfifo "$scene/stdin_pipe"
-    exec 3<> "$scene/stdin_pipe"
-    before="$(snapshot "$tree")"
-    cd "$tree" || return 1
-    # One simple command in the background, so $! is the script's own pid, and job control on, so the
-    # background job does not ignore INT. The fifo's write end is held open, so standard input does
-    # not end.
-    set -m
-    /usr/bin/env -i PATH="$bin" HOME="$home" "$tree/checks/readme-capture.sh" < "$scene/stdin_pipe" > "$scene/out" 2> "$scene/err" &
-    pid=$!
-    waited=0
-    while ! grep -q -F "press Enter here" "$scene/err" && [ "$waited" -lt 200 ]; do
-      sleep 0.05
-      waited=$((waited + 1))
-    done
-    kill -s "$name" "$pid" 2> /dev/null
-    status=0
-    wait "$pid" || status=$?
-    set +m
-    exec 3>&-
-    stderr="$(cat "$scene/err")"
-    after="$(snapshot "$tree")"
-    if [ "$status" -ne "$allowed" ] && [ "$status" -ne 1 ]; then
-      fail "ended with $status, expected $allowed or 1, never 0. stderr: $stderr" || return 1
-    fi
-    expect_launched_process_stopped && expect_work_folders_gone && expect_nothing_written || return 1
-  done
+  (interrupt_while_waiting_for_enter TERM 143) || return 1
+  (interrupt_while_waiting_for_enter INT 130) || return 1
 
   SUB="the launched process cannot be stopped"
   fixture
