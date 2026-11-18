@@ -95,8 +95,6 @@ RECORD_PATH="docs/readme/shell.record"
 LAUNCH_WAIT_SECONDS=20
 LAUNCH_POLL_TICKS=80
 STOP_POLL_TICKS=20
-# How long one read of the person's Enter lasts before the script looks for a signal.
-ENTER_POLL_SECONDS=1
 
 # The version, read as text as checks/readme-picture.sh reads it: Cargo.toml's one version line in
 # its [workspace.package] table, and Info.plist's one <string> after its one
@@ -146,8 +144,17 @@ work=""
 # shell's builtin.
 launched_pid=""
 kill_tool=""
+# The background reader that waits for the person's Enter. Empty until it is started.
+enter_reader_pid=""
 # 1 from the moment the first file is written into docs/readme/, so an interruption says which.
 writing=0
+
+# Stops the reader waiting for Enter, so no part of this run is left reading the person's terminal.
+stop_enter_reader() {
+  [ -n "$enter_reader_pid" ] || return 0
+  kill -TERM "$enter_reader_pid" 2> /dev/null || true
+  enter_reader_pid=""
+}
 
 # Stops the process this run launched, with TERM and then KILL, and says so when it cannot.
 stop_launched_process() {
@@ -183,6 +190,7 @@ remove_work_folder() {
 # Runs on every way out: the process first, so nothing is left running over a removed folder. The
 # status stands: a cleanup that ends the run on its own would hide the status that did.
 cleanup() {
+  stop_enter_reader
   stop_launched_process
   remove_work_folder
 }
@@ -357,15 +365,26 @@ say "KA-Reader is running (pid $launched_pid). If its window is not in front, cl
 say "in its Open panel, press Shift-Command-G, type $fixture, press Return, then click Open."
 say "keep Files chosen in the sidebar, and select a file in the file tree so its content is in the reading panel. The file, the theme and the window's size are yours to choose: once the picture is committed, the README's opening shows it."
 say "when the window shows what the picture should show, press Enter here. Only KA-Reader's window is captured, without its shadow."
-# The wait is a read of one second at a time: a signal that has a trap is not acted on while a read
-# blocks (the shell's own rule), so the trap runs between the slices and the run ends at once. A read
-# that times out ends with a status above 128, and a line or the end of the input ends the loop.
-while :; do
-  enter_status=0
-  IFS= read -r -t "$ENTER_POLL_SECONDS" _ || enter_status=$?
-  [ "$enter_status" -gt 128 ] || break
+# The wait is a background reader the script polls in ticks of 0.25 s, not a read in the script
+# itself. bash 3.2 does not act on a trapped TERM or INT while a read blocks, and a timed read is no
+# way round that there: a `read -t` that times out ends with 1, the same status as the end of the
+# input, so the two cannot be told apart (measured 2026-11-18, bash 3.2.57). The reader is handed
+# the script's own standard input, since a background command is otherwise given /dev/null, and
+# leaves the read's status in the work folder; the script's traps run between the ticks.
+enter_file="$work/enter-status"
+{
+  reader_status=0
+  IFS= read -r _ || reader_status=$?
+  printf '%s\n' "$reader_status" > "$enter_file"
+} <&0 &
+enter_reader_pid=$!
+while [ ! -s "$enter_file" ]; do
+  sleep 0.25
 done
-[ "$enter_status" -eq 0 ] \
+enter_reader_pid=""
+enter_status=1
+IFS= read -r enter_status < "$enter_file" || true
+[ "$enter_status" = 0 ] \
   || die "the input ended before Enter, so nothing was captured or written. Run checks/readme-capture.sh again from a terminal where you can press Enter."
 
 # --- the capture ---
