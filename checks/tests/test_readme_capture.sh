@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Version: 1.0.0 — first version: the capture's admission, usage, tool lookup and work folder, and
-#   the scan that holds it to no variable of its own and no network tool
+# Version: 1.0.0 — first version: the capture's admission, usage, tool lookup, work folder, build,
+#   fixture, launch, capture, metadata check, write and close, and the scan that holds it to no
+#   variable of its own and no network tool
 #
 # checks/tests/test_readme_capture.sh — the cases of checks/readme-capture.sh.
 #
@@ -11,8 +12,11 @@
 #   ordinary text and file tools and shasum, each linked in by name, and a stand-in for every other
 #   program the script runs. Each stand-in logs its calls to a file the case reads. `uname` and
 #   `sysctl` answer as the case sets, `mktemp` makes its folder inside the case's scratch so nothing
-#   lands in the real /tmp, and HOME points into the scratch. No case runs the host's git, tar or
-#   cargo.
+#   lands in the real /tmp, and HOME points into the scratch. `sleep` is a stand-in too, one that
+#   returns at once, so the script's launch bound of eighty ticks takes no real time. `open` records
+#   a process in the list `ps` prints, `kill` stops it, `screencapture` writes the PNG the case
+#   supplies and `swiftc` writes a probe whose two modes reply as the case sets. No case runs the
+#   host's git, tar or cargo.
 #
 # THE RECORDED GIT REPLIES
 #   The stand-in `git` replays replies recorded once from the real `git` and committed as data under
@@ -32,13 +36,15 @@ set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 SCRIPT="$ROOT/checks/readme-capture.sh"
 REPLIES="$ROOT/checks/tests/support/readme_capture_git_replies"
+# Recorded once for the picture check's suite; the capture's pass case replays its `ls-files` hit.
+PICTURE_REPLIES="$ROOT/checks/tests/support/readme_picture_git_replies"
 # The hash the git stand-in prints for `rev-parse HEAD`, and so the one the build must be held to.
 COMMIT_HASH="3f2a9c1d5e7b40816a2c9d4e1f0b7a5c3d8e6f19"
-TOOLS="bash awk sed grep cat tr head wc cmp cp mkdir rm sleep shasum"
+TOOLS="bash awk sed grep cat tr head wc cmp cp mkdir rm shasum"
 # The eleven programs the script looks up, each of which a case may leave off PATH.
 LOOKED_UP="git open ps kill screencapture swiftc shasum mktemp id hostname scutil"
 # Every stand-in the harness builds; a program the suite links in as an ordinary tool is not one.
-STAND_INS="uname sysctl git open ps kill screencapture swiftc mktemp id hostname scutil"
+STAND_INS="uname sysctl git open ps kill screencapture swiftc mktemp id hostname scutil sleep"
 
 WORK=""
 SUB=""
@@ -53,6 +59,10 @@ test_the_bundle_is_built_from_the_recorded_commit_offline
 test_versions_that_disagree_are_refused_before_the_build
 test_the_fixture_is_a_fresh_repository_outside_the_home
 test_a_failed_clone_checkout_build_or_fixture_step_is_refused_and_cleaned_up
+test_one_run_writes_the_picture_and_the_record_and_the_check_then_passes
+test_an_interrupted_run_removes_everything_it_made
+test_each_refusal_writes_nothing_in_the_repository
+test_a_picture_whose_metadata_names_the_machine_is_refused
 test_the_capture_reads_no_variable_of_its_own_and_names_no_network_tool
 "
 
@@ -83,7 +93,7 @@ stand_in() {
 
 # Fills the placeholders of a stand-in's text with this scene's folders.
 render() {
-  sed -e "s|@SCENE@|$scene|g" -e "s|@REPLIES@|$REPLIES|g"
+  sed -e "s|@SCENE@|$scene|g" -e "s|@REPLIES@|$REPLIES|g" -e "s|@PICTURE_REPLIES@|$PICTURE_REPLIES|g"
 }
 
 # The `git` stand-in: it logs the isolation it was run under and its arguments, then replays the
@@ -95,6 +105,7 @@ write_git_stand_in() {
 #!/usr/bin/env bash
 scene="@SCENE@"
 replies="@REPLIES@"
+picture_replies="@PICTURE_REPLIES@"
 printf 'config=%s,%s args=%s\n' "${GIT_CONFIG_NOSYSTEM:-}" "${GIT_CONFIG_GLOBAL:-}" "$*" >> "$scene/log/git.log"
 dir=""
 sub=""
@@ -142,6 +153,9 @@ case "$sub" in
   commit)
     [ "$fail" != commit ] || replay commit_fail
     replay commit_ok;;
+  ls-files)
+    cat "$picture_replies/ls_files_hit.stdout"
+    exit "$(cat "$picture_replies/ls_files_hit.status")";;
   *)
     echo "stand-in git: no recorded reply for: $sub" >&2
     exit 99;;
@@ -151,7 +165,8 @@ STAND_IN
 }
 
 # What a clone of the product holds: the two files the versions are read from, the clone's own
-# ka-reader-mac/assemble.sh (a stand-in that records its environment and writes a bundle folder),
+# ka-reader-mac/assemble.sh (a stand-in that records its environment and writes a bundle folder
+# holding one executable),
 # and a CHANGELOG.md for the fixture to leave untracked.
 write_clone_source() {
   source_root="$scene/clone_source"
@@ -164,9 +179,11 @@ write_clone_source() {
 #!/usr/bin/env bash
 scene="@SCENE@"
 printf 'ran=%s\nCARGO_NET_OFFLINE=%s\n' "$0" "${CARGO_NET_OFFLINE:-}" >> "$scene/log/assemble.log"
-if [ "$(cat "$scene/assemble_bundle")" = yes ]; then
-  mkdir -p "${0%/*}/../target/release/bundle/macos/KA-Reader.app"
-fi
+bundle="${0%/*}/../target/release/bundle/macos/KA-Reader.app"
+case "$(cat "$scene/assemble_bundle")" in
+  yes) mkdir -p "$bundle/Contents/MacOS"; : > "$bundle/Contents/MacOS/ka-reader";;
+  empty) mkdir -p "$bundle/Contents/MacOS";;
+esac
 exit "$(cat "$scene/assemble_status")"
 STAND_IN
   chmod +x "$source_root/ka-reader-mac/assemble.sh"
@@ -178,6 +195,142 @@ set_versions() {
   mv "$scene/cargo.next" "$scene/clone_source/Cargo.toml"
   sed -e "s|<string>.*</string>|<string>$2</string>|" "$scene/clone_source/ka-reader-mac/Info.plist" > "$scene/plist.next"
   mv "$scene/plist.next" "$scene/clone_source/ka-reader-mac/Info.plist"
+}
+
+# A stand-in whose body is the text on standard input, run with $scene set to this scene's folder.
+stand_in_script() {
+  name="$1"
+  {
+    echo '#!/usr/bin/env bash'
+    echo "scene=\"$scene\""
+    echo "printf '%s\\n' \"\$*\" >> \"\$scene/log/$name.log\""
+    cat
+  } > "$bin/$name"
+  chmod +x "$bin/$name"
+}
+
+# The stand-ins for the launch, the capture, the probe and the names the metadata is held against.
+# Every one answers from a file of the scene, so a case sets its reply by writing that file.
+write_launch_stand_ins() {
+  printf 'ok\n' > "$scene/screencapture_mode"
+  printf '0\n' > "$scene/open_status"
+  printf 'start\n' > "$scene/open_mode"
+  printf '4242\n' > "$scene/launch_pid"
+  printf 'no\n' > "$scene/ps_before_mode"
+  printf 'normal\n' > "$scene/kill_mode"
+  printf '0\n' > "$scene/swiftc_status"
+  printf 'one\n' > "$scene/probe_window"
+  printf '31337\n' > "$scene/window_number"
+  printf '0\n' > "$scene/probe_metadata_status"
+  printf 'container.PixelWidth = 10\nimage.PixelHeight = 10\n' > "$scene/probe_metadata"
+  printf 'scratchuser\n' > "$scene/login_name"
+  printf 'Scratch Person\n' > "$scene/full_name"
+  printf 'scratchhost\n' > "$scene/host_name"
+  printf 'Scratch Computer\n' > "$scene/computer_name"
+  printf 'scratch-local\n' > "$scene/local_host_name"
+  printf 'none\n' > "$scene/unreadable"
+  printf '\211PNG\r\n\032\nstand-in pixels\n' > "$scene/png_source"
+  printf '\n' > "$scene/stdin"
+  : > "$scene/running"
+  : > "$scene/stopped"
+  stand_in_script sleep <<'STAND_IN'
+exit 0
+STAND_IN
+  stand_in_script open <<'STAND_IN'
+[ "$(cat "$scene/open_status")" = 0 ] || exit "$(cat "$scene/open_status")"
+if [ "$(cat "$scene/open_mode")" = start ]; then
+  for exe in "$2"/Contents/MacOS/*; do :; done
+  printf '%s %s\n' "$(cat "$scene/launch_pid")" "$exe" >> "$scene/running"
+fi
+exit 0
+STAND_IN
+  stand_in_script ps <<'STAND_IN'
+if [ "$(cat "$scene/ps_before_mode")" = yes ]; then
+  for exe in "$scene"/tmp/ka-reader-picture.*/build/target/release/bundle/macos/KA-Reader.app/Contents/MacOS/*; do
+    [ -f "$exe" ] || continue
+    dir="$(cd "${exe%/*}" && pwd -P)"
+    printf '777 %s/%s\n' "$dir" "${exe##*/}"
+  done
+fi
+cat "$scene/running"
+exit 0
+STAND_IN
+  stand_in_script kill <<'STAND_IN'
+case "$1" in
+  -0)
+    awk -v wanted="$2" '$1 == wanted { found = 1 } END { exit !found }' "$scene/running" || exit 1
+    ! grep -q -x -F -e "$2" "$scene/stopped" || exit 1
+    exit 0;;
+  *)
+    [ "$(cat "$scene/kill_mode")" = stubborn ] || printf '%s\n' "$2" >> "$scene/stopped"
+    exit 0;;
+esac
+STAND_IN
+  stand_in_script screencapture <<'STAND_IN'
+for last; do :; done
+case "$(cat "$scene/screencapture_mode")" in
+  fail) exit 5;;
+  empty) : > "$last"; exit 0;;
+  notpng) printf 'not a png\n' > "$last"; exit 0;;
+  *) cp "$scene/png_source" "$last"; exit 0;;
+esac
+STAND_IN
+  render > "$scene/probe_template" <<'PROBE'
+#!/usr/bin/env bash
+scene="@SCENE@"
+printf '%s\n' "$*" >> "$scene/log/probe.log"
+case "$1" in
+  window)
+    case "$(cat "$scene/probe_window")" in
+      one) cat "$scene/window_number"; exit 0;;
+      zero) echo "ka-reader-window-probe: process $2 owns 0 on-screen windows at layer 0, and exactly 1 is needed" >&2; exit 1;;
+      two) echo "ka-reader-window-probe: process $2 owns 2 on-screen windows at layer 0, and exactly 1 is needed" >&2; exit 1;;
+      *) echo "ka-reader-window-probe: cannot read the list of windows on screen" >&2; exit 1;;
+    esac;;
+  metadata)
+    [ "$(cat "$scene/probe_metadata_status")" = 0 ] || { echo "ka-reader-window-probe: cannot open $2 as an image" >&2; exit 1; }
+    cat "$scene/probe_metadata"
+    exit 0;;
+esac
+exit 2
+PROBE
+  chmod +x "$scene/probe_template"
+  stand_in_script swiftc <<'STAND_IN'
+status="$(cat "$scene/swiftc_status")"
+if [ "$status" != 0 ]; then
+  echo "main.swift:1:1: error: stand-in compile error" >&2
+  exit "$status"
+fi
+out=""
+while [ $# -gt 0 ]; do
+  [ "$1" != -o ] || out="$2"
+  shift
+done
+cp "$scene/probe_template" "$out"
+exit 0
+STAND_IN
+  stand_in_script id <<'STAND_IN'
+case "$*" in
+  -un) reader=login; file=login_name;;
+  -F) reader=full; file=full_name;;
+  *) exit 1;;
+esac
+[ "$(cat "$scene/unreadable")" != "$reader" ] || exit 1
+cat "$scene/$file"
+STAND_IN
+  stand_in_script hostname <<'STAND_IN'
+[ "$(cat "$scene/unreadable")" != host ] || exit 1
+cat "$scene/host_name"
+STAND_IN
+  stand_in_script scutil <<'STAND_IN'
+case "$*" in
+  "--get ComputerName") reader=computer; file=computer_name;;
+  "--get LocalHostName") reader=local; file=local_host_name;;
+  *) exit 1;;
+esac
+[ "$(cat "$scene/unreadable")" != "$reader" ] || exit 1
+cat "$scene/$file"
+STAND_IN
 }
 
 # Builds one scene: the PATH directory, the scratch product root, the home, the stand-ins and their
@@ -208,9 +361,7 @@ fixture() {
   printf 'yes\n' > "$scene/assemble_bundle"
   write_git_stand_in
   write_clone_source
-  for plain in open ps kill screencapture swiftc id hostname scutil; do
-    stand_in "$plain" 'exit 0'
-  done
+  write_launch_stand_ins
   stand_in mktemp "
 case \"\$(cat \"$scene/mktemp_mode\")\" in
   under_home) parent=\"$home\" ;;
@@ -234,11 +385,11 @@ snapshot() {
 }
 
 # Runs the real script in the scratch product root, under env -i with only the built PATH and a
-# HOME inside the scratch. Standard input is closed.
+# HOME inside the scratch. Standard input is the scene's stdin file: one Enter, unless the case sets it.
 run_capture() {
   before="$(snapshot "$tree")"
   status=0
-  (cd "$tree" && /usr/bin/env -i PATH="$bin" HOME="$home" "$tree/checks/readme-capture.sh" "$@") < /dev/null > "$scene/out" 2> "$scene/err" || status=$?
+  (cd "$tree" && /usr/bin/env -i PATH="$bin" HOME="$home" "$tree/checks/readme-capture.sh" "$@") < "$scene/stdin" > "$scene/out" 2> "$scene/err" || status=$?
   stdout="$(cat "$scene/out")"
   stderr="$(cat "$scene/err")"
   after="$(snapshot "$tree")"
@@ -292,7 +443,7 @@ expect_work_folders_gone() {
 
 # The stderr lines that are no progress line of the script: the refusals.
 refusal_lines() {
-  printf '%s\n' "$stderr" | grep -v -E '^readme-capture.sh: (building |built |making the fixture|the fixture repository is ready)' || true
+  printf '%s\n' "$stderr" | grep -v -E "^readme-capture.sh: (building |built |making the fixture|the fixture repository is ready|compiling |launching |KA-Reader is running|in its Open panel|keep Files|when the window shows|capturing window|checking the picture|the picture's metadata holds none)" || true
 }
 
 # A refusal is one line among the progress lines the run printed before it.
@@ -437,7 +588,6 @@ test_the_bundle_is_built_from_the_recorded_commit_offline() {
     || fail "the assemble.sh that ran is not the build clone's: $(cat "$logs/assemble.log")" || return 1
   grep -F -x -q "CARGO_NET_OFFLINE=true" "$logs/assemble.log" \
     || fail "assemble.sh did not see CARGO_NET_OFFLINE=true: $(cat "$logs/assemble.log")" || return 1
-  expect_untouched open ps kill screencapture swiftc
 }
 
 # CP-1374: the two versions are read from the clone and must agree, before the build runs.
@@ -518,6 +668,243 @@ test_a_failed_clone_checkout_build_or_fixture_step_is_refused_and_cleaned_up() {
       bundle-missing) expect_stderr_names "is not there" || return 1;;
     esac
   done
+  SUB=""
+}
+
+# The launched process, recorded by the `open` stand-in as pid 4242, was sent TERM.
+expect_launched_process_stopped() {
+  grep -F -q -e "-TERM 4242" "$logs/kill.log" 2> /dev/null || fail "the launched process 4242 was not stopped: $(cat "$logs/kill.log" 2> /dev/null)"
+}
+
+# No process was launched, so none was stopped.
+expect_no_process_stopped() {
+  [ ! -s "$logs/kill.log" ] || fail "the kill stand-in was called, with no process launched: $(cat "$logs/kill.log")"
+}
+
+# What a refusal after the launch leaves: one line, nothing in the repository, the work folder gone and
+# the launched process stopped.
+expect_clean_refusal_after_launch() {
+  expect_status 1 && expect_one_refusal && expect_nothing_written && expect_work_folders_gone && expect_launched_process_stopped
+}
+
+# CP-1370, CP-1374: one run, with Enter on standard input, writes the picture and the record, and
+# the real check then passes on the tree that holds them with the README line, tracked.
+test_one_run_writes_the_picture_and_the_record_and_the_check_then_passes() {
+  SUB="a run to the end"
+  fixture
+  run_capture
+  expect_status 0 || return 1
+  work_folder="$(head -1 "$scene/made")"
+  new_entries="$(printf '%s\n' "$after" | grep -v -F -x -f <(printf '%s\n' "$before") || true)"
+  new_paths="$(printf '%s\n' "$new_entries" | awk '{ print $2 }' | LC_ALL=C sort | tr '\n' ' ')"
+  [ "$new_paths" = "./docs/readme/shell.png ./docs/readme/shell.record " ] \
+    || fail "the new entries in the product root are not the picture and the record alone: $new_paths" || return 1
+  [ "$(printf '%s\n' "$before" | grep -v -F -x -f <(printf '%s\n' "$after") | wc -l | tr -d ' ')" -eq 0 ] \
+    || fail "an entry of the product root was changed or removed" || return 1
+  cmp -s "$scene/png_source" "$tree/docs/readme/shell.png" || fail "docs/readme/shell.png is not the supplied PNG's bytes" || return 1
+  digest="$(shasum -a 256 "$scene/png_source" | awk '{ print $1 }')"
+  expected_record="picture: docs/readme/shell.png
+version: 0.1.0
+commit: $COMMIT_HASH
+sha256: $digest"
+  [ "$(cat "$tree/docs/readme/shell.record")" = "$expected_record" ] \
+    || fail "docs/readme/shell.record is not the four lines in order: $(cat "$tree/docs/readme/shell.record")" || return 1
+  [ "$(wc -l < "$tree/docs/readme/shell.record" | tr -d ' ')" -eq 4 ] || fail "docs/readme/shell.record is not four lines" || return 1
+  [ "$(printf '%s\n' "$stdout" | wc -l | tr -d ' ')" -eq 1 ] || fail "expected one stdout line, got: $stdout" || return 1
+  case "$stdout" in
+    *"docs/readme/shell.png"*"0.1.0"*"$COMMIT_HASH"*) ;;
+    *) fail "the stdout line does not name the picture, the version and the commit: $stdout" || return 1;;
+  esac
+  expect_stderr_names "$work_folder/ka-reader" || return 1
+  expect_work_folders_gone || return 1
+  [ ! -e "$work_folder/build" ] && [ ! -e "$work_folder/ka-reader" ] || fail "a clone or the fixture is still there" || return 1
+  expect_launched_process_stopped || return 1
+
+  # The real check, on the tree the capture wrote, with the README line and the picture tracked.
+  cp "$ROOT/checks/readme-picture.sh" "$tree/checks/readme-picture.sh"
+  chmod +x "$tree/checks/readme-picture.sh"
+  mkdir -p "$tree/ka-reader-mac"
+  cp "$scene/clone_source/Cargo.toml" "$tree/Cargo.toml"
+  cp "$scene/clone_source/ka-reader-mac/Info.plist" "$tree/ka-reader-mac/Info.plist"
+  printf 'The description.\n\n![The shell.](docs/readme/shell.png)\n' > "$tree/README.md"
+  check_status=0
+  (cd "$tree" && /usr/bin/env -i PATH="$bin" "$tree/checks/readme-picture.sh") > "$scene/check_out" 2> "$scene/check_err" || check_status=$?
+  [ "$check_status" -eq 0 ] && [ ! -s "$scene/check_err" ] \
+    || fail "the real check did not pass on the capture's output: exit $check_status, $(cat "$scene/check_err")" || return 1
+
+  SUB="a process of the same executable was running before"
+  fixture
+  printf 'yes\n' > "$scene/ps_before_mode"
+  run_capture
+  expect_status 0 && expect_launched_process_stopped || return 1
+  ! grep -q -e "777" "$logs/kill.log" || fail "a process that was running before open was named to kill: $(cat "$logs/kill.log")" || return 1
+  SUB=""
+}
+
+# QC-70: TERM and INT while the script waits for Enter end it with 143 and 130 (or 1, never 0), with
+# the launched process stopped, the work folder gone and nothing in docs/readme/. A process that will
+# not stop is named to the person.
+test_an_interrupted_run_removes_everything_it_made() {
+  for signal in TERM:143 INT:130; do
+    name="${signal%%:*}"
+    allowed="${signal##*:}"
+    SUB="$name while waiting for Enter"
+    fixture
+    mkfifo "$scene/stdin_pipe"
+    exec 3<> "$scene/stdin_pipe"
+    before="$(snapshot "$tree")"
+    cd "$tree" || return 1
+    # One simple command in the background, so $! is the script's own pid, and job control on, so the
+    # background job does not ignore INT. The fifo's write end is held open, so standard input does
+    # not end.
+    set -m
+    /usr/bin/env -i PATH="$bin" HOME="$home" "$tree/checks/readme-capture.sh" < "$scene/stdin_pipe" > "$scene/out" 2> "$scene/err" &
+    pid=$!
+    waited=0
+    while ! grep -q -F "press Enter here" "$scene/err" && [ "$waited" -lt 200 ]; do
+      sleep 0.05
+      waited=$((waited + 1))
+    done
+    kill -s "$name" "$pid" 2> /dev/null
+    status=0
+    wait "$pid" || status=$?
+    set +m
+    exec 3>&-
+    stderr="$(cat "$scene/err")"
+    after="$(snapshot "$tree")"
+    if [ "$status" -ne "$allowed" ] && [ "$status" -ne 1 ]; then
+      fail "ended with $status, expected $allowed or 1, never 0. stderr: $stderr" || return 1
+    fi
+    expect_launched_process_stopped && expect_work_folders_gone && expect_nothing_written || return 1
+  done
+
+  SUB="the launched process cannot be stopped"
+  fixture
+  printf 'stubborn\n' > "$scene/kill_mode"
+  run_capture
+  expect_status 0 && expect_stderr_names "could not stop KA-Reader (pid 4242)" || return 1
+  grep -F -q -e "-KILL 4242" "$logs/kill.log" || fail "the process was not sent KILL after TERM: $(cat "$logs/kill.log")" || return 1
+  SUB=""
+}
+
+# Each way the launch, the window, the capture or the probe can fail is one line, exit 1, nothing in
+# the repository, the work folder gone and, once launched, the process stopped.
+test_each_refusal_writes_nothing_in_the_repository() {
+  SUB="the input ends before Enter"
+  fixture
+  : > "$scene/stdin"
+  run_capture
+  expect_clean_refusal_after_launch && expect_stderr_names "the input ended before Enter" || return 1
+
+  SUB="open fails"
+  fixture
+  printf '3\n' > "$scene/open_status"
+  run_capture
+  expect_status 1 && expect_one_refusal && expect_nothing_written && expect_work_folders_gone \
+    && expect_stderr_names "exited with status 3" && expect_no_process_stopped || return 1
+
+  SUB="no new process appears"
+  fixture
+  printf 'noprocess\n' > "$scene/open_mode"
+  run_capture
+  expect_status 1 && expect_one_refusal && expect_nothing_written && expect_work_folders_gone \
+    && expect_stderr_names "no new KA-Reader process appeared within 20 seconds" && expect_no_process_stopped || return 1
+
+  SUB="the probe reports zero windows"
+  fixture
+  printf 'zero\n' > "$scene/probe_window"
+  run_capture
+  expect_clean_refusal_after_launch && expect_stderr_names "has no window on screen" || return 1
+
+  SUB="the probe reports two windows"
+  fixture
+  printf 'two\n' > "$scene/probe_window"
+  run_capture
+  expect_clean_refusal_after_launch && expect_stderr_names "has 2 windows on screen" || return 1
+
+  SUB="the probe cannot read the window list"
+  fixture
+  printf 'unreadable\n' > "$scene/probe_window"
+  run_capture
+  expect_clean_refusal_after_launch && expect_stderr_names "could not read the list of windows on screen" || return 1
+
+  SUB="screencapture fails"
+  fixture
+  printf 'fail\n' > "$scene/screencapture_mode"
+  run_capture
+  expect_clean_refusal_after_launch && expect_stderr_names "screencapture exited with status 5" || return 1
+
+  SUB="screencapture writes an empty file"
+  fixture
+  printf 'empty\n' > "$scene/screencapture_mode"
+  run_capture
+  expect_clean_refusal_after_launch && expect_stderr_names "screencapture wrote an empty file" || return 1
+
+  SUB="screencapture writes a file that is not a PNG"
+  fixture
+  printf 'notpng\n' > "$scene/screencapture_mode"
+  run_capture
+  expect_clean_refusal_after_launch && expect_stderr_names "is not a PNG" || return 1
+
+  SUB="the probe does not compile"
+  fixture
+  printf '1\n' > "$scene/swiftc_status"
+  run_capture
+  expect_status 1 && expect_one_refusal && expect_nothing_written && expect_work_folders_gone \
+    && expect_stderr_names "swiftc could not compile checks/window_probe/main.swift" \
+    && expect_stderr_names "stand-in compile error" && expect_untouched open ps kill screencapture || return 1
+
+  SUB="the probe cannot read the picture's metadata"
+  fixture
+  printf '1\n' > "$scene/probe_metadata_status"
+  run_capture
+  expect_clean_refusal_after_launch && expect_stderr_names "could not read the picture's metadata" || return 1
+
+  SUB="the bundle holds no executable"
+  fixture
+  printf 'empty\n' > "$scene/assemble_bundle"
+  run_capture
+  expect_status 1 && expect_one_refusal && expect_nothing_written && expect_work_folders_gone \
+    && expect_stderr_names "exactly one executable" && expect_untouched open ps kill screencapture swiftc || return 1
+  SUB=""
+}
+
+# CP-1369: the picture's decoded metadata is held against six names, each as a fixed string. A name
+# found, or a name that cannot be read, holds the picture back, and an empty full name is nothing to
+# look for.
+test_a_picture_whose_metadata_names_the_machine_is_refused() {
+  for held in "login name:scratchuser:login_name" "full name:Scratch Person:full_name" "home folder:@HOME@:" \
+    "host name:scratchhost:host_name" "computer name:Scratch Computer:computer_name" "local host name:scratch-local:local_host_name"; do
+    label="${held%%:*}"
+    rest="${held#*:}"
+    value="${rest%:*}"
+    SUB="the metadata holds the $label"
+    fixture
+    [ "$value" != "@HOME@" ] || value="$home"
+    printf 'container.Description = made for %s\n' "$value" > "$scene/probe_metadata"
+    run_capture
+    expect_clean_refusal_after_launch && expect_stderr_names "the picture's metadata holds this" && expect_stderr_names "$value" || return 1
+  done
+
+  for unreadable in login full host computer local; do
+    SUB="the $unreadable name cannot be read"
+    fixture
+    printf '%s\n' "$unreadable" > "$scene/unreadable"
+    run_capture
+    expect_clean_refusal_after_launch && expect_stderr_names "could not read this" || return 1
+  done
+
+  SUB="the full name is empty"
+  fixture
+  : > "$scene/full_name"
+  run_capture
+  expect_status 0 && [ -f "$tree/docs/readme/shell.png" ] || fail "an empty full name refused the run, or nothing was written: $stderr" || return 1
+
+  SUB="a name is in the picture's bytes and not in its properties"
+  fixture
+  printf '\211PNG\r\n\032\nscratchuser Scratch Person scratchhost\n' > "$scene/png_source"
+  run_capture
+  expect_status 0 && [ -f "$tree/docs/readme/shell.png" ] || fail "the raw bytes were searched, and the picture was refused: $stderr" || return 1
   SUB=""
 }
 
