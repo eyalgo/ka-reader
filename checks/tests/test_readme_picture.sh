@@ -411,8 +411,10 @@ test_a_signal_never_ends_with_zero() {
     SUB="$name"
     fixture
     printf '1\n' > "$scene/git_delay"
+    # One simple command in the background, so $! is the script's own pid (env replaces itself with
+    # it), and job control on, so the background job does not ignore INT.
     set -m
-    (cd "$tree" && /usr/bin/env -i PATH="$bin" "$tree/checks/readme-picture.sh") > "$scene/out" 2> "$scene/err" &
+    /usr/bin/env -i PATH="$bin" "$tree/checks/readme-picture.sh" > "$scene/out" 2> "$scene/err" &
     pid=$!
     waited=0
     while [ ! -s "$scene/git.log" ] && [ "$waited" -lt 100 ]; do
@@ -436,7 +438,14 @@ test_the_check_holds_no_write() {
   source_text="$(sed '/^[[:space:]]*#/d' "$CHECK")"
   forbidden="$(printf '%s\n' "$source_text" | grep -E '(^|[[:space:];|])(curl|wget|ssh|scp|nc|touch|mktemp|mkdir|rm|mv|cp|tee|install|python3?|perl|ruby|eval)([[:space:];|]|$)|<<|system[[:space:]]*\(|ENVIRON|\$\{[A-Z_][A-Z_0-9]*[:-]' || true)"
   [ -z "$forbidden" ] || fail "checks/readme-picture.sh holds a write outside its comments: $forbidden" || return 1
-  redirects="$(printf '%s\n' "$source_text" | sed 's@> */dev/null@@g' | grep -E '>([[:space:]]+"?[$/.A-Za-z_]|"[$/.A-Za-z_]|[$/.])|>>' || true)"
+  # Quoted text is dropped first, so the > of an <key> tag or of a message is no redirect.
+  unquoted="$(printf '%s\n' "$source_text" | awk '{ out = ""; n = length($0)
+    for (i = 1; i <= n; i++) { c = substr($0, i, 1)
+      if (quote == "") { if (c == "\047" || c == "\"") quote = c; else out = out c }
+      else if (c == "\\" && quote == "\"") i++
+      else if (c == quote) quote = "" }
+    print out }')"
+  redirects="$(printf '%s\n' "$unquoted" | sed 's@> */dev/null@@g' | grep -E '>([[:space:]]+"?[$/.A-Za-z_]|"[$/.A-Za-z_]|[$/.])|>>' || true)"
   [ -z "$redirects" ] || fail "checks/readme-picture.sh holds a write outside its comments: $redirects"
 }
 
