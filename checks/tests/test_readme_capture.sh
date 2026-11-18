@@ -61,7 +61,9 @@ test_the_bundle_is_built_from_the_recorded_commit_offline
 test_versions_that_disagree_are_refused_before_the_build
 test_the_fixture_is_a_fresh_repository_outside_the_home
 test_a_failed_clone_checkout_build_or_fixture_step_is_refused_and_cleaned_up
+test_the_capture_reads_the_versions_by_the_checks_own_rules
 test_one_run_writes_the_picture_and_the_record_and_the_check_then_passes
+test_the_run_waits_for_enter_until_the_person_presses_it
 test_an_interrupted_run_removes_everything_it_made
 test_each_refusal_writes_nothing_in_the_repository
 test_a_picture_whose_metadata_names_the_machine_is_refused
@@ -793,6 +795,56 @@ interrupt_while_waiting_for_enter() {
     fail "ended with $status, expected $allowed or 1, never 0. stderr: $stderr" || return 1
   fi
   expect_launched_process_stopped && expect_work_folders_gone && expect_nothing_written
+}
+
+# Task 7's launch: the script tells the person what to do and then waits for Enter, for as long as the
+# person takes. Standard input stays open with no line on it for longer than any slice the wait could
+# be cut into; the run is still waiting, has captured and written nothing, and Enter then finishes it.
+test_the_run_waits_for_enter_until_the_person_presses_it() {
+  fixture
+  mkfifo "$scene/stdin_pipe"
+  exec 3<> "$scene/stdin_pipe"
+  before="$(snapshot "$tree")"
+  (cd "$tree" && exec /usr/bin/env -i PATH="$bin" HOME="$home" "$tree/checks/readme-capture.sh") \
+    < "$scene/stdin_pipe" > "$scene/out" 2> "$scene/err" &
+  pid=$!
+  waited=0
+  while ! grep -q -F "press Enter here" "$scene/err" && [ "$waited" -lt 1200 ]; do
+    sleep 0.05
+    waited=$((waited + 1))
+  done
+  grep -q -F "press Enter here" "$scene/err" || { exec 3>&-; wait "$pid"; fail "the run never asked for Enter: $(cat "$scene/err")"; return 1; }
+  sleep 3
+  still_waiting=0
+  kill -0 "$pid" 2> /dev/null || still_waiting=1
+  captured="$(cat "$logs/screencapture.log" 2> /dev/null || true)"
+  printf '\n' >&3
+  status=0
+  wait "$pid" || status=$?
+  exec 3>&-
+  stderr="$(cat "$scene/err")"
+  after="$(snapshot "$tree")"
+  [ "$still_waiting" -eq 0 ] || fail "the run stopped waiting for Enter before the person pressed it: exit $status. stderr: $stderr" || return 1
+  [ -z "$captured" ] || fail "the window was captured before Enter: $captured" || return 1
+  expect_status 0 || return 1
+  [ -f "$tree/docs/readme/shell.png" ] && [ -f "$tree/docs/readme/shell.record" ] \
+    || fail "Enter did not finish the run with the picture and the record written. stderr: $stderr"
+}
+
+# Task 6's build reads the two versions "by the same rules as Task 1's check": the capture's two awk
+# programs are the check's, line for line, so the version a record names is the one the check reads.
+test_the_capture_reads_the_versions_by_the_checks_own_rules() {
+  check="$ROOT/checks/readme-picture.sh"
+  for pair in "CARGO_VERSION_PROGRAM:cargo_program" "PLIST_VERSION_PROGRAM:plist_program"; do
+    capture_name="${pair%%:*}"
+    check_name="${pair##*:}"
+    capture_text="$(sed -n "/^$capture_name='\$/,/^'\$/p" "$SCRIPT")"
+    check_text="$(sed -n "/^$check_name='\$/,/^'\$/p" "$check")"
+    [ -n "$capture_text" ] || fail "checks/readme-capture.sh holds no $capture_name program" || return 1
+    [ -n "$check_text" ] || fail "checks/readme-picture.sh holds no $check_name program" || return 1
+    [ "$(printf '%s\n' "$capture_text" | sed '1d')" = "$(printf '%s\n' "$check_text" | sed '1d')" ] \
+      || fail "the capture's $capture_name is not the check's $check_name, line for line" || return 1
+  done
 }
 
 # QC-70: TERM and INT while the script waits for Enter end it with 143 and 130 (or 1, never 0), with

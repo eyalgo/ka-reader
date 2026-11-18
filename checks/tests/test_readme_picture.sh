@@ -172,15 +172,29 @@ letters() {
 
 expect_letters() {
   got="$(letters)"
-  [ "$got" = "$1 " ] || fail "expected the lines for conditions $2, in that order, got: $stderr"
+  [ "$got" = "$1 " ] || fail "expected the lines for conditions $2, in that order, got: $stderr" || return 1
+  expect_lines_in_the_shape
+}
+
+# CP-1376: every stderr line has the one shape, `readme-picture.sh: <file>: <found>. <what to do>,
+# then run checks/readme-picture.sh from the product root.`
+expect_lines_in_the_shape() {
+  while IFS= read -r line; do
+    [ -n "$line" ] || continue
+    case "$line" in
+      "readme-picture.sh: "?*": "?*". "?*", then run checks/readme-picture.sh from the product root.") ;;
+      *) fail "a stderr line is not in the shape <check>: <file>: <found>. <what to do>, then run checks/readme-picture.sh from the product root.: $line" || return 1;;
+    esac
+  done <<< "$stderr"
 }
 
 # Exactly one stderr line, and it is the one condition's.
 expect_one_condition() {
   expect_stdout_empty || return 1
   count="$(printf '%s' "$stderr" | wc -l | tr -d ' ')"
-  [ -n "$stderr" ] && [ "$count" -eq 0 ] || fail "expected exactly one line for condition ($1), got: $stderr"
-  [ "$(letter_of "$stderr")" = "$1" ] || fail "expected exactly one line for condition ($1), got: $stderr"
+  [ -n "$stderr" ] && [ "$count" -eq 0 ] || fail "expected exactly one line for condition ($1), got: $stderr" || return 1
+  [ "$(letter_of "$stderr")" = "$1" ] || fail "expected exactly one line for condition ($1), got: $stderr" || return 1
+  expect_lines_in_the_shape
 }
 
 expect_line_names() {
@@ -242,13 +256,17 @@ test_an_unreadable_readme_is_condition_a_not_a_pass() {
   run_check
   expect_status 1 || return 1
   expect_one_condition a || return 1
-  SUB="README.md unreadable"
+  # A folder where the file should be, not a file made unreadable with chmod: root reads a file
+  # whatever its mode, so a chmod case would hold only for whoever runs the suite (testing_doctrine.md,
+  # "Who runs it").
+  SUB="README.md present and not a file that can be read"
   fixture
-  chmod 000 "$tree/README.md"
+  rm "$tree/README.md"
+  mkdir "$tree/README.md"
   run_check
-  chmod 644 "$tree/README.md"
   expect_status 1 || return 1
-  expect_one_condition a
+  expect_one_condition a || return 1
+  expect_line_names a "README.md: cannot read this file"
 }
 
 test_a_missing_record_is_condition_b_alone() {
@@ -263,7 +281,7 @@ test_a_missing_record_is_condition_b_alone() {
 
 test_a_malformed_record_is_condition_b() {
   digest="$(digest_of "$ROOT/checks/tests/test_readme_picture.sh")"
-  for mutation in "no picture line" "no version line" "no commit line" "no sha256 line" "a line given twice" "an extra line" "the lines out of order" "a commit that is not 40 hex digits" "a digest that is not 64 hex digits" "an absolute picture path" "a picture path with .."; do
+  for mutation in "no picture line" "no version line" "no commit line" "no sha256 line" "a line given twice" "an extra line" "the lines out of order" "a commit that is not 40 hex digits" "a digest that is not 64 hex digits" "an absolute picture path" "a picture path with .." "a picture path with a scheme" "an empty version" "a version with a space"; do
     SUB="$mutation"
     fixture
     good="$(digest_of "$tree/$PICTURE")"
@@ -279,6 +297,9 @@ test_a_malformed_record_is_condition_b() {
       "a digest that is not 64 hex digits") printf 'picture: %s\nversion: 0.1.0\ncommit: %s\nsha256: %s\n' "$PICTURE" "$COMMIT" "${digest%??}";;
       "an absolute picture path") printf 'picture: /%s\nversion: 0.1.0\ncommit: %s\nsha256: %s\n' "$PICTURE" "$COMMIT" "$good";;
       "a picture path with ..") printf 'picture: docs/../%s\nversion: 0.1.0\ncommit: %s\nsha256: %s\n' "$PICTURE" "$COMMIT" "$good";;
+      "a picture path with a scheme") printf 'picture: https://example.com/%s\nversion: 0.1.0\ncommit: %s\nsha256: %s\n' "$PICTURE" "$COMMIT" "$good";;
+      "an empty version") printf 'picture: %s\nversion: \ncommit: %s\nsha256: %s\n' "$PICTURE" "$COMMIT" "$good";;
+      "a version with a space") printf 'picture: %s\nversion: 0.1.0 beta\ncommit: %s\nsha256: %s\n' "$PICTURE" "$COMMIT" "$good";;
     esac > "$tree/$RECORD"
     run_check
     expect_status 1 || return 1
@@ -318,7 +339,19 @@ test_a_missing_or_untracked_picture_is_condition_d() {
   run_check
   expect_status 1 || return 1
   expect_one_condition d || return 1
-  expect_line_names d "Git does not track it"
+  expect_line_names d "Git does not track it" || return 1
+  # With no record to name the picture, (d) checks the opening's first image path instead.
+  SUB="no record, and the picture the opening names absent"
+  fixture
+  rm "$tree/$RECORD" "$tree/$PICTURE"
+  run_check
+  expect_status 1 || return 1
+  expect_stdout_empty || return 1
+  expect_letters "b d" "(b) then (d)" || return 1
+  case "$stderr" in
+    *"readme-picture.sh: $PICTURE: no file is there"*) ;;
+    *) fail "the line for condition (d) does not name the opening's image path $PICTURE: $stderr";;
+  esac
 }
 
 test_rewritten_picture_bytes_are_condition_e() {
