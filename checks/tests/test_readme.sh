@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.2.4 — the pinned gate list names the README picture capture suite, after "Git beta walk suite"
 # Version: 1.2.3 — the pinned gate list names the README picture check suite, after "Release absent suite"
 # Version: 1.2.2 — the pinned gate list names the two Git view memory steps, after "Test gate"
 # Version: 1.2.1 — the pinned gate list names the two Git beta suites
@@ -563,6 +564,7 @@ run_step '"'"'Own state step suite'"'"' '"'"'checks/tests/test_own_state_step.sh
 run_step '"'"'Tree scene helper suite'"'"' '"'"'checks/tests/test_tree_scene.sh'"'"'
 run_step '"'"'Git beta scene helper suite'"'"' '"'"'checks/tests/test_git_beta_scene.sh'"'"'
 run_step '"'"'Git beta walk suite'"'"' '"'"'checks/tests/test_git_beta_walk.sh'"'"'
+run_step '"'"'README picture capture suite'"'"' '"'"'checks/tests/test_readme_capture.sh'"'"'
 run_step '"'"'Launch the built bundle'"'"' '"'"'checks/launch.sh'"'"'
 run_step '"'"'Own state'"'"' '"'"'checks/own-state-step.sh'"'"''
 DIRECT="run_step 'README check' 'checks/readme.sh'"

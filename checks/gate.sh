@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.24.0 — "README picture capture suite" joins the list, after "Git beta walk suite"
 # Version: 1.23.0 — "README picture check suite" joins the list, after "Release absent suite"
 # Version: 1.22.0 — "Git view memory bound" and its suite join the list, directly after "Test gate"
 # Version: 1.21.0 — "Test gate" skips the Git view memory suite, which runs one case at a time in a process of its own
@@ -197,9 +198,10 @@ run_step 'Release absent suite' 'checks/tests/test_release_absent.sh'
 run_step 'README picture check suite' 'checks/tests/test_readme_picture.sh'
 run_step 'Own state suite' 'checks/tests/test_own_state.sh'
 # "VM refusal suite", "Launch step suite", "Own state step suite", "Tree scene helper suite",
-# "Git beta scene helper suite" and "Git beta walk suite" launch nothing, so they run before the
-# real launch below. Each helper's suite holds a script that launches the bundle and so refuses off
-# a macOS VM (checks/tree-scene.sh, checks/git-beta-scene.sh), on stand-ins for `open`, `ps` and
+# "Git beta scene helper suite", "Git beta walk suite" and "README picture capture suite" launch
+# nothing, so they run before the real launch below. Each helper's suite holds a script that
+# launches the bundle and so refuses off a macOS VM (checks/tree-scene.sh, checks/git-beta-scene.sh,
+# and checks/readme-capture.sh, a person's tool that no step runs), on stand-ins for `open`, `ps` and
 # `kill`; the walk's suite holds the host script that starts the guest (checks/git-beta-walk.sh), on
 # stand-ins for `tart`. They come after the other launch-step suites and never after the real launch.
 run_step 'VM refusal suite' 'checks/tests/test_vm_refusal.sh'
@@ -208,6 +210,7 @@ run_step 'Own state step suite' 'checks/tests/test_own_state_step.sh'
 run_step 'Tree scene helper suite' 'checks/tests/test_tree_scene.sh'
 run_step 'Git beta scene helper suite' 'checks/tests/test_git_beta_scene.sh'
 run_step 'Git beta walk suite' 'checks/tests/test_git_beta_walk.sh'
+run_step 'README picture capture suite' 'checks/tests/test_readme_capture.sh'
 # The app's own log is written by a launch. Steps above this one launch the product, and each may
 # already have left the log behind: "Bundle probe", "Bundle probe suite", "Renderer gate" and
 # "Renderer gate suite". "Own state", the step that runs checks/own-state.sh against this machine's
