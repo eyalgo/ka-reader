@@ -88,7 +88,8 @@ render() {
 
 # The `git` stand-in: it logs the isolation it was run under and its arguments, then replays the
 # recorded reply for the call, unless the case names that call in git_fail. A clone writes the
-# scene's clone source into its destination, as the real clone writes the repository's files.
+# scene's clone source into its destination, with a .git of its own, as the real clone writes the
+# repository's files and its history.
 write_git_stand_in() {
   render > "$bin/git" <<'STAND_IN'
 #!/usr/bin/env bash
@@ -121,6 +122,7 @@ case "$sub" in
     [ "$fail" != "$kind" ] || replay clone_fail
     mkdir -p "$last"
     cp -R "$scene/clone_source/." "$last"
+    mkdir -p "$last/.git"
     replay clone_ok;;
   checkout)
     case "$dir" in */build) kind=checkout-build;; *) kind=checkout-fixture;; esac

@@ -77,6 +77,48 @@ die() { say "$*"; exit 1; }
 # use are constants in this file and never variables (docs/nfdr.md QC-67).
 REQUIRED_TOOLS="git open ps kill screencapture swiftc shasum mktemp id hostname scutil"
 WORK_FOLDER_TEMPLATE="/tmp/ka-reader-picture.XXXXXX"
+# The identity every fixture commit carries, so no machine's own shapes the picture.
+FIXTURE_IDENTITY_NAME="KA-Reader Capture"
+FIXTURE_IDENTITY_EMAIL="capture@example.invalid"
+FIXTURE_COMMIT_MESSAGE="KA-Reader fixture"
+# The one file the fixture leaves untracked, so its tree marks it with a changed-file letter.
+FIXTURE_UNTRACKED_FILE="CHANGELOG.md"
+# Where the clone's own assembly puts the bundle, relative to the clone.
+BUNDLE_IN_CLONE="target/release/bundle/macos/KA-Reader.app"
+
+# The version, read as text as checks/readme-picture.sh reads it: Cargo.toml's one version line in
+# its [workspace.package] table, and Info.plist's one <string> after its one
+# CFBundleShortVersionString key. awk ends with 3 when the text holds none or more than one.
+CARGO_VERSION_PROGRAM='
+/^\[/ { in_table = ($0 ~ /^\[workspace\.package\][ \t]*$/); next }
+in_table && /^version[ \t]*=[ \t]*"[^"]+"[ \t]*(#.*)?$/ {
+  value = $0
+  sub(/^version[ \t]*=[ \t]*"/, "", value)
+  sub(/".*$/, "", value)
+  count++
+  found = value
+}
+END { if (count != 1) exit 3; print found }
+'
+PLIST_VERSION_PROGRAM='
+{
+  text = $0
+  if (index(text, "<key>CFBundleShortVersionString</key>")) {
+    keys++
+    want = 1
+    sub(/.*<key>CFBundleShortVersionString<\/key>/, "", text)
+  }
+  if (want) {
+    if (text ~ /^[ \t\r]*$/) next
+    if (match(text, /<string>[^<]+<\/string>/)) {
+      strings++
+      found = substr(text, RSTART + 8, RLENGTH - 17)
+    }
+    want = 0
+  }
+}
+END { if (keys != 1 || strings != 1) exit 3; print found }
+'
 
 # --- the arguments ---
 
@@ -129,3 +171,70 @@ case "$work" in
     die "the work folder $work lies under the home folder $HOME, so nothing was cloned, built or launched. The fixture is kept outside every folder of yours: run checks/readme-capture.sh on a guest where /tmp lies outside the home folder."
     ;;
 esac
+
+# --- the commit, and the clones that are built and shown ---
+
+# Git runs with none of the machine's own configuration, the one fixed identity, no signing and no
+# hook, so no machine shapes a build clone or the fixture.
+git_isolated() {
+  GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null GIT_EDITOR=true GIT_TERMINAL_PROMPT=0 \
+    git -c user.name="$FIXTURE_IDENTITY_NAME" -c user.email="$FIXTURE_IDENTITY_EMAIL" -c commit.gpgsign=false -c core.hooksPath=/dev/null "$@"
+}
+
+root="$(pwd)"
+commit="$(git_isolated -C "$root" rev-parse HEAD 2> /dev/null)" || commit=""
+case "$commit" in
+  *[!0-9a-f]* | "") commit="" ;;
+esac
+[ "${#commit}" -eq 40 ] \
+  || die "could not read the commit at HEAD in $root, so nothing was cloned, built or launched. Run checks/readme-capture.sh from the root of a product checkout that has a commit."
+
+# --- the build ---
+
+build="$work/build"
+say "building KA-Reader.app from commit $commit in $build, with Cargo held offline."
+git_isolated clone --quiet --no-hardlinks "$root" "$build" > /dev/null 2>&1 \
+  || die "could not clone $root into $build, so nothing was built or launched. Check that /tmp has room and can be written, then run checks/readme-capture.sh from the product root."
+git_isolated -C "$build" checkout --quiet --detach "$commit" > /dev/null 2>&1 \
+  || die "could not check out commit $commit in $build, so nothing was built or launched. Run checks/readme-capture.sh again from the product root."
+
+cargo_version="$(LC_ALL=C awk "$CARGO_VERSION_PROGRAM" "$build/Cargo.toml" 2> /dev/null)" \
+  || die "Cargo.toml at commit $commit holds no single version line in its [workspace.package] table, so nothing was built or launched. Commit Cargo.toml with exactly one version line there, then run checks/readme-capture.sh from the product root."
+plist_version="$(LC_ALL=C awk "$PLIST_VERSION_PROGRAM" "$build/ka-reader-mac/Info.plist" 2> /dev/null)" \
+  || die "ka-reader-mac/Info.plist at commit $commit holds no single <string> after <key>CFBundleShortVersionString</key>, so nothing was built or launched. Commit Info.plist with exactly one such key and its <string>, then run checks/readme-capture.sh from the product root."
+[ "$cargo_version" = "$plist_version" ] \
+  || die "at commit $commit, Cargo.toml carries version $cargo_version and ka-reader-mac/Info.plist carries $plist_version, so nothing was built or launched. Commit the same version in both, then run checks/readme-capture.sh from the product root."
+version="$cargo_version"
+
+# Cargo held offline: a crate missing from the guest's cache stops the build rather than being
+# fetched. The build's own output goes to stderr, where the person reads it, and it reads no input.
+assemble_status=0
+CARGO_NET_OFFLINE=true "$build/ka-reader-mac/assemble.sh" 1>&2 < /dev/null || assemble_status=$?
+[ "$assemble_status" -eq 0 ] \
+  || die "ka-reader-mac/assemble.sh exited with status $assemble_status in $build, so nothing was launched or written. The build runs with Cargo held offline, and a crate missing from this guest's Cargo cache stops it. If Cargo's output names a crate it could not get, run checks/gate.sh once in this guest to fill the cache, then run checks/readme-capture.sh from the product root."
+bundle="$build/$BUNDLE_IN_CLONE"
+[ -d "$bundle" ] \
+  || die "ka-reader-mac/assemble.sh finished, and $bundle is not there, so nothing was launched or written. Check where ka-reader-mac/assemble.sh puts KA-Reader.app at commit $commit, then run checks/readme-capture.sh from the product root."
+say "built $bundle, version $version."
+
+# --- the fixture ---
+
+# One step of making the fixture: $1 is the step as a person would type it, the rest is the command.
+fixture="$work/ka-reader"
+fixture_step() {
+  step_name="$1"
+  shift
+  "$@" > /dev/null 2>&1 \
+    || die "$step_name did not complete while making the fixture at $fixture, so nothing was launched or written. Check that /tmp has room and can be written, then run checks/readme-capture.sh from the product root."
+}
+
+say "making the fixture repository at $fixture from the files of commit $commit."
+fixture_step "git clone" git_isolated clone --quiet --no-hardlinks "$root" "$fixture"
+fixture_step "git clone" git_isolated -C "$fixture" checkout --quiet --detach "$commit"
+# The clone's own .git goes, so no path of the person's repository survives in the fixture.
+fixture_step "rm -rf .git" rm -rf "$fixture/.git"
+fixture_step "git init" git_isolated -C "$fixture" init --quiet
+fixture_step "git symbolic-ref HEAD refs/heads/main" git_isolated -C "$fixture" symbolic-ref HEAD refs/heads/main
+fixture_step "git add" git_isolated -C "$fixture" add -- . ":(exclude)$FIXTURE_UNTRACKED_FILE"
+fixture_step "git commit" git_isolated -C "$fixture" commit --quiet -m "$FIXTURE_COMMIT_MESSAGE"
+say "the fixture repository is ready at $fixture, with $FIXTURE_UNTRACKED_FILE left untracked."
