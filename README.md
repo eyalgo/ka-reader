@@ -2,6 +2,8 @@
 
 KA-Reader is a local, read-only reader of folders, files and Git repositories.
 
+![KA-Reader's window with a repository open: Files is chosen in the sidebar, a letter stands beside a changed file in the file tree, and the reading panel shows one of the repository's files.](docs/readme/shell.png)
+
 On macOS 26 or later, use this repository's [Releases page](https://github.com/eyalgo/ka-reader/releases) when a release is offered: download the disk image, open it, drag KA-Reader.app to Applications, then open KA-Reader. The app isn't notarized. If macOS blocks the first launch, open System Settings › Privacy & Security, scroll down and click Open Anyway, then click Open in the confirmation.
 
 In the Open panel, choose a folder of your own, then select a file in the file tree to read it.
