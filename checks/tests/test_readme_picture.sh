@@ -57,6 +57,7 @@ test_a_signal_never_ends_with_zero
 test_the_check_holds_no_write
 test_the_real_readmes_opening_images_carry_alternative_text
 test_the_suite_is_one_fatal_step_of_the_gate
+test_the_check_is_one_fatal_step_before_its_suite
 "
 
 # --- messages: the plain form, or the form that opens with the sub-case's label ---
@@ -547,6 +548,12 @@ gate_step_is_one_fatal_step() {
 # between "Release absent suite" and its suite.
 test_the_suite_is_one_fatal_step_of_the_gate() {
   gate_step_is_one_fatal_step "README picture check suite" "checks/tests/test_readme_picture.sh" "between:Release absent suite:Own state suite"
+}
+
+# CP-1380: the check is one fatal step of the gate, once, unconditional, directly before its suite, so a
+# miss on the tree is named by the check's own step.
+test_the_check_is_one_fatal_step_before_its_suite() {
+  gate_step_is_one_fatal_step "README picture check" "checks/readme-picture.sh" "directly_before:README picture check suite"
 }
 
 # --- the runner ---
