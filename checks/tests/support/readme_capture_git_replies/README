@@ -1,0 +1,17 @@
+Replies of the real `git` (git version 2.54.0 (Apple Git-157)), recorded once on 2026-11-18 by running
+each call the capture makes, with GIT_CONFIG_NOSYSTEM=1, GIT_CONFIG_GLOBAL=/dev/null, a fixed identity,
+commit.gpgsign=false and core.hooksPath=/dev/null, against a small source repository holding a.txt and
+CHANGELOG.md (a scratch folder under /tmp, removed after).
+<name>.status  - the call's exit status.
+<name>.stdout  - what it printed on standard output (absent when it printed nothing).
+<name>.stderr  - what it printed on standard error (absent when it printed nothing).
+rev_parse_head, rev_parse_not_a_repository  - `git -C <root> rev-parse HEAD`: a hash; a folder with no repository.
+clone_ok, clone_fail        - `git clone --quiet --no-hardlinks <root> <dest>`: made; the source does not exist.
+checkout_ok, checkout_fail  - `git -C <clone> checkout --quiet --detach <hash>`: done; a hash the clone does not hold.
+init_ok, init_fail          - `git -C <fixture> init --quiet`: done; the folder does not exist.
+symbolic_ref_ok             - `git -C <fixture> symbolic-ref HEAD refs/heads/main`.
+add_ok, add_fail            - `git -C <fixture> add -- . ':(exclude)CHANGELOG.md'`: done, and CHANGELOG.md stays untracked;
+                              the folder is no repository.
+commit_ok, commit_fail      - `git -C <fixture> commit --quiet -m <message>`: done; the folder is no repository.
+checks/tests/test_readme_capture.sh replays them as data and runs no real git. The rev-parse hash printed
+here is a real one of that source repository; the suite prints the case's own hash in its place.
