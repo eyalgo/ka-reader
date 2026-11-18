@@ -233,7 +233,7 @@ test_a_missing_tool_is_refused_before_anything_is_made() {
     run_capture
     expect_status 1 && expect_one_stderr_line && expect_stderr_names "$missing was not found on PATH" || return 1
     expect_nothing_launched || return 1
-    made="$(ls "$scene/tmp" "$home")"
+    made="$(find "$scene/tmp" "$home" -mindepth 1)"
     [ -z "$made" ] || fail "a work folder was made: $made" || return 1
   done
   SUB=""
