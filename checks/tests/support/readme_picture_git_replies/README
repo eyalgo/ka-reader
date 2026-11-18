@@ -1,0 +1,6 @@
+Replies of the real `git` (git version 2.54.0 (Apple Git-157)), recorded once on 2026-11-18 for
+`git -C <root> ls-files --cached --error-unmatch -- <path>`, in a repository that tracked
+docs/readme/shell.png and did not track docs/readme/other.png.
+ls_files_hit.*  - the path tracked: the path on stdout, status 0.
+ls_files_miss.* - the path not tracked: the pathspec error on stderr, status 1.
+checks/tests/test_readme_picture.sh replays them as data and runs no real git.
