@@ -34,6 +34,8 @@
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+GATE="$ROOT/checks/gate.sh"
+TAB=$'\t'
 SCRIPT="$ROOT/checks/readme-capture.sh"
 REPLIES="$ROOT/checks/tests/support/readme_capture_git_replies"
 # Recorded once for the picture check's suite; the capture's pass case replays its `ls-files` hit.
@@ -64,6 +66,7 @@ test_an_interrupted_run_removes_everything_it_made
 test_each_refusal_writes_nothing_in_the_repository
 test_a_picture_whose_metadata_names_the_machine_is_refused
 test_the_capture_reads_no_variable_of_its_own_and_names_no_network_tool
+test_the_suite_is_one_fatal_step_before_the_real_launch
 "
 
 # --- messages: the plain form, or the form that opens with the sub-case's label ---
@@ -941,6 +944,89 @@ test_the_capture_reads_no_variable_of_its_own_and_names_no_network_tool() {
   [ -z "$network" ] || fail "checks/readme-capture.sh names a network tool: $network" || return 1
   network="$(printf '%s\n' "$code" | grep -E 'git( -C [^ ]+)? (fetch|pull|push|remote)' | head -1 || true)"
   [ -z "$network" ] || fail "checks/readme-capture.sh names a network tool: $network" || return 1
+}
+
+# --- the gate, read as text ---
+
+# The same reading of checks/gate.sh as checks/tests/test_readme_picture.sh makes, copied: each suite is its
+# own runner and holds the helpers it uses.
+
+# The steps of a gate file, one per line: the name, a tab, the command. Only a top-level call in the
+# gate's literal form is read. From the first call to the end of the file, the list holds nothing
+# but calls, comments and blank lines; any other line there is read as no list at all, because an
+# `if` around a call or a `|| true` after it leaves a call that does not stop the run.
+gate_steps_of() {
+  [ -f "$1" ] || return 0
+  first="$(grep -n -m 1 "^run_step '" "$1" | cut -d: -f1 || true)"
+  [ -n "$first" ] || return 0
+  stray="$(tail -n +"$first" "$1" | grep -v -E "^run_step '[^']*' '.*'\$|^[[:space:]]*(#.*)?\$" || true)"
+  [ -z "$stray" ] || return 0
+  sed -n "s/^run_step '\([^']*\)' '\(.*\)'\$/\1${TAB}\2/p" "$1"
+}
+
+# Holds the step $2 of the gate file $1 to its command $3 and its place $4 (`between:<after>:<before>`
+# for a relative place, `directly_before:<name>` for an adjacent one). Each failure names itself and
+# returns 1.
+gate_step_holds() {
+  gate_file="$1"; step="$2"; command="$3"; place="$4"
+  steps="$(gate_steps_of "$gate_file")"
+  count="$(printf '%s\n' "$steps" | awk -F'\t' -v want="$step" '$1 == want' | wc -l | tr -d ' ')"
+  if [ "$count" -eq 0 ]; then
+    conditional="$(grep -F "'$step'" "$gate_file" | grep -v '^[[:space:]]*#' | head -1 || true)"
+    if [ -n "$conditional" ]; then
+      echo "checks/gate.sh runs the step $step under a condition: $conditional"
+    else
+      echo "checks/gate.sh holds no step named $step"
+    fi
+    return 1
+  fi
+  [ "$count" -le 1 ] || { echo "checks/gate.sh holds the step $step more than once"; return 1; }
+  line="$(printf '%s\n' "$steps" | awk -F'\t' -v want="$step" '$1 == want { print substr($0, length($1) + 2) }')"
+  [ "$line" = "$command" ] || { echo "checks/gate.sh runs the step $step with a command other than $command: run_step '$step' '$line'"; return 1; }
+  names="$(printf '%s\n' "$steps" | awk -F'\t' '{ print $1 }')"
+  position() { printf '%s\n' "$names" | grep -n -x -F "$1" | head -1 | cut -d: -f1; }
+  at="$(position "$step")"
+  case "$place" in
+    between:*)
+      rest="${place#between:}"; after="${rest%%:*}"; before="${rest#*:}"
+      if [ "$(position "$after")" -lt "$at" ] && [ "$at" -lt "$(position "$before")" ]; then return 0; fi
+      echo "checks/gate.sh puts the step $step outside its place, which is after $after and before $before"
+      return 1;;
+    directly_before:*)
+      next="${place#directly_before:}"
+      if [ "$(position "$next")" -eq $((at + 1)) ]; then return 0; fi
+      echo "checks/gate.sh puts the step $step outside its place, which is directly before $next"
+      return 1;;
+  esac
+}
+
+# The gate with the step's line deleted, commented, followed by `|| true`, or inside `if false`.
+mutate_gate() {
+  case "$1" in
+    "the step deleted") sed "/^run_step '$2' /d" "$GATE";;
+    "the step commented out") sed "s|^run_step '$2' |# &|" "$GATE";;
+    "the step followed by || true") sed "/^run_step '$2' /s|\$| \|\| true|" "$GATE";;
+    "the step inside if false") awk -v want="run_step '$2' " 'index($0, want) == 1 { print "if false; then"; print; print "fi"; next } { print }' "$GATE";;
+  esac
+}
+
+# The step holds in the real gate, and each of the four mutations of its line fails the same check.
+gate_step_is_one_fatal_step() {
+  holds="$(gate_step_holds "$GATE" "$1" "$2" "$3")" || { fail "$holds"; return 1; }
+  for mutation in "the step deleted" "the step commented out" "the step followed by || true" "the step inside if false"; do
+    mutate_gate "$mutation" "$1" > "$WORK/mutated_gate"
+    if gate_step_holds "$WORK/mutated_gate" "$1" "$2" "$3" > /dev/null; then
+      fail "$mutation: the case did not fail on a gate with this change" || return 1
+    fi
+  done
+}
+
+# CP-1378: the suite is one fatal step of the gate, once, unconditional, after "Git beta walk suite" and
+# before "Launch the built bundle". The capture script is a person's tool and no gate step runs it.
+test_the_suite_is_one_fatal_step_before_the_real_launch() {
+  gate_step_is_one_fatal_step "README picture capture suite" "checks/tests/test_readme_capture.sh" "between:Git beta walk suite:Launch the built bundle" || return 1
+  script_steps="$(gate_steps_of "$GATE" | grep -F 'readme-capture.sh' | grep -v -F 'test_readme_capture.sh' || true)"
+  [ -z "$script_steps" ] || fail "checks/gate.sh runs checks/readme-capture.sh, a person's tool: $script_steps" || return 1
 }
 
 # --- the runner ---
