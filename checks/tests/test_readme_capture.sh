@@ -31,6 +31,9 @@ set -uo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 SCRIPT="$ROOT/checks/readme-capture.sh"
+REPLIES="$ROOT/checks/tests/support/readme_capture_git_replies"
+# The hash the git stand-in prints for `rev-parse HEAD`, and so the one the build must be held to.
+COMMIT_HASH="3f2a9c1d5e7b40816a2c9d4e1f0b7a5c3d8e6f19"
 TOOLS="bash awk sed grep cat tr head wc cmp cp mkdir rm sleep shasum"
 # The eleven programs the script looks up, each of which a case may leave off PATH.
 LOOKED_UP="git open ps kill screencapture swiftc shasum mktemp id hostname scutil"
@@ -46,6 +49,10 @@ test_any_argument_is_a_usage_error_before_anything_is_launched
 test_a_missing_tool_is_refused_before_anything_is_made
 test_a_work_folder_under_the_home_is_refused
 test_the_work_folder_is_removed_on_every_way_out
+test_the_bundle_is_built_from_the_recorded_commit_offline
+test_versions_that_disagree_are_refused_before_the_build
+test_the_fixture_is_a_fresh_repository_outside_the_home
+test_a_failed_clone_checkout_build_or_fixture_step_is_refused_and_cleaned_up
 test_the_capture_reads_no_variable_of_its_own_and_names_no_network_tool
 "
 
@@ -74,6 +81,103 @@ stand_in() {
   chmod +x "$bin/$name"
 }
 
+# Fills the placeholders of a stand-in's text with this scene's folders.
+render() {
+  sed -e "s|@SCENE@|$scene|g" -e "s|@REPLIES@|$REPLIES|g"
+}
+
+# The `git` stand-in: it logs the isolation it was run under and its arguments, then replays the
+# recorded reply for the call, unless the case names that call in git_fail. A clone writes the
+# scene's clone source into its destination, as the real clone writes the repository's files.
+write_git_stand_in() {
+  render > "$bin/git" <<'STAND_IN'
+#!/usr/bin/env bash
+scene="@SCENE@"
+replies="@REPLIES@"
+printf 'config=%s,%s args=%s\n' "${GIT_CONFIG_NOSYSTEM:-}" "${GIT_CONFIG_GLOBAL:-}" "$*" >> "$scene/log/git.log"
+dir=""
+sub=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -C) dir="$2"; shift 2;;
+    -c) shift 2;;
+    *) sub="$1"; shift; break;;
+  esac
+done
+fail="$(cat "$scene/git_fail")"
+replay() {
+  [ ! -f "$replies/$1.stdout" ] || cat "$replies/$1.stdout"
+  [ ! -f "$replies/$1.stderr" ] || cat "$replies/$1.stderr" >&2
+  exit "$(cat "$replies/$1.status")"
+}
+case "$sub" in
+  rev-parse)
+    [ "$fail" != rev-parse ] || replay rev_parse_not_a_repository
+    cat "$scene/hash"
+    exit "$(cat "$replies/rev_parse_head.status")";;
+  clone)
+    for last; do :; done
+    case "$last" in */build) kind=clone-build;; *) kind=clone-fixture;; esac
+    [ "$fail" != "$kind" ] || replay clone_fail
+    mkdir -p "$last"
+    cp -R "$scene/clone_source/." "$last"
+    replay clone_ok;;
+  checkout)
+    case "$dir" in */build) kind=checkout-build;; *) kind=checkout-fixture;; esac
+    [ "$fail" != "$kind" ] || replay checkout_fail
+    replay checkout_ok;;
+  init)
+    [ "$fail" != init ] || replay init_fail
+    if [ -e "$dir/.git" ]; then echo present > "$scene/log/init_state"; else echo absent > "$scene/log/init_state"; fi
+    mkdir -p "$dir/.git"
+    replay init_ok;;
+  symbolic-ref)
+    [ "$fail" != symbolic-ref ] || replay init_fail
+    replay symbolic_ref_ok;;
+  add)
+    [ "$fail" != add ] || replay add_fail
+    replay add_ok;;
+  commit)
+    [ "$fail" != commit ] || replay commit_fail
+    replay commit_ok;;
+  *)
+    echo "stand-in git: no recorded reply for: $sub" >&2
+    exit 99;;
+esac
+STAND_IN
+  chmod +x "$bin/git"
+}
+
+# What a clone of the product holds: the two files the versions are read from, the clone's own
+# ka-reader-mac/assemble.sh (a stand-in that records its environment and writes a bundle folder),
+# and a CHANGELOG.md for the fixture to leave untracked.
+write_clone_source() {
+  source_root="$scene/clone_source"
+  mkdir -p "$source_root/ka-reader-mac"
+  printf '[workspace]\nmembers = []\n\n[workspace.package]\nversion = "0.1.0"\nedition = "2024"\n' > "$source_root/Cargo.toml"
+  printf '<plist version="1.0">\n<dict>\n  <key>CFBundleShortVersionString</key>\n  <string>0.1.0</string>\n</dict>\n</plist>\n' > "$source_root/ka-reader-mac/Info.plist"
+  printf 'changes\n' > "$source_root/CHANGELOG.md"
+  printf 'readme\n' > "$source_root/README.md"
+  render > "$source_root/ka-reader-mac/assemble.sh" <<'STAND_IN'
+#!/usr/bin/env bash
+scene="@SCENE@"
+printf 'ran=%s\nCARGO_NET_OFFLINE=%s\n' "$0" "${CARGO_NET_OFFLINE:-}" >> "$scene/log/assemble.log"
+if [ "$(cat "$scene/assemble_bundle")" = yes ]; then
+  mkdir -p "${0%/*}/../target/release/bundle/macos/KA-Reader.app"
+fi
+exit "$(cat "$scene/assemble_status")"
+STAND_IN
+  chmod +x "$source_root/ka-reader-mac/assemble.sh"
+}
+
+# Sets the two versions the next clone carries, each a word.
+set_versions() {
+  sed -e "s|^version = .*|version = \"$1\"|" "$scene/clone_source/Cargo.toml" > "$scene/cargo.next"
+  mv "$scene/cargo.next" "$scene/clone_source/Cargo.toml"
+  sed -e "s|<string>.*</string>|<string>$2</string>|" "$scene/clone_source/ka-reader-mac/Info.plist" > "$scene/plist.next"
+  mv "$scene/plist.next" "$scene/clone_source/ka-reader-mac/Info.plist"
+}
+
 # Builds one scene: the PATH directory, the scratch product root, the home, the stand-ins and their
 # logs. $1, when given, is a program the scene leaves off PATH.
 fixture() {
@@ -93,9 +197,15 @@ fixture() {
   printf '0\n' > "$scene/sysctl_status"
   printf 'scratch\n' > "$scene/mktemp_mode"
   : > "$scene/made"
+  : > "$logs/git.log"
   stand_in uname "cat \"$scene/host_os\"; exit \"\$(cat \"$scene/uname_status\")\""
   stand_in sysctl "cat \"$scene/host_vmm\"; exit \"\$(cat \"$scene/sysctl_status\")\""
-  stand_in git 'echo "stand-in git: no recorded reply for: $*" >&2; exit 99'
+  : > "$scene/git_fail"
+  printf '%s\n' "$COMMIT_HASH" > "$scene/hash"
+  printf '0\n' > "$scene/assemble_status"
+  printf 'yes\n' > "$scene/assemble_bundle"
+  write_git_stand_in
+  write_clone_source
   for plain in open ps kill screencapture swiftc id hostname scutil; do
     stand_in "$plain" 'exit 0'
   done
@@ -176,6 +286,37 @@ expect_work_folders_gone() {
   while IFS= read -r made_folder; do
     [ -z "$made_folder" ] || [ ! -e "$made_folder" ] || fail "the work folder is still there: $made_folder" || return 1
   done < "$scene/made"
+}
+
+# The stderr lines that are no progress line of the script: the refusals.
+refusal_lines() {
+  printf '%s\n' "$stderr" | grep -v -E '^readme-capture.sh: (building |built |making the fixture|the fixture repository is ready)' || true
+}
+
+# A refusal is one line among the progress lines the run printed before it.
+expect_one_refusal() {
+  [ "$(refusal_lines | grep -c .)" -eq 1 ] || fail "expected one line on stderr, got: $stderr"
+}
+
+# Nothing was launched, and the build did not run.
+expect_nothing_started() {
+  expect_untouched open ps kill screencapture swiftc || return 1
+  [ ! -s "$logs/assemble.log" ] || fail "the ka-reader-mac/assemble.sh stand-in was called: $(cat "$logs/assemble.log")"
+}
+
+# Nothing under docs/readme/ and nothing else new in the product root.
+expect_nothing_written() {
+  [ ! -e "$tree/docs/readme" ] || fail "something was written into the product root: docs/readme" || return 1
+  expect_product_root_unchanged
+}
+
+# True when one line of the git log holds every fragment given.
+git_log_line() {
+  matched="$(cat "$logs/git.log")"
+  for fragment in "$@"; do
+    matched="$(printf '%s\n' "$matched" | grep -F -e "$fragment" || true)"
+  done
+  [ -n "$matched" ]
 }
 
 # --- cases ---
@@ -273,6 +414,108 @@ test_the_work_folder_is_removed_on_every_way_out() {
   [ -s "$scene/made" ] || fail "the mktemp stand-in made no folder: $(cat "$logs/mktemp.log")" || return 1
   expect_work_folders_gone || return 1
   [ "$real_tmp_before" = "$real_tmp_after" ] || fail "the work folder is still there: $real_tmp_after" || return 1
+  SUB=""
+}
+
+# CP-1367, CP-1371: the bundle is built in a clone checked out at exactly the hash HEAD gave, by the
+# clone's own assemble.sh, with Cargo held offline.
+test_the_bundle_is_built_from_the_recorded_commit_offline() {
+  fixture
+  run_capture
+  expect_status 0 || return 1
+  work_folder="$(head -1 "$scene/made")"
+  tree_real="$(cd "$tree" && pwd -P)"
+  git_log_line "rev-parse HEAD" || fail "the build clone was not checked out at $COMMIT_HASH: $(cat "$logs/git.log")" || return 1
+  git_log_line "clone --quiet --no-hardlinks $tree_real $work_folder/build" \
+    || fail "the build clone was not checked out at $COMMIT_HASH: $(cat "$logs/git.log")" || return 1
+  git_log_line "-C $work_folder/build" "checkout --quiet --detach $COMMIT_HASH" \
+    || fail "the build clone was not checked out at $COMMIT_HASH: $(cat "$logs/git.log")" || return 1
+  [ -s "$logs/assemble.log" ] || fail "the assemble.sh that ran is not the build clone's: nothing ran" || return 1
+  grep -F -x -q "ran=$work_folder/build/ka-reader-mac/assemble.sh" "$logs/assemble.log" \
+    || fail "the assemble.sh that ran is not the build clone's: $(cat "$logs/assemble.log")" || return 1
+  grep -F -x -q "CARGO_NET_OFFLINE=true" "$logs/assemble.log" \
+    || fail "assemble.sh did not see CARGO_NET_OFFLINE=true: $(cat "$logs/assemble.log")" || return 1
+  expect_untouched open ps kill screencapture swiftc
+}
+
+# CP-1374: the two versions are read from the clone and must agree, before the build runs.
+test_versions_that_disagree_are_refused_before_the_build() {
+  SUB="Cargo.toml at 0.1.0 and Info.plist at 0.2.0"
+  fixture
+  set_versions 0.1.0 0.2.0
+  run_capture
+  expect_status 1 && expect_one_refusal && expect_stderr_names "0.1.0" && expect_stderr_names "0.2.0" \
+    && expect_nothing_started && expect_nothing_written || return 1
+
+  SUB="Cargo.toml holds no version"
+  fixture
+  sed -e '/^version/d' "$scene/clone_source/Cargo.toml" > "$scene/cargo.next"
+  mv "$scene/cargo.next" "$scene/clone_source/Cargo.toml"
+  run_capture
+  expect_status 1 && expect_one_refusal && expect_stderr_names "Cargo.toml" \
+    && expect_nothing_started && expect_nothing_written || return 1
+
+  SUB="Info.plist holds no version"
+  fixture
+  sed -e '/CFBundleShortVersionString/d' "$scene/clone_source/ka-reader-mac/Info.plist" > "$scene/plist.next"
+  mv "$scene/plist.next" "$scene/clone_source/ka-reader-mac/Info.plist"
+  run_capture
+  expect_status 1 && expect_one_refusal && expect_stderr_names "ka-reader-mac/Info.plist" \
+    && expect_nothing_started && expect_nothing_written || return 1
+  SUB=""
+}
+
+# CP-1371, CP-1368: the fixture is a fresh repository made from the commit's own files, outside the
+# home, with CHANGELOG.md left untracked, under the isolated config and the fixed identity.
+test_the_fixture_is_a_fresh_repository_outside_the_home() {
+  fixture
+  run_capture
+  expect_status 0 || return 1
+  work_folder="$(head -1 "$scene/made")"
+  fixture_folder="$work_folder/ka-reader"
+  tree_real="$(cd "$tree" && pwd -P)"
+  case "$fixture_folder" in
+    "$scene/tmp"/*) ;;
+    *) fail "the fixture $fixture_folder is not under the stand-in mktemp's folder" || return 1;;
+  esac
+  case "$fixture_folder" in
+    "$home"/*) fail "the fixture $fixture_folder is under HOME" || return 1;;
+  esac
+  git_log_line "clone --quiet --no-hardlinks $tree_real $fixture_folder" \
+    || fail "the git log does not show git clone in the fixture: $(cat "$logs/git.log")" || return 1
+  for expected in "init --quiet" "symbolic-ref HEAD refs/heads/main" "commit --quiet"; do
+    git_log_line "config=1,/dev/null" "-C $fixture_folder" "user.name=" "user.email=" "commit.gpgsign=false" "$expected" \
+      || fail "the git log does not show $expected in the fixture under the isolated config and the fixed identity: $(cat "$logs/git.log")" || return 1
+  done
+  git_log_line "config=1,/dev/null" "-C $fixture_folder" "add -- . :(exclude)CHANGELOG.md" \
+    || fail "the git log does not show git add in the fixture under the isolated config and the fixed identity: $(cat "$logs/git.log")" || return 1
+  [ "$(grep -c -F 'CHANGELOG.md' "$logs/git.log")" -eq 1 ] || fail "git add included CHANGELOG.md: $(cat "$logs/git.log")" || return 1
+  [ "$(cat "$logs/init_state")" = absent ] || fail "the fixture holds a .git of the product's when git init runs" || return 1
+  for writing in "-C $tree_real init" "-C $tree_real add" "-C $tree_real commit" "-C $tree_real symbolic-ref"; do
+    ! git_log_line "$writing" || fail "a git command ran in the product root: $(cat "$logs/git.log")" || return 1
+  done
+  expect_stderr_names "$fixture_folder"
+}
+
+# Each stage that can fail, failing in turn, is one stderr line, exit 1, nothing in the product root
+# and the work folder gone. The three added at the end are the edges the stages themselves imply.
+test_a_failed_clone_checkout_build_or_fixture_step_is_refused_and_cleaned_up() {
+  for failing in clone-build checkout-build assemble clone-fixture checkout-fixture init symbolic-ref add commit rev-parse bundle-missing; do
+    SUB="$failing fails"
+    fixture
+    case "$failing" in
+      assemble) printf '3\n' > "$scene/assemble_status";;
+      bundle-missing) printf 'no\n' > "$scene/assemble_bundle";;
+      *) printf '%s\n' "$failing" > "$scene/git_fail";;
+    esac
+    run_capture
+    expect_status 1 && expect_one_refusal && expect_untouched open ps kill screencapture swiftc && expect_nothing_written || return 1
+    expect_work_folders_gone || return 1
+    case "$failing" in
+      assemble) expect_stderr_names "exited with status 3" || return 1;;
+      bundle-missing) expect_stderr_names "is not there" || return 1;;
+    esac
+  done
   SUB=""
 }
 
