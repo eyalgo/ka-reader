@@ -55,6 +55,7 @@ test_every_failed_condition_is_named_in_one_run
 test_any_argument_is_a_usage_error_that_reads_nothing
 test_a_signal_never_ends_with_zero
 test_the_check_holds_no_write
+test_the_real_readmes_opening_images_carry_alternative_text
 "
 
 # --- messages: the plain form, or the form that opens with the sub-case's label ---
@@ -447,6 +448,25 @@ test_the_check_holds_no_write() {
     print out }')"
   redirects="$(printf '%s\n' "$unquoted" | sed 's@> */dev/null@@g' | grep -E '>([[:space:]]+"?[$/.A-Za-z_]|"[$/.A-Za-z_]|[$/.])|>>' || true)"
   [ -z "$redirects" ] || fail "checks/readme-picture.sh holds a write outside its comments: $redirects"
+}
+
+# CP-1366: every inline image in the real README's opening has alternative text. The opening and the
+# image form are the check's own: the awk program is read out of checks/readme-picture.sh between its
+# two marker lines, so the two cannot disagree on what an image is. The case passes while the opening
+# holds no image; condition (a) of the gate's step holds that case.
+test_the_real_readmes_opening_images_carry_alternative_text() {
+  program="$(sed -n "/^# $README_MARKER: begin\$/,/^# $README_MARKER: end\$/p" "$CHECK" | sed '1d;$d')"
+  [ -n "$program" ] || fail "checks/readme-picture.sh holds no opening-images program between its marker lines" || return 1
+  eval "$program"
+  images="$(LC_ALL=C awk "$opening_images" "$ROOT/README.md")"
+  # Split by parameter expansion: read would treat the tab as blank space and drop an empty alt.
+  while IFS= read -r line; do
+    [ -n "$line" ] || continue
+    alt="${line%%"$TAB"*}"
+    path="${line#*"$TAB"}"
+    [ -n "$alt" ] || fail "README.md's opening holds an image with no alternative text: ![]($path)" || return 1
+  done <<< "$images"
+  return 0
 }
 
 # --- the runner ---
