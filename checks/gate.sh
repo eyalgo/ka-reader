@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.23.0 — "README picture check suite" joins the list, after "Release absent suite"
 # Version: 1.22.0 — "Git view memory bound" and its suite join the list, directly after "Test gate"
 # Version: 1.21.0 — "Test gate" skips the Git view memory suite, which runs one case at a time in a process of its own
 # Version: 1.20.0 — the application icon check joins the list, on the bundle "Build KA-Reader.app" wrote, before its suite
@@ -188,6 +189,12 @@ run_step 'Release version suite' 'checks/tests/test_release_version.sh'
 run_step 'Release image suite' 'checks/tests/test_release_pack.sh'
 run_step 'Release checksum suite' 'checks/tests/test_release_sums.sh'
 run_step 'Release absent suite' 'checks/tests/test_release_absent.sh'
+# "README picture check suite" reads no bundle and launches nothing, so it comes before "Launch the
+# built bundle". Its place after "Release absent suite" is a preference. It cannot join the document
+# checks above: checks/tests/test_readme.sh and checks/tests/test_git_beta.sh hold "Strings check
+# step suite", the two README steps, the two Git beta steps and "Release workflow shape" as one run
+# with no step between them.
+run_step 'README picture check suite' 'checks/tests/test_readme_picture.sh'
 run_step 'Own state suite' 'checks/tests/test_own_state.sh'
 # "VM refusal suite", "Launch step suite", "Own state step suite", "Tree scene helper suite",
 # "Git beta scene helper suite" and "Git beta walk suite" launch nothing, so they run before the

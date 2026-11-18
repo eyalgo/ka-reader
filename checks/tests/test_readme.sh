@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.2.3 — the pinned gate list names the README picture check suite, after "Release absent suite"
 # Version: 1.2.2 — the pinned gate list names the two Git view memory steps, after "Test gate"
 # Version: 1.2.1 — the pinned gate list names the two Git beta suites
 # Version: 1.2.0 — conditional beta prose and entire wording suites
@@ -554,6 +555,7 @@ run_step '"'"'Release version suite'"'"' '"'"'checks/tests/test_release_version.
 run_step '"'"'Release image suite'"'"' '"'"'checks/tests/test_release_pack.sh'"'"'
 run_step '"'"'Release checksum suite'"'"' '"'"'checks/tests/test_release_sums.sh'"'"'
 run_step '"'"'Release absent suite'"'"' '"'"'checks/tests/test_release_absent.sh'"'"'
+run_step '"'"'README picture check suite'"'"' '"'"'checks/tests/test_readme_picture.sh'"'"'
 run_step '"'"'Own state suite'"'"' '"'"'checks/tests/test_own_state.sh'"'"'
 run_step '"'"'VM refusal suite'"'"' '"'"'checks/tests/test_vm_refusal.sh'"'"'
 run_step '"'"'Launch step suite'"'"' '"'"'checks/tests/test_launch.sh'"'"'
