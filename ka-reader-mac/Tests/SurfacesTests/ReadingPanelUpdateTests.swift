@@ -104,16 +104,59 @@ private func contentCatalogue() throws -> String {
 
 // MARK: - The automatic update (task 6)
 
+/// The kind of window a windowed panel is placed in.
+private enum WindowKind: Sendable, CaseIterable {
+    /// The machine's own `NSWindow`, whose backing scale is the display's.
+    case machine
+    /// A window reporting a backing scale of 1, as GitHub's hosted macOS image draws.
+    case oneX
+}
+
+/// A window reporting a backing scale of 1. AppKit aligns the text view's frame and the clip view's
+/// origin to the window's scale, so this sets the 1x geometry on any display.
+private final class OneXWindow: NSWindow {
+    override var backingScaleFactor: CGFloat { 1 }
+}
+
 /// A panel in a window, sized so a 400-line file overflows it both ways.
 @MainActor
-private func makeWindowedPanel() -> (ReadingPanelView, NSClipView, NSWindow) {
+private func makeWindowedPanel(
+    in kind: WindowKind = .machine
+) -> (ReadingPanelView, NSClipView, NSWindow) {
     let panel = ReadingPanelView(statusGlyphs: makeGlyphs())
-    let window = NSWindow(
-        contentRect: panelFrame, styleMask: [.titled], backing: .buffered, defer: false)
+    let window: NSWindow
+    switch kind {
+    case .machine:
+        window = NSWindow(
+            contentRect: panelFrame, styleMask: [.titled], backing: .buffered, defer: false)
+    case .oneX:
+        window = OneXWindow(
+            contentRect: panelFrame, styleMask: [.titled], backing: .buffered, defer: false)
+    }
     window.contentView = panel
     panel.layoutSubtreeIfNeeded()
     // The clip view exists from construction, but only text gives the panel something to scroll.
     return (panel, panel.contentView.enclosingScrollView?.contentView ?? NSClipView(), window)
+}
+
+/// The document's real end: the last numbered row's bottom plus the code view's inset, in the text
+/// view's coordinates. The extra fragment after a terminal break is not enumerated.
+@MainActor
+private func realEnd(of panel: ReadingPanelView) -> CGFloat {
+    let textView = panel.contentView
+    guard let layoutManager = unsafe textView.layoutManager,
+        let container = unsafe textView.textContainer
+    else {
+        preconditionFailure("the panel's text view is TextKit 1 and has a layout manager")
+    }
+    layoutManager.ensureLayout(for: container)
+    var lastRowBottom: CGFloat = 0
+    unsafe layoutManager.enumerateLineFragments(
+        forGlyphRange: NSRange(location: 0, length: layoutManager.numberOfGlyphs)
+    ) { rect, _, _, _, _ in
+        lastRowBottom = rect.maxY
+    }
+    return textView.textContainerOrigin.y + lastRowBottom + CodeSpacing.inset
 }
 
 /// `count` numbered lines, each `width` characters wide, so the document overflows sideways.
@@ -199,9 +242,25 @@ private final class PositionLog {
     #expect(panel.contentView.string.contains("inserted near the end"))
 }
 
+/// The measure's own reading, so it cannot drift back to the pixel-aligned frame: 50 rows of
+/// `CodeType.linePitch` between two 16-pt insets.
+private let realEndOfA50LineDocument: CGFloat = 1039.5
+
 @MainActor
-@Test func aTruncationTo50LinesShowsTheLastLinesAndNotTheTop() throws {
-    let (panel, clip, window) = makeWindowedPanel()
+@Test(arguments: WindowKind.allCases)
+private func theRealEndOfA50LineDocumentIs1039Point5InBothWindows(_ kind: WindowKind) {
+    let (panel, _, window) = makeWindowedPanel(in: kind)
+    _ = window
+    panel.show(path: "big.txt", verdict: .text(lines(50), .plain))
+    panel.layoutSubtreeIfNeeded()
+
+    #expect(abs(realEnd(of: panel) - realEndOfA50LineDocument) < 0.5)
+}
+
+@MainActor
+@Test(arguments: WindowKind.allCases)
+private func aTruncationTo50LinesShowsTheLastLinesAndNotTheTop(_ kind: WindowKind) throws {
+    let (panel, clip, window) = makeWindowedPanel(in: kind)
     _ = window
     panel.show(path: "big.txt", verdict: .text(lines(400), .plain))
     panel.layoutSubtreeIfNeeded()
@@ -209,9 +268,37 @@ private final class PositionLog {
 
     panel.update(path: "big.txt", verdict: .text(lines(50), .plain), position: .topLeft)
 
-    let document = try #require(panel.contentView.enclosingScrollView?.documentView)
     #expect(clip.bounds.origin.y > 0)
-    #expect(abs(clip.bounds.maxY - document.frame.maxY) < 1)
+    // The real end, not `documentView.frame`: at 1x AppKit aligns the frame up to 0.5 pt past it.
+    #expect(abs(clip.bounds.maxY - realEnd(of: panel)) < 1)
+    #expect(panel.currentPosition.topLine > 0)
+    #expect(panel.currentPosition.topLine < 50)
+}
+
+/// CP-1382 and CP-1383: the same truncation after the reader's scroll has been reported, as it always
+/// is before a file changes on disk. The panel keeps the 240-pt offset the new text still reaches,
+/// stands at the real end, and raises no position change for its own clamp, in both windows.
+@MainActor
+@Test(arguments: WindowKind.allCases)
+private func aTruncationAfterTheReadersScrollKeepsTheOffsetAndRaisesNoPositionChange(
+    _ kind: WindowKind
+) async {
+    let (panel, clip, window) = makeWindowedPanel(in: kind)
+    _ = window
+    panel.show(path: "big.txt", verdict: .text(lines(400), .plain))
+    panel.layoutSubtreeIfNeeded()
+    clip.scroll(to: NSPoint(x: 240, y: originY(ofLine: 200)))
+    await settle()
+    let log = PositionLog()
+    panel.positionChanged = { log.record($0) }
+
+    panel.update(path: "big.txt", verdict: .text(lines(50), .plain), position: .topLeft)
+    panel.layoutSubtreeIfNeeded()
+    await settle()
+
+    #expect(log.positions.isEmpty)
+    #expect(clip.bounds.origin.x == 240)
+    #expect(abs(clip.bounds.maxY - realEnd(of: panel)) < 1)
     #expect(panel.currentPosition.topLine > 0)
     #expect(panel.currentPosition.topLine < 50)
 }
@@ -279,8 +366,11 @@ private final class PositionLog {
 }
 
 @MainActor
-@Test func recoveryFromGoneAndFromAFailureShowsTheNewTextNoMessageAndTheCarriedPositionClamped() {
-    let (panel, clip, window) = makeWindowedPanel()
+@Test(arguments: WindowKind.allCases)
+private func recoveryFromGoneAndFromAFailureShowsTheNewTextNoMessageAndTheCarriedPositionClamped(
+    _ kind: WindowKind
+) {
+    let (panel, clip, window) = makeWindowedPanel(in: kind)
     _ = window
     for broken in [FileVerdict.gone, .failed(.unreadable)] {
         panel.show(path: "big.txt", verdict: .text(lines(400), .plain))
@@ -303,7 +393,8 @@ private final class PositionLog {
         path: "big.txt", verdict: .text(lines(50), .plain),
         position: ReadingPosition(topLine: 10_000, horizontalOffset: 100_000))
     let document = panel.contentView.enclosingScrollView?.documentView
-    #expect(abs(clip.bounds.maxY - (document?.frame.maxY ?? 0)) < 1)
+    // The real end, not `documentView.frame`: at 1x AppKit aligns the frame up to 0.5 pt past it.
+    #expect(abs(clip.bounds.maxY - realEnd(of: panel)) < 1)
     #expect(panel.currentPosition.topLine < 50)
     #expect(clip.bounds.maxX <= (document?.frame.maxX ?? 0) + 1)
 }
