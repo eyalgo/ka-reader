@@ -275,6 +275,34 @@ private func aTruncationTo50LinesShowsTheLastLinesAndNotTheTop(_ kind: WindowKin
     #expect(panel.currentPosition.topLine < 50)
 }
 
+/// CP-1382 and CP-1383: the same truncation after the reader's scroll has been reported, as it always
+/// is before a file changes on disk. The panel keeps the 240-pt offset the new text still reaches,
+/// stands at the real end, and raises no position change for its own clamp, in both windows.
+@MainActor
+@Test(arguments: WindowKind.allCases)
+private func aTruncationAfterTheReadersScrollKeepsTheOffsetAndRaisesNoPositionChange(
+    _ kind: WindowKind
+) async {
+    let (panel, clip, window) = makeWindowedPanel(in: kind)
+    _ = window
+    panel.show(path: "big.txt", verdict: .text(lines(400), .plain))
+    panel.layoutSubtreeIfNeeded()
+    clip.scroll(to: NSPoint(x: 240, y: originY(ofLine: 200)))
+    await settle()
+    let log = PositionLog()
+    panel.positionChanged = { log.record($0) }
+
+    panel.update(path: "big.txt", verdict: .text(lines(50), .plain), position: .topLeft)
+    panel.layoutSubtreeIfNeeded()
+    await settle()
+
+    #expect(log.positions.isEmpty)
+    #expect(clip.bounds.origin.x == 240)
+    #expect(abs(clip.bounds.maxY - realEnd(of: panel)) < 1)
+    #expect(panel.currentPosition.topLine > 0)
+    #expect(panel.currentPosition.topLine < 50)
+}
+
 @MainActor
 @Test func thePendingSentenceNeverAppearsDuringAnUpdateAndNoFrameShowsAnEmptyPanel() {
     let (panel, _, window) = makeWindowedPanel()
