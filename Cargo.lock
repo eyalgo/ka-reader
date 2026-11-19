@@ -114,7 +114,7 @@ dependencies = [
 
 [[package]]
 name = "ka-reader-bridge"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "git2",
  "ka-reader-bridge",
@@ -127,7 +127,7 @@ dependencies = [
 
 [[package]]
 name = "ka-reader-core"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "git2",
  "ka-reader-core",
