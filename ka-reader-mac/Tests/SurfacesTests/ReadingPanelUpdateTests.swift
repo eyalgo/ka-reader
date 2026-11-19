@@ -338,8 +338,11 @@ private func aTruncationTo50LinesShowsTheLastLinesAndNotTheTop(_ kind: WindowKin
 }
 
 @MainActor
-@Test func recoveryFromGoneAndFromAFailureShowsTheNewTextNoMessageAndTheCarriedPositionClamped() {
-    let (panel, clip, window) = makeWindowedPanel()
+@Test(arguments: WindowKind.allCases)
+private func recoveryFromGoneAndFromAFailureShowsTheNewTextNoMessageAndTheCarriedPositionClamped(
+    _ kind: WindowKind
+) {
+    let (panel, clip, window) = makeWindowedPanel(in: kind)
     _ = window
     for broken in [FileVerdict.gone, .failed(.unreadable)] {
         panel.show(path: "big.txt", verdict: .text(lines(400), .plain))
@@ -362,7 +365,8 @@ private func aTruncationTo50LinesShowsTheLastLinesAndNotTheTop(_ kind: WindowKin
         path: "big.txt", verdict: .text(lines(50), .plain),
         position: ReadingPosition(topLine: 10_000, horizontalOffset: 100_000))
     let document = panel.contentView.enclosingScrollView?.documentView
-    #expect(abs(clip.bounds.maxY - (document?.frame.maxY ?? 0)) < 1)
+    // The real end, not `documentView.frame`: at 1x AppKit aligns the frame up to 0.5 pt past it.
+    #expect(abs(clip.bounds.maxY - realEnd(of: panel)) < 1)
     #expect(panel.currentPosition.topLine < 50)
     #expect(clip.bounds.maxX <= (document?.frame.maxX ?? 0) + 1)
 }
