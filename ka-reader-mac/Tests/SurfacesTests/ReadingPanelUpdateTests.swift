@@ -268,9 +268,9 @@ private func aTruncationTo50LinesShowsTheLastLinesAndNotTheTop(_ kind: WindowKin
 
     panel.update(path: "big.txt", verdict: .text(lines(50), .plain), position: .topLeft)
 
-    let document = try #require(panel.contentView.enclosingScrollView?.documentView)
     #expect(clip.bounds.origin.y > 0)
-    #expect(abs(clip.bounds.maxY - document.frame.maxY) < 1)
+    // The real end, not `documentView.frame`: at 1x AppKit aligns the frame up to 0.5 pt past it.
+    #expect(abs(clip.bounds.maxY - realEnd(of: panel)) < 1)
     #expect(panel.currentPosition.topLine > 0)
     #expect(panel.currentPosition.topLine < 50)
 }
