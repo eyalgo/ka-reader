@@ -1,0 +1,2 @@
+# checks/ is the test and gate harness, not the program a user runs, so the language bar leaves it out.
+checks/** linguist-detectable=false
