@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Version: 1.27.0 — "README badge check" joins the list, directly before "README badge check suite"
 # Version: 1.26.0 — "README badge check suite" joins the list, directly after "README picture check suite"
 # Version: 1.25.0 — "README picture check" joins the list, directly before "README picture check suite"
 # Version: 1.24.0 — "README picture capture suite" joins the list, after "Git beta walk suite"
@@ -205,6 +206,7 @@ run_step 'README picture check suite' 'checks/tests/test_readme_picture.sh'
 # preference. They cannot join the document checks above, for the reason the comment above
 # "README picture check" gives. The check runs first, so a release badge left at an old version is
 # named by its own step, as with "Strings check".
+run_step 'README badge check' 'checks/readme-badge.sh'
 run_step 'README badge check suite' 'checks/tests/test_readme_badge.sh'
 run_step 'Own state suite' 'checks/tests/test_own_state.sh'
 # "VM refusal suite", "Launch step suite", "Own state step suite", "Tree scene helper suite",
