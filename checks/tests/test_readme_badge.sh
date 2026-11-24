@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Version: 1.1.0 — every case holds the fixture unchanged and git uncalled; each line is held to the
+#   versions it names; (i) before (v), (r) before (iii), (v) with stale halves, and a pass on
+#   differing versions carried by both halves
 # Version: 1.0.0 — first version: the badge check's five conditions, its pass line, its usage and
 #   signal statuses, the scans that hold it to no write and no variable, the copies of the picture
 #   check's programs, and the gate step that runs this suite
@@ -161,7 +164,9 @@ letters() {
 expect_letters() {
   got="$(letters)"
   [ "$got" = "$1 " ] || fail "expected the lines for conditions $2, in that order, got: $stderr" || return 1
-  expect_lines_in_the_shape
+  expect_lines_in_the_shape || return 1
+  expect_tree_unchanged || return 1
+  expect_git_untouched
 }
 
 # Every stderr line has the one shape, `readme-badge.sh: <file>: <found>. <what to do>, then run
@@ -182,7 +187,9 @@ expect_one_condition() {
   count="$(printf '%s' "$stderr" | wc -l | tr -d ' ')"
   [ -n "$stderr" ] && [ "$count" -eq 0 ] || fail "expected exactly one line for condition ($1), got: $stderr" || return 1
   [ "$(letter_of "$stderr")" = "$1" ] || fail "expected exactly one line for condition ($1), got: $stderr" || return 1
-  expect_lines_in_the_shape
+  expect_lines_in_the_shape || return 1
+  expect_tree_unchanged || return 1
+  expect_git_untouched
 }
 
 expect_line_names() {
@@ -190,6 +197,17 @@ expect_line_names() {
     *"$2"*) ;;
     *) fail "the line for condition ($1) does not name $2: $stderr";;
   esac
+}
+
+# Every stderr line names $1, each on its own line, so one line cannot carry what another lacks.
+expect_each_line_names() {
+  while IFS= read -r line; do
+    [ -n "$line" ] || continue
+    case "$line" in
+      *"$1"*) ;;
+      *) fail "the line for condition ($(letter_of "$line")) does not name $1: $stderr" || return 1;;
+    esac
+  done <<< "$stderr"
 }
 
 # A run that passes: status 0, one stdout line naming the badge and the version, nothing on stderr,
@@ -210,9 +228,23 @@ expect_pass() {
 
 # The release badge's alternative text and its picture both carry the product's version.
 test_a_release_badge_that_matches_in_both_halves_passes() {
+  SUB="both halves at the product's 0.1.1"
   fixture
   run_check
-  expect_pass 0.1.1
+  expect_pass 0.1.1 || return 1
+  # Where Cargo.toml and Info.plist differ, each half has to carry both versions, so a badge that
+  # carries both passes, and its pass line names both.
+  SUB="Cargo.toml at 0.1.1 and Info.plist at 0.1.2, each half carrying both"
+  fixture
+  write_versions 0.1.1 0.1.2
+  write_readme "Release: 0.1.1 and 0.1.2"
+  printf '<svg xmlns="http://www.w3.org/2000/svg" width="98" height="20" role="img" aria-label="Release: 0.1.1 and 0.1.2">\n<text x="28" y="14">Release</text>\n<text x="77" y="14">0.1.1</text>\n<text x="120" y="14">0.1.2</text>\n</svg>\n' > "$tree/$BADGE"
+  run_check
+  expect_pass 0.1.1 || return 1
+  case "$stdout" in
+    *"0.1.2"*) ;;
+    *) fail "expected one stdout line naming docs/readme/badges/release.svg and 0.1.2, got: $stdout";;
+  esac
 }
 
 # The opening shows no image naming the release picture: the line deleted, or the badge only below
@@ -225,12 +257,22 @@ test_no_release_badge_in_the_opening_is_condition_i() {
   expect_status 1 || return 1
   expect_one_condition i || return 1
   expect_line_names i "$BADGE" || return 1
+  expect_line_names i "0.1.1" || return 1
   SUB="the release badge only below the first ## heading"
   fixture
   printf '# KA-Reader\n\nA local reader.\n\n![Licence: MIT](docs/readme/badges/licence.svg)\n\n## Known gaps\n\n![Release: 0.1.1](%s)\n' "$BADGE" > "$tree/README.md"
   run_check
   expect_status 1 || return 1
-  expect_one_condition i
+  expect_one_condition i || return 1
+  # (i) prints before (v), and with a version unread it names no product version.
+  SUB="the release badge's line deleted, and Cargo.toml's version unread"
+  fixture
+  sed "/release.svg/d" "$tree/README.md" > "$scene/edited" && cp "$scene/edited" "$tree/README.md"
+  rm "${tree:?}/Cargo.toml"
+  run_check
+  expect_status 1 || return 1
+  expect_stdout_empty || return 1
+  expect_letters "i v" "(i) then (v)"
 }
 
 # The release badge is the image at exactly docs/readme/badges/release.svg: the same file name in
@@ -260,12 +302,14 @@ test_an_alternative_without_the_version_is_condition_ii() {
   run_check
   expect_status 1 || return 1
   expect_one_condition ii || return 1
+  expect_line_names ii "version 0.1.10," || return 1
   SUB="the alternative text at 10.1.1"
   fixture
   write_readme "Release: 10.1.1"
   run_check
   expect_status 1 || return 1
   expect_one_condition ii || return 1
+  expect_line_names ii "version 10.1.1," || return 1
   SUB="the alternative text at 0.1.1.5"
   fixture
   write_readme "Release: 0.1.1.5"
@@ -279,6 +323,7 @@ test_an_alternative_without_the_version_is_condition_ii() {
   expect_status 1 || return 1
   expect_one_condition ii || return 1
   expect_line_names ii "carries no version" || return 1
+  expect_line_names ii "0.1.1" || return 1
   SUB="the alternative text reading v0.1.1"
   fixture
   write_readme "Release: v0.1.1"
@@ -300,7 +345,8 @@ test_a_picture_without_the_version_is_condition_iii() {
   expect_status 1 || return 1
   expect_one_condition iii || return 1
   expect_line_names iii "$BADGE" || return 1
-  expect_line_names iii "0.1.2" || return 1
+  expect_line_names iii "version 0.1.2," || return 1
+  expect_line_names iii "0.1.1 in Cargo.toml" || return 1
   SUB="the picture with no <text> holding a version"
   fixture
   printf '<svg xmlns="http://www.w3.org/2000/svg" width="98" height="20" role="img" aria-label="Release: 0.1.1">\n<text x="28" y="14">Release</text>\n</svg>\n' > "$tree/$BADGE"
@@ -308,6 +354,7 @@ test_a_picture_without_the_version_is_condition_iii() {
   expect_status 1 || return 1
   expect_one_condition iii || return 1
   expect_line_names iii "carries no version" || return 1
+  expect_line_names iii "0.1.1 in Cargo.toml" || return 1
   SUB="the picture absent"
   fixture
   rm "${tree:?}/$BADGE"
@@ -336,9 +383,9 @@ test_a_version_moved_past_the_badge_names_both_halves() {
   expect_status 1 || return 1
   expect_stdout_empty || return 1
   expect_letters "ii iii" "(ii) then (iii)" || return 1
-  expect_line_names ii "$BADGE" || return 1
-  expect_line_names ii "0.1.1" || return 1
-  expect_line_names ii "0.1.2" || return 1
+  expect_each_line_names "$BADGE" || return 1
+  expect_each_line_names "version 0.1.1," || return 1
+  expect_each_line_names "0.1.2 in Cargo.toml and 0.1.2 in ka-reader-mac/Info.plist" || return 1
   SUB="Cargo.toml alone at 0.1.2"
   fixture
   write_versions 0.1.2 0.1.1
@@ -346,8 +393,7 @@ test_a_version_moved_past_the_badge_names_both_halves() {
   expect_status 1 || return 1
   expect_stdout_empty || return 1
   expect_letters "ii iii" "(ii) then (iii)" || return 1
-  expect_line_names ii "0.1.2" || return 1
-  expect_line_names ii "0.1.1" || return 1
+  expect_each_line_names "0.1.2 in Cargo.toml and 0.1.1 in ka-reader-mac/Info.plist" || return 1
   SUB="Info.plist alone at 0.1.2"
   fixture
   write_versions 0.1.1 0.1.2
@@ -355,8 +401,7 @@ test_a_version_moved_past_the_badge_names_both_halves() {
   expect_status 1 || return 1
   expect_stdout_empty || return 1
   expect_letters "ii iii" "(ii) then (iii)" || return 1
-  expect_line_names ii "0.1.2" || return 1
-  expect_line_names ii "0.1.1" || return 1
+  expect_each_line_names "0.1.1 in Cargo.toml and 0.1.2 in ka-reader-mac/Info.plist"
 }
 
 # A version this check cannot read names (v) once, and leaves the comparison undone.
@@ -368,15 +413,30 @@ test_an_unreadable_product_version_is_condition_v() {
   expect_status 1 || return 1
   expect_one_condition v || return 1
   expect_line_names v "$BADGE" || return 1
+  expect_line_names v "ka-reader-mac/Info.plist carries 0.1.1" || return 1
   SUB="no version key in Info.plist"
   fixture
   printf '<plist>\n<dict>\n  <key>CFBundleName</key>\n  <string>KA-Reader</string>\n</dict>\n</plist>\n' > "$tree/ka-reader-mac/Info.plist"
   run_check
   expect_status 1 || return 1
   expect_one_condition v || return 1
+  expect_line_names v "$BADGE" || return 1
+  expect_line_names v "Cargo.toml carries 0.1.1" || return 1
   SUB="neither version readable"
   fixture
   rm "${tree:?}/Cargo.toml" "${tree:?}/ka-reader-mac/Info.plist"
+  run_check
+  expect_status 1 || return 1
+  expect_one_condition v || return 1
+  expect_line_names v "$BADGE" || return 1
+  expect_line_names v "neither Cargo.toml" || return 1
+  # Both halves at a version the readable file does not carry: were (ii) or the version half of
+  # (iii) evaluated, they would hold here.
+  SUB="no version in Cargo.toml's [workspace.package] table, and both halves at 0.1.2"
+  fixture
+  printf '[workspace]\nmembers = []\n\n[workspace.package]\nedition = "2024"\n' > "$tree/Cargo.toml"
+  write_readme "Release: 0.1.2"
+  write_svg 0.1.2
   run_check
   expect_status 1 || return 1
   expect_one_condition v || return 1
@@ -405,7 +465,16 @@ test_an_unreadable_readme_is_condition_r_not_a_pass() {
   mkdir "$tree/README.md"
   run_check
   expect_status 1 || return 1
-  expect_one_condition r
+  expect_one_condition r || return 1
+  # (r) leaves (i) and (ii) unevaluated, and (iii) is still evaluated.
+  SUB="README.md absent, and the picture at 0.1.2"
+  fixture
+  rm "${tree:?}/README.md"
+  write_svg 0.1.2
+  run_check
+  expect_status 1 || return 1
+  expect_stdout_empty || return 1
+  expect_letters "r iii" "(r) then (iii)"
 }
 
 # A wrong invocation is 2, with the usage line, before anything is read.

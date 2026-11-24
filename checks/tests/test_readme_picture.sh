@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Version: 1.2.0 — the badge cases hold the fixture unchanged, and the badges' folder alone is no
+#   badge
 # Version: 1.1.0 — the badge pictures: five cases for the badge rule and condition (g), and letter_of
 #   names (g)'s line
 # Version: 1.0.0 — first version: the picture check's six conditions, its pass line, its usage and
@@ -373,6 +375,7 @@ test_an_image_neither_the_picture_nor_a_badge_is_condition_c() {
   expect_one_condition c || return 1
   expect_line_names c "docs/readme/other.png" || return 1
   expect_line_names c "$PICTURE" || return 1
+  expect_tree_unchanged || return 1
   SUB="a path under docs/readme/badges/../"
   fixture
   write_opening "![The shell, as the fixture shows it.]($PICTURE)
@@ -382,6 +385,7 @@ test_an_image_neither_the_picture_nor_a_badge_is_condition_c() {
   expect_status 1 || return 1
   expect_one_condition c || return 1
   expect_line_names c "docs/readme/badges/../other.png" || return 1
+  expect_tree_unchanged || return 1
   SUB="a path under docs/readme/badgesx/"
   fixture
   write_opening "![The shell, as the fixture shows it.]($PICTURE)
@@ -390,7 +394,19 @@ test_an_image_neither_the_picture_nor_a_badge_is_condition_c() {
   run_check
   expect_status 1 || return 1
   expect_one_condition c || return 1
-  expect_line_names c "docs/readme/badgesx/other.svg"
+  expect_line_names c "docs/readme/badgesx/other.svg" || return 1
+  expect_tree_unchanged || return 1
+  # A badge's path goes on past the folder's name: the folder itself is no badge.
+  SUB="the path docs/readme/badges/ and nothing after it"
+  fixture
+  write_opening "![The shell, as the fixture shows it.]($PICTURE)
+
+![Folder.](docs/readme/badges/)"
+  run_check
+  expect_status 1 || return 1
+  expect_one_condition c || return 1
+  expect_line_names c "the image docs/readme/badges/," || return 1
+  expect_tree_unchanged
 }
 
 # Condition (g): the opening shows badges and nothing else, so it does not show the record's picture.
@@ -404,8 +420,9 @@ test_an_opening_of_badges_alone_is_condition_g() {
   expect_line_names g "does not show" || return 1
   case "$stderr" in
     *"then run checks/readme-picture.sh from the product root.") ;;
-    *) fail "the line for condition (g) does not end then run checks/readme-picture.sh from the product root.: $stderr";;
+    *) fail "the line for condition (g) does not end then run checks/readme-picture.sh from the product root.: $stderr" || return 1;;
   esac
+  expect_tree_unchanged
 }
 
 # A badge is told by its path and by not being the record's picture, so a record that names a path
@@ -421,8 +438,9 @@ test_a_record_picture_under_the_badges_folder_is_never_a_badge() {
   [ -z "$stderr" ] || fail "stderr is not empty: $stderr" || return 1
   case "$stdout" in
     *"docs/readme/badges/shot.png"*) ;;
-    *) fail "expected one stdout line naming docs/readme/badges/shot.png, got: $stdout";;
+    *) fail "expected one stdout line naming docs/readme/badges/shot.png, got: $stdout" || return 1;;
   esac
+  expect_tree_unchanged
 }
 
 # With no record, (d) checks the opening's first image that is not a badge, and with none, it is not
@@ -440,13 +458,15 @@ test_with_no_record_condition_d_skips_the_badges() {
     *"readme-picture.sh: $PICTURE: no file is there"*) ;;
     *) fail "the line for condition (d) does not name $PICTURE, the opening's first image that is not a badge picture: $stderr" || return 1;;
   esac
+  expect_tree_unchanged || return 1
   SUB="no record, and badges alone in the opening"
   fixture
   rm "$tree/$RECORD"
   write_opening ""
   run_check
   expect_status 1 || return 1
-  expect_one_condition b
+  expect_one_condition b || return 1
+  expect_tree_unchanged
 }
 
 test_a_missing_or_untracked_picture_is_condition_d() {
