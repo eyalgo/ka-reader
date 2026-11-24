@@ -2,7 +2,20 @@
 
 KA-Reader is a local, read-only reader of folders, files and Git repositories.
 
+Built by [KensaiApp](https://github.com/eyalgo/kensaiapp), a system of AI roles on Claude Code.
+
+![Licence: MIT](docs/readme/badges/licence.svg)
+![Release: 0.1.1](docs/readme/badges/release.svg)
+![Platform: macOS 26 or later](docs/readme/badges/platform.svg)
+![Languages: Rust, Swift, Shell](docs/readme/badges/languages.svg)
+![Status: before 1.0.0](docs/readme/badges/status.svg)
+![Built by KensaiApp](docs/readme/badges/built-by.svg)
+
+**[Install](https://github.com/eyalgo/ka-reader#install) · [Releases](https://github.com/eyalgo/ka-reader/releases) · [Build cost](https://github.com/eyalgo/ka-reader/blob/main/docs/build_cost.md) · [KensaiApp](https://github.com/eyalgo/kensaiapp)**
+
 ![KA-Reader's window with a repository open: Files is chosen in the sidebar, a letter stands beside a changed file in the file tree, and the reading panel shows one of the repository's files.](docs/readme/shell.png)
+
+### Install
 
 On macOS 26 or later, use this repository's [Releases page](https://github.com/eyalgo/ka-reader/releases) when a release is offered: download the disk image, open it, drag KA-Reader.app to Applications, then open KA-Reader. The app isn't notarized. If macOS blocks the first launch, open System Settings › Privacy & Security, scroll down and click Open Anyway, then click Open in the confirmation.
 
