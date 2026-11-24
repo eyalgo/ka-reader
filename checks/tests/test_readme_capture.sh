@@ -721,6 +721,7 @@ sha256: $digest"
     *) fail "the stdout line does not name the picture, the version and the commit: $stdout" || return 1;;
   esac
   expect_stderr_names "$work_folder/ka-reader" || return 1
+  expect_stderr_names "after the row of links, before the ### Install heading" || return 1
   expect_work_folders_gone || return 1
   [ ! -e "$work_folder/build" ] && [ ! -e "$work_folder/ka-reader" ] || fail "a clone or the fixture is still there" || return 1
   expect_launched_process_stopped || return 1

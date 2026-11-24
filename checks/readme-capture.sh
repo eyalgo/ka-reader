@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Version: 1.0.1 — the closing line says where the picture goes in the opening as it now runs: after the
+#   row of links, before the ### Install heading; nothing else moves
 # Version: 1.0.0 — first version: one run builds the bundle at HEAD, captures its window on a fixture
 #   repository, and writes the README's picture and its record
 #
@@ -488,4 +490,4 @@ writing=0
 # The script stages nothing: staging writes the index, and inside the repository it writes the
 # picture and the record only.
 echo "readme-capture.sh: wrote $PICTURE_PATH and $RECORD_PATH, captured from KA-Reader $version built at commit $commit."
-say "look at $PICTURE_PATH before you commit it: once it is committed, the README's opening shows it. If the README's opening has no image line naming $PICTURE_PATH, add one after the description sentence. Then commit $PICTURE_PATH, $RECORD_PATH and the README's image line together: checks/readme-picture.sh exits 1 on a tree that holds only some of them."
+say "look at $PICTURE_PATH before you commit it: once it is committed, the README's opening shows it. If the README's opening has no image line naming $PICTURE_PATH, add one after the row of links, before the ### Install heading. Then commit $PICTURE_PATH, $RECORD_PATH and the README's image line together: checks/readme-picture.sh exits 1 on a tree that holds only some of them."

@@ -262,6 +262,7 @@ test_no_image_in_the_opening_is_condition_a() {
   expect_one_condition a || return 1
   expect_line_names a "holds no Markdown image" || return 1
   expect_line_names a "Add an image line" || return 1
+  expect_line_names a "after the row of links and before the ### Install heading" || return 1
   SUB="an image only below the first ## heading"
   fixture
   printf '# KA-Reader\n\nA local reader.\n\n## Known gaps\n\n![below](%s)\n' "$PICTURE" > "$tree/README.md"

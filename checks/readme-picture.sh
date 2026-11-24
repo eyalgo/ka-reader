@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Version: 1.1.1 — the (a) finding says where the picture goes in the opening as it now runs: after the
+#   row of links and before the ### Install heading; no condition moves
 # Version: 1.1.0 — the badge pictures: (c) admits them, the new (g) fails an opening that shows
 #   nothing else, and (d)'s fallback skips them
 # Version: 1.0.0 — first version: the README's picture held to its record and to the product's version
@@ -243,7 +245,7 @@ fi
 if [ "$readme_readable" -eq 0 ]; then
   finding "readme-picture.sh: README.md: cannot read this file. Make this file readable, $again"
 elif [ -z "$images" ]; then
-  finding "readme-picture.sh: README.md: the opening, before its first ## heading, holds no Markdown image of the form ![alternative text](path). Add an image line naming the picture $record_name names to the opening, after the description sentence, $again"
+  finding "readme-picture.sh: README.md: the opening, before its first ## heading, holds no Markdown image of the form ![alternative text](path). Add an image line naming the picture $record_name names to the opening, after the row of links and before the ### Install heading, $again"
 fi
 
 # --- (b) the record ---
