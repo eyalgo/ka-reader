@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Version: 1.1.0 — the badge pictures: (c) admits them, the new (g) fails an opening that shows
+#   nothing else, and (d)'s fallback skips them
 # Version: 1.0.0 — first version: the README's picture held to its record and to the product's version
 #
 # checks/readme-picture.sh — fails when the README's opening does not show the picture the capture
@@ -33,17 +35,29 @@
 #     commit: <40 lowercase hex digits>
 #     sha256: <64 lowercase hex digits>
 #
+# THE BADGE PICTURES
+#   The opening also shows the README's badges, and each one is a picture stored under
+#   docs/readme/badges/. An image in the opening is a badge picture when all three of these hold:
+#   its path, as README.md writes it, begins with docs/readme/badges/ and goes on past it; no
+#   /-separated part of the path is ..; and, when the record can be read, the path is not the
+#   record's picture. The path is compared as text, and nothing outside the repository is read for
+#   it. Whether a badge's file is there and tracked is checks/readme.sh's to check, and this check
+#   does not repeat it. checks/readme-badge.sh holds the release badge to the product's version.
+#
 # THE CONDITIONS
 #   Every condition is evaluated before any is reported. Each one that holds prints one stderr line,
 #   in this order:
 #   (a) the opening holds no image, or README.md cannot be read;
 #   (b) the record is missing, cannot be read, or is not in the form above;
-#   (c) when (a) and (b) pass: an image in the opening names a path other than the record's picture;
-#   (d) the picture is missing or not tracked; when (b) holds, the opening's first image path is
-#       checked instead, and when there is neither, (d) is not evaluated;
+#   (c) when (a) and (b) pass: an image in the opening is neither the record's picture nor a badge
+#       picture;
+#   (d) the picture is missing or not tracked; when (b) holds, the opening's first image that is not
+#       a badge picture is checked instead, and when there is no such image, (d) is not evaluated;
 #   (e) when (b) passes and the picture is there: its SHA-256 is not the record's;
 #   (f) when (b) passes: the record's version differs from Cargo.toml's or Info.plist's, or either
-#       of those cannot be read.
+#       of those cannot be read;
+#   (g) when (a) and (b) pass: every image in the opening is a badge picture, so none of them is the
+#       record's picture.
 #   On a pass, one stdout line names the picture and the record's version, and stderr is empty.
 #
 # NO FILE IS WRITTEN
@@ -90,7 +104,9 @@ again='then run checks/readme-picture.sh from the product root.'
 
 # The opening's images: one line per inline image, the alternative text, a tab, the path. The
 # opening ends at the first line that begins "## ". checks/tests/test_readme_picture.sh reads this
-# one program between the two marker lines, so the check and the suite agree on what an image is.
+# one program between the two marker lines, and checks/readme-badge.sh holds a byte-for-byte copy
+# of it between the same two lines, so the check, its suite and the badge check agree on what an
+# image is.
 # opening-images-program: begin
 opening_images='
 { sub(/\r$/, "") }
@@ -144,6 +160,10 @@ END {
 }
 '
 
+# The product's version, from Cargo.toml and then from Info.plist. checks/readme-badge.sh holds a
+# byte-for-byte copy of these two programs between the same two marker lines, and its suite fails
+# when the two copies differ, so the two checks agree on what the product's version is.
+# product-version-programs: begin
 # Cargo.toml: the one version line of the [workspace.package] table, or status 3.
 cargo_program='
 /^\[/ { in_table = ($0 ~ /^\[workspace\.package\][ \t]*$/); next }
@@ -177,6 +197,25 @@ plist_program='
 }
 END { if (keys != 1 || strings != 1) exit 3; print found }
 '
+# product-version-programs: end
+
+# The images that are not badge pictures: the paths of the opening's image lines (alternative text, a
+# tab, the path) that are not under docs/readme/badges/. The prefix is compared as text.
+non_badge_program='
+function is_badge(path,    prefix, parts_count, parts, i) {
+  prefix = "docs/readme/badges/"
+  if (substr(path, 1, length(prefix)) != prefix) return 0
+  if (length(path) == length(prefix)) return 0
+  parts_count = split(path, parts, "/")
+  for (i = 1; i <= parts_count; i++) if (parts[i] == "..") return 0
+  if (record_read == 1 && path == picture) return 0
+  return 1
+}
+{
+  path = substr($0, index($0, "\t") + 1)
+  if (!is_badge(path)) print path
+}
+'
 
 # Runs awk with one program over one file. The text goes to $awk_text, the status to $awk_status.
 # A status other than 0 and 3 is awk not running at all, which no condition can be judged on.
@@ -200,11 +239,6 @@ if [ -f "$readme_file" ] && [ -r "$readme_file" ]; then
   images="$awk_text"
 else
   readme_readable=0
-fi
-first_image_path=''
-if [ -n "$images" ]; then
-  first_image_path="${images%%$'\n'*}"
-  first_image_path="${first_image_path#*$'\t'}"
 fi
 if [ "$readme_readable" -eq 0 ]; then
   finding "readme-picture.sh: README.md: cannot read this file. Make this file readable, $again"
@@ -243,8 +277,13 @@ fi
 
 # --- (c) every image in the opening names the record's picture ---
 
+non_badge_paths=''
+if [ -n "$images" ]; then
+  non_badge_paths="$(printf '%s\n' "$images" | awk -v record_read="$record_ok" -v picture="$picture" "$non_badge_program")" || exit 1
+fi
+
 if [ "$readme_readable" -eq 1 ] && [ -n "$images" ] && [ "$record_ok" -eq 1 ]; then
-  other_path="$(printf '%s\n' "$images" | awk -F'\t' -v want="$picture" '$2 != want && !seen { print $2; seen = 1 }')"
+  other_path="$(printf '%s\n' "$non_badge_paths" | awk -v want="$picture" '$0 != "" && $0 != want && !seen { print $0; seen = 1 }')"
   if [ -n "$other_path" ]; then
     finding "readme-picture.sh: README.md: the opening shows the image $other_path, and $record_name names $picture. Make every image in the opening name $picture, $again"
   fi
@@ -255,8 +294,8 @@ fi
 picture_to_check=''
 if [ "$record_ok" -eq 1 ]; then
   picture_to_check="$picture"
-elif [ -n "$first_image_path" ]; then
-  picture_to_check="$first_image_path"
+elif [ -n "$non_badge_paths" ]; then
+  picture_to_check="${non_badge_paths%%$'\n'*}"
 fi
 picture_present=0
 if [ -n "$picture_to_check" ]; then
@@ -320,6 +359,12 @@ if [ "$record_ok" -eq 1 ]; then
   else
     finding "readme-picture.sh: $record_name: it names version $record_version, and neither Cargo.toml's [workspace.package] table nor ka-reader-mac/Info.plist holds a single version this check can read. Give each exactly one version, $again"
   fi
+fi
+
+# --- (g) the opening shows the picture, not only badges ---
+
+if [ "$readme_readable" -eq 1 ] && [ -n "$images" ] && [ "$record_ok" -eq 1 ] && [ -z "$non_badge_paths" ]; then
+  finding "readme-picture.sh: README.md: every image in the opening is a badge picture under docs/readme/badges/, so the opening does not show $picture, the picture $record_name names. Add an image line naming $picture to the opening, after the badge and link rows, $again"
 fi
 
 # --- the verdict ---
