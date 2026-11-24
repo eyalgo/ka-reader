@@ -29,10 +29,6 @@ KA-Reader sends no telemetry, and it makes no network call while it runs — dow
 
 ## Promises and limits
 
-KA-Reader never changes the folder you point it at. It writes no file in it, and it runs no Git command that alters your repository's state.
-
-KA-Reader sends no telemetry, and it makes no network call while it runs — downloading it uses the network; using it does not.
-
 KA-Reader is before version 1.0.0. Until 1.0.0, anything in it may change: what it does, how it looks, and how you start it.
 
 Issues and questions are welcome and are read when there is time. There is no response time, no commitment to fix, and no promise that a fix arrives. Security reports have a private channel and are read on the same terms.
@@ -91,14 +87,14 @@ The order, slice by slice, is `docs/SDD.md` § 6.
 
 Sidebar search and filtering, pane resizing and keyboard navigation are outside what KA-Reader is built to become.
 
-## Built by KensaiApp
-
-KA-Reader is built by [KensaiApp](https://github.com/eyalgo/kensaiapp), a system of AI roles that
-carries a software change from first ask to merged code. What that cost in Claude runs, tokens and
-money is in [`docs/build_cost.md`](docs/build_cost.md).
-
 ## Name
 
 *KA-Reader* was called *Nozoki* (覗き — *"to peek / peer in"*) until 2026-10-08.
 The tool is the same: it lets you look into a folder,
 but never reach in and change it.
+
+## Built by KensaiApp
+
+KA-Reader is built by [KensaiApp](https://github.com/eyalgo/kensaiapp), a system of AI roles that
+carries a software change from first ask to merged code. What that cost in Claude runs, tokens and
+money is in [`docs/build_cost.md`](https://github.com/eyalgo/ka-reader/blob/main/docs/build_cost.md).
