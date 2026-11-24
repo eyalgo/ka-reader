@@ -2,7 +2,8 @@
 
 **Status:** Settled
 **Owner:** Principal Architect
-**Version:** 102 — Fold cycle-93 §§ 3.1–3.4, the close: § 9's suites bullet is re-measured at `ka-reader@3463d17` — thirty-two suites, `checks/gate.sh` 1.24.0, every locator re-pinned, the thirty at `21f611f` kept as a dated reading, "Four of the thirty-two" and "all thirty-two" moving with it; QC-65's set names `checks/readme-capture.sh`, the README picture's capture, beside the two scene helpers, its suite outside the set and its refusal case in its own suite with no twin in the refusal suite; QC-14's list names the window probe and is whole at four programs, re-pinned at one commit; RN-22's README locator is pinned at the v11 commit it was true at, with a dated note that both items it called owed have landed and today's sentences cited by section; § 10's QC-65 row follows. No obligation and no record changes. The companion is removed; Status is Settled — RN-112.
+**Version:** 103 — Fold cycle-94 § 3.1, the close: § 9's suites bullet is re-measured at `ka-reader@35d5e02` — thirty-three suites, `checks/gate.sh` 1.27.0, every locator re-pinned, `test_readme_badge.sh` (`:L210`) joining with its pairing to `checks/readme-badge.sh`, the thirty-two at `3463d17` kept as a dated reading, "Four of the thirty-two" and "all thirty-two" moving to thirty-three, the `test_assemble.sh` comment locator re-pinned to `:L130`. No obligation and no record changes. The companion is removed; Status is Settled — RN-113.
+Version 102 — Fold cycle-93 §§ 3.1–3.4, the close: § 9's suites bullet is re-measured at `ka-reader@3463d17` — thirty-two suites, `checks/gate.sh` 1.24.0, every locator re-pinned, the thirty at `21f611f` kept as a dated reading, "Four of the thirty-two" and "all thirty-two" moving with it; QC-65's set names `checks/readme-capture.sh`, the README picture's capture, beside the two scene helpers, its suite outside the set and its refusal case in its own suite with no twin in the refusal suite; QC-14's list names the window probe and is whole at four programs, re-pinned at one commit; RN-22's README locator is pinned at the v11 commit it was true at, with a dated note that both items it called owed have landed and today's sentences cited by section; § 10's QC-65 row follows. No obligation and no record changes. The companion is removed; Status is Settled — RN-112.
 Version 101 — Fold cycle-92 § 2.1, the close: § 5 names the Git view's memory ceiling beside QC-45 as a dated reading and not a rule — it points at `GitViewMemoryBoundTests.swift:L18` (`riseBound`) and `checks/gate.sh:L104`, quotes 154,000,000 bytes as the constant at `ka-reader@21f611f`, says why the figure sits outside QC-45's three named kinds of number, and names a later suite's figure as an uncovered case for QC-45's review; § 5 still asserts no number of its own. No obligation and no record changes. The companion is removed; Status is Settled — RN-111.
 Version 100 — Fold cycle-91 §§ 3.1–3.2: § 8 quotes the test gate as `checks/gate.sh` 1.22.0 holds it at `ka-reader@21f611f` — its `swift test` skips `ShellTests.GitViewMemoryBoundTests` — and names the *Git view memory bound* step and its suite after it, with the unskipped command and the `f25fdbb` locators kept as a dated reading; § 9's runner paragraph states that each case of that suite runs alone, in a `swift test` of its own; § 9's suites bullet is re-measured at `ka-reader@21f611f` — thirty suites, every locator re-pinned, the twenty-nine at `03bb989` kept as a dated reading. No obligation and no record changes. One choice awaits the owner — § 2.1, § 5's silence on the Git view's memory ceiling — so Status is Draft — RN-110.
 Version 99 — Fold cycle-90 § 3.1, the close: § 9 makes the Behave call and picks the way in — `**Behave:** behave` and `**Behave way in:** command` — with four bounds every scenario holds: the program a scenario runs is a test host or a `checks/` script, never the shipped app given an argument; a scenario asserts the projection a view is drawn from, never the drawing; an environment refusal is a run that did not read the change, never a red; and layer 7's row names QA's scenarios under `.behave/features/`, run with `uv run --locked behave` from `.behave/`. The Layers 6–7 bullet follows. No record is owed. The companion is removed; Status is Settled — RN-109.
@@ -3202,7 +3203,25 @@ left with `ka-reader-ui` at `ka-reader@0aca57e` (RN-22; RN-25).
   nowhere is ADR-0012's rule broken one level down: a gate that cannot go red has not run. A script
   that lands with a suite lands the suite as a step of `checks/gate.sh` in the same change, and the
   workflow runs it through `Test gate` *(through v57 "lands the suite's CI step in the same change" —
-  RN-69)*. Thirty-two top-level shell suites are in the tree at
+  RN-69)*. Thirty-three top-level shell suites are in the tree at
+  `ka-reader@35d5e020f57fddfc44025a71135728aae14a9cd4`, each the whole command of one `run_step`
+  line of `checks/gate.sh` (1.27.0): `test_secret_scan.sh` (`checks/gate.sh:L81`),
+  `test_secret_scan_planted.sh` (`:L99`), `test_git_view_memory.sh` (`:L110`), `test_structure.sh`
+  (`:L119`), `test_entry_points.sh` (`:L121`), `test_app_icon.sh` (`:L129`), `test_assemble.sh`
+  (`:L133`), `test_bundle.sh` (`:L136`), `test_view.sh` (`:L138`), `test_renderer.sh` (`:L148`),
+  `test_read_only.sh` (`:L159`), `test_no_network.sh` (`:L161`), `test_notices.sh` (`:L169`),
+  `test_offline_page.sh` (`:L171`), `test_strings.sh` (`:L177`), `test_strings_step.sh` (`:L178`),
+  `test_readme.sh` (`:L182`), `test_git_beta.sh` (`:L184`), `test_release_shape.sh` (`:L191`),
+  `test_release_version.sh` (`:L192`), `test_release_pack.sh` (`:L193`), `test_release_sums.sh`
+  (`:L194`), `test_release_absent.sh` (`:L195`), `test_readme_picture.sh` (`:L203`),
+  `test_readme_badge.sh` (`:L210`), `test_own_state.sh` (`:L211`), `test_vm_refusal.sh` (`:L219`),
+  `test_launch.sh` (`:L220`), `test_own_state_step.sh` (`:L221`), `test_tree_scene.sh` (`:L222`),
+  `test_git_beta_scene.sh` (`:L223`), `test_git_beta_walk.sh` (`:L224`) and `test_readme_capture.sh`
+  (`:L225`). The tree outside `docs/` is unchanged from `ka-reader@35d5e02` at `ka-reader@d651da0`.
+  The measurement enumerates `checks/tests/*.sh` and matches each path to an exact whole-command
+  `run_step` line; it executes no suite *(re-measured at v103 from thirty-two, on the stand-in answer in the owner's seat at
+  `docs/trail/architecture/cycle-94.md` § 3.1 — RN-113)*.
+  **Dated reading retained from v102:** thirty-two suites at
   `ka-reader@3463d17fcb1108d2df77b0a1a747d363ef8c368e`, each the whole command of one `run_step`
   line of `checks/gate.sh` (1.24.0): `test_secret_scan.sh` (`checks/gate.sh:L78`),
   `test_secret_scan_planted.sh` (`:L96`), `test_git_view_memory.sh` (`:L107`), `test_structure.sh`
@@ -3216,7 +3235,7 @@ left with `ka-reader-ui` at `ka-reader@0aca57e` (RN-22; RN-25).
   `test_own_state.sh` (`:L199`), `test_vm_refusal.sh` (`:L207`), `test_launch.sh` (`:L208`),
   `test_own_state_step.sh` (`:L209`), `test_tree_scene.sh` (`:L210`), `test_git_beta_scene.sh`
   (`:L211`), `test_git_beta_walk.sh` (`:L212`) and `test_readme_capture.sh` (`:L213`). The tree
-  outside `docs/` is unchanged at `ka-reader@9c2ed61`. The measurement enumerates
+  outside `docs/` was unchanged at `ka-reader@9c2ed61`. The measurement enumerates
   `checks/tests/*.sh` and matches each path to an exact whole-command `run_step` line; it executes
   no suite *(re-measured at v102 from thirty, on the owner's seat's answer at
   `docs/trail/architecture/cycle-93.md` § 3.1 — RN-112)*.
@@ -3373,8 +3392,8 @@ left with `ka-reader-ui` at `ka-reader@0aca57e` (RN-22; RN-25).
   `:L96`, `:L99`, `:L100` and `:L101` — true at that pin)* *(re-measured at v66 from eleven, on the owner's seat's answer at
   `docs/trail/architecture/cycle-59.md` § 3.1 — RN-77; through v65 it counted eleven, all steps of
   the gate at `ka-reader@8b93322` — `:L50`, `:L52`, `:L55`, `:L57`, `:L67`, `:L71`, `:L73`, `:L74`,
-  `:L77`, `:L78` and `:L79` — true at that pin)*. Four of the thirty-two have no `checks/<name>.sh` of
-  their own name *(through v101 "Four of the thirty" — RN-112; through v99 "Four of the twenty-nine" — RN-110; through v97 "Three of the twenty-seven" — RN-108; through v92 "Three of the twenty-three" — RN-103; through v88 "Three of the twenty-two" — RN-99; through v86 "Three of the seventeen" — RN-97; through v84 "Three of the fifteen" — RN-95; through v70 "Two of the fourteen" — RN-82; through v67 "Two of the thirteen"
+  `:L77`, `:L78` and `:L79` — true at that pin)*. Four of the thirty-three have no `checks/<name>.sh` of
+  their own name *(through v102 "Four of the thirty-two" — RN-113; through v101 "Four of the thirty" — RN-112; through v99 "Four of the twenty-nine" — RN-110; through v97 "Three of the twenty-seven" — RN-108; through v92 "Three of the twenty-three" — RN-103; through v88 "Three of the twenty-two" — RN-99; through v86 "Three of the seventeen" — RN-97; through v84 "Three of the fifteen" — RN-95; through v70 "Two of the fourteen" — RN-82; through v67 "Two of the thirteen"
   — RN-79)*; `test_notices.sh`, counted at v89, pairs by name with `checks/notices.sh` (RN-99);
   the four suites added since v89, `test_readme.sh`, `test_git_beta.sh`, `test_git_beta_scene.sh`
   and `test_git_beta_walk.sh`, pair by name with `checks/readme.sh`, `checks/git-beta.sh`,
@@ -3383,9 +3402,11 @@ left with `ka-reader-ui` at `ka-reader@0aca57e` (RN-22; RN-25).
   (RN-110);
   the two counted at v102, `test_readme_picture.sh` and `test_readme_capture.sh`, pair by name with
   `checks/readme-picture.sh` and `checks/readme-capture.sh` (RN-112);
+  the one counted at v103, `test_readme_badge.sh`, pairs by name with `checks/readme-badge.sh`
+  (RN-113);
   of the two counted at v98, `test_app_icon.sh` pairs by name with `checks/app-icon.sh`, and
   `test_assemble.sh` is the fourth with no `checks/<name>.sh`: it holds `ka-reader-mac/assemble.sh`,
-  the app's build script, run as a byte copy in a tree of its own (its header, `:L2-L3`; `checks/gate.sh:L127` at `ka-reader@3463d17` — RN-112; `:L125` at `ka-reader@21f611f` — RN-110; `:L116` at `ka-reader@03bb989` — RN-110) (RN-108);
+  the app's build script, run as a byte copy in a tree of its own (its header, `:L2-L3`; `checks/gate.sh:L130` at `ka-reader@35d5e02` — RN-113; `:L127` at `ka-reader@3463d17` — RN-112; `:L125` at `ka-reader@21f611f` — RN-110; `:L116` at `ka-reader@03bb989` — RN-110) (RN-108);
   the five suites counted at v87 pair by name with `checks/release-shape.sh`,
   `checks/release-version.sh`, `checks/release-pack.sh`, `checks/release-sums.sh` and
   `checks/release-absent.sh` (RN-97), as the two counted at v85 do, `test_tree_scene.sh` with
@@ -3409,7 +3430,7 @@ left with `ka-reader-ui` at `ka-reader@0aca57e` (RN-22; RN-25).
   `:L79-L80` and `:L82-L83` — true at that pin)*; the workflow's `Test gate` step (`ci.yml:L28` at
   `ka-reader@8235240`, unmoved at `ka-reader@1b32500`, at `ka-reader@cd65c02` and at
   `ka-reader@f25fdbb`, and at `ka-reader@33b8661` and `ka-reader@3fa227e`) runs
-  `checks/gate.sh`, and through it all thirty-two *(through v101 "all thirty" — RN-112)* *(through v99 "all twenty-nine" — RN-110)* *(through v97 "all twenty-seven" — RN-108)* *(through v92 "all seventeen" — RN-103)*
+  `checks/gate.sh`, and through it all thirty-three *(through v102 "all thirty-two" — RN-113)* *(through v101 "all thirty" — RN-112)* *(through v99 "all twenty-nine" — RN-110)* *(through v97 "all twenty-seven" — RN-108)* *(through v92 "all seventeen" — RN-103)*
   *(through v84 "all fifteen" — RN-95)*
   *(through v70 "all fourteen" — RN-82)*
   *(through v67 "all thirteen" — RN-79)*
@@ -10141,4 +10162,46 @@ of the trait-collaborator line, and the read seam until it is built), QC-13 (the
   `crates/`, `checks/` or `ka-reader-mac/` is changed by this fold. The inputs' status lines read as in
   the header, so the `Inputs read:` line stands. `docs/trail/architecture/cycle-93.md` holds the
   answered companion whole. Nothing is left open, so the companion is removed and `Status:` is
+  Settled.
+
+- **RN-113:** *(v103 — the cycle-94 fold, § 3.1, and the close)* The stand-in answer in the owner's
+  seat at `docs/trail/architecture/cycle-94.md` § 3.1, committed 2026-11-24 (`ka-reader@d651da0`),
+  authorizes every change here; its reasoning is `docs/trail/architecture/self_answer-99.md`, and it
+  is cited as the stand-in's, not the owner's. The PM raised the item against the product at
+  `ka-reader@35d5e02`, after the README badge check and its suite joined the gate as fatal steps. The
+  answer is a correction the NFDR owed that change, not a widening.
+
+  **§ 3.1 → § 9's suites bullet.** Taken as confirmed, with its addition. Re-measured at
+  `ka-reader@35d5e02`: thirty-three top-level suites, each the whole command of exactly one
+  `run_step` line of `checks/gate.sh` 1.27.0, every locator re-pinned and each one matching the
+  answer's list. The new suite, `test_readme_badge.sh` (`:L210`), pairs by name with
+  `checks/readme-badge.sh`, which the *README badge check* step runs at `:L209`. So "Four of the
+  thirty-two" reads "Four of the thirty-three", the same four (`test_assemble.sh`,
+  `test_secret_scan_planted.sh`, `test_strings_step.sh`, `test_vm_refusal.sh`), and "all thirty-two"
+  reads "all thirty-three". The thirty-two at `3463d17` are kept as a dated reading, and its
+  sentence on the tree outside `docs/` now reads in the past tense, as true at `9c2ed61`. The
+  sentence that replaces it in the live reading is this fold's own check, as the answer asks.
+
+  **One locator departs from the answer's figure, and the measurement wins.** The answer re-pins the
+  `test_assemble.sh` comment locator from `:L127` to `:L131`. The comment's first line, the one
+  `:L127` named at `3463d17`, reads at `:L130` at `35d5e02`. `:L131` is the comment's second line.
+  The answer's own shift rule — old `:L2`–`:L196` read three higher — gives `:L130`, and the answer
+  also says the fold measures the tree it reads. So the bullet reads `:L130`. This is the answer's
+  arithmetic, not its decision, and nothing is re-opened.
+
+  **Locators read.** `git diff --stat 35d5e02 d651da0 -- . ':!docs'` prints nothing, so the
+  measured tree is the tree at the fold. At `ka-reader@35d5e02`, `checks/gate.sh:L2` reads
+  Version 1.27.0, and each suite's line is as listed in § 9. `:L209` and `:L210` are the README
+  badge check and its suite, and `:L130`–`:L132` are the comment over *Build KA-Reader.app suite*,
+  `:L133`. `git ls-tree --name-only 35d5e02 checks/tests/` lists thirty-three `.sh` files. Those
+  without a `checks/<name>.sh` of their own name are exactly the four above.
+  `git diff -U0 3463d17 35d5e02 -- checks/gate.sh` gives the three hunks the answer names.
+
+  **Limits.** No ADR is written or restatused, so the index is unchanged. Re-counting suites and
+  re-pinning locators involve no trade-off this product made, so none clears the three gates. No `QC`
+  is added, renumbered or reused. The only body text edited is § 9's suites bullet. § 8's gate
+  locators are pinned to `21f611f` and stay true as dated. No product test ran: nothing under
+  `crates/`, `checks/` or `ka-reader-mac/` is changed by this fold. The inputs' status lines read as
+  in the header, so the `Inputs read:` line stands. `docs/trail/architecture/cycle-94.md` holds the
+  answered companion whole. Nothing is left open, so the companion is removed and `Status:` stays
   Settled.
