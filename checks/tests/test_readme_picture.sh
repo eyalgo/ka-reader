@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Version: 1.1.0 — the badge pictures: five cases for the badge rule and condition (g), and letter_of
+#   names (g)'s line
 # Version: 1.0.0 — first version: the picture check's six conditions, its pass line, its usage and
 #   signal statuses, and the scan that holds it to no write
 #
@@ -36,6 +38,12 @@ PICTURE='docs/readme/shell.png'
 RECORD='docs/readme/shell.record'
 COMMIT='0123456789abcdef0123456789abcdef01234567'
 README_MARKER='opening-images-program'
+BADGE_ROW='![Licence: MIT](docs/readme/badges/licence.svg)
+![Release: 0.1.0](docs/readme/badges/release.svg)
+![Platform: macOS 26 or later](docs/readme/badges/platform.svg)
+![Languages: Rust, Swift, Shell](docs/readme/badges/languages.svg)
+![Status: before 1.0.0](docs/readme/badges/status.svg)
+![Built by KensaiApp](docs/readme/badges/built-by.svg)'
 TOOLS="bash awk sed grep cat tr head wc cmp cp mkdir rm sleep shasum"
 
 WORK=""
@@ -48,6 +56,11 @@ test_an_unreadable_readme_is_condition_a_not_a_pass
 test_a_missing_record_is_condition_b_alone
 test_a_malformed_record_is_condition_b
 test_the_opening_names_another_tracked_picture_is_condition_c
+test_badge_pictures_beside_the_record_picture_are_not_condition_c
+test_an_image_neither_the_picture_nor_a_badge_is_condition_c
+test_an_opening_of_badges_alone_is_condition_g
+test_a_record_picture_under_the_badges_folder_is_never_a_badge
+test_with_no_record_condition_d_skips_the_badges
 test_a_missing_or_untracked_picture_is_condition_d
 test_rewritten_picture_bytes_are_condition_e
 test_a_version_moved_without_a_new_capture_is_condition_f
@@ -113,6 +126,11 @@ STANDIN
   write_record "$PICTURE" 0.1.0 "$COMMIT" "$(digest_of "$tree/$PICTURE")"
 }
 
+# The README as the shared front writes it: the six badge lines, then whatever image lines $1 holds.
+write_opening() {
+  printf '# KA-Reader\n\nA local reader.\n\n%s\n\n%s\n\n## Known gaps\n\nLater text.\n' "$BADGE_ROW" "$1" > "$tree/README.md"
+}
+
 digest_of() {
   shasum -a 256 "$1" | awk '{ print $1 }'
 }
@@ -156,6 +174,7 @@ letter_of() {
     *"README.md: cannot read this file"*|*"README.md: the opening, before its first ## heading"*) echo a;;
     *"shell.record: no file is there"*|*"shell.record: cannot read this file"*|*"shell.record: the file is not the four lines"*) echo b;;
     *"README.md: the opening shows the image"*) echo c;;
+    *"README.md: every image in the opening is a badge picture"*) echo g;;
     *"no file is there"*|*"Git does not track it"*) echo d;;
     *"its SHA-256 is not the one"*) echo e;;
     *"it names version"*) echo f;;
@@ -323,6 +342,111 @@ test_the_opening_names_another_tracked_picture_is_condition_c() {
   run_check
   expect_status 1 || return 1
   expect_one_condition c
+}
+
+# The badge rule: an image under docs/readme/badges/ is no other picture, so (c) lets it stand beside
+# the record's picture.
+test_badge_pictures_beside_the_record_picture_are_not_condition_c() {
+  fixture
+  write_opening "![The shell, as the fixture shows it.]($PICTURE)"
+  run_check
+  expect_status 0 || return 1
+  [ -z "$stderr" ] || fail "stderr is not empty: $stderr" || return 1
+  lines="$(printf '%s\n' "$stdout" | wc -l | tr -d ' ')"
+  case "$stdout" in
+    *"$PICTURE"*) [ "$lines" -eq 1 ] || fail "expected one stdout line naming docs/readme/shell.png and 0.1.0, got: $stdout" || return 1;;
+    *) fail "expected one stdout line naming docs/readme/shell.png and 0.1.0, got: $stdout" || return 1;;
+  esac
+  expect_tree_unchanged
+}
+
+# An image that is neither the record's picture nor a badge still fails (c). A path that only starts
+# like the badges' folder is no badge: one that goes up out of it, and one in a folder of another name.
+test_an_image_neither_the_picture_nor_a_badge_is_condition_c() {
+  SUB="badges, the shell picture and docs/readme/other.png"
+  fixture
+  write_opening "![The shell, as the fixture shows it.]($PICTURE)
+
+![Other.](docs/readme/other.png)"
+  run_check
+  expect_status 1 || return 1
+  expect_one_condition c || return 1
+  expect_line_names c "docs/readme/other.png" || return 1
+  expect_line_names c "$PICTURE" || return 1
+  SUB="a path under docs/readme/badges/../"
+  fixture
+  write_opening "![The shell, as the fixture shows it.]($PICTURE)
+
+![Up.](docs/readme/badges/../other.png)"
+  run_check
+  expect_status 1 || return 1
+  expect_one_condition c || return 1
+  expect_line_names c "docs/readme/badges/../other.png" || return 1
+  SUB="a path under docs/readme/badgesx/"
+  fixture
+  write_opening "![The shell, as the fixture shows it.]($PICTURE)
+
+![Beside.](docs/readme/badgesx/other.svg)"
+  run_check
+  expect_status 1 || return 1
+  expect_one_condition c || return 1
+  expect_line_names c "docs/readme/badgesx/other.svg"
+}
+
+# Condition (g): the opening shows badges and nothing else, so it does not show the record's picture.
+test_an_opening_of_badges_alone_is_condition_g() {
+  fixture
+  write_opening ""
+  run_check
+  expect_status 1 || return 1
+  expect_one_condition g || return 1
+  expect_line_names g "$PICTURE" || return 1
+  expect_line_names g "does not show" || return 1
+  case "$stderr" in
+    *"then run checks/readme-picture.sh from the product root.") ;;
+    *) fail "the line for condition (g) does not end then run checks/readme-picture.sh from the product root.: $stderr";;
+  esac
+}
+
+# A badge is told by its path and by not being the record's picture, so a record that names a path
+# under the badges' folder keeps that path the picture.
+test_a_record_picture_under_the_badges_folder_is_never_a_badge() {
+  fixture
+  mkdir -p "$tree/docs/readme/badges"
+  printf 'a picture stored under the badges folder\n' > "$tree/docs/readme/badges/shot.png"
+  write_record docs/readme/badges/shot.png 0.1.0 "$COMMIT" "$(digest_of "$tree/docs/readme/badges/shot.png")"
+  printf '# KA-Reader\n\nA local reader.\n\n![The shot.](docs/readme/badges/shot.png)\n\n## Known gaps\n' > "$tree/README.md"
+  run_check
+  expect_status 0 || return 1
+  [ -z "$stderr" ] || fail "stderr is not empty: $stderr" || return 1
+  case "$stdout" in
+    *"docs/readme/badges/shot.png"*) ;;
+    *) fail "expected one stdout line naming docs/readme/badges/shot.png, got: $stdout";;
+  esac
+}
+
+# With no record, (d) checks the opening's first image that is not a badge, and with none, it is not
+# evaluated.
+test_with_no_record_condition_d_skips_the_badges() {
+  SUB="no record and no shell picture, badges first"
+  fixture
+  rm "$tree/$RECORD" "$tree/$PICTURE"
+  write_opening "![The shell, as the fixture shows it.]($PICTURE)"
+  run_check
+  expect_status 1 || return 1
+  expect_stdout_empty || return 1
+  expect_letters "b d" "(b) then (d)" || return 1
+  case "$stderr" in
+    *"readme-picture.sh: $PICTURE: no file is there"*) ;;
+    *) fail "the line for condition (d) does not name $PICTURE, the opening's first image that is not a badge picture: $stderr" || return 1;;
+  esac
+  SUB="no record, and badges alone in the opening"
+  fixture
+  rm "$tree/$RECORD"
+  write_opening ""
+  run_check
+  expect_status 1 || return 1
+  expect_one_condition b
 }
 
 test_a_missing_or_untracked_picture_is_condition_d() {
