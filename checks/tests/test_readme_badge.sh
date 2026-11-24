@@ -48,6 +48,7 @@ test_the_check_holds_no_write
 test_the_check_reads_no_variable_of_its_own
 test_the_programs_are_the_picture_checks_own
 test_the_suite_is_one_fatal_step_of_the_gate
+test_the_check_is_one_fatal_step_before_its_suite
 "
 
 # --- messages: the plain form, or the form that opens with the sub-case's label ---
@@ -580,6 +581,11 @@ gate_step_is_one_fatal_step() {
 # and before "Own state suite".
 test_the_suite_is_one_fatal_step_of_the_gate() {
   gate_step_is_one_fatal_step "README badge check suite" "checks/tests/test_readme_badge.sh" "between:README picture check suite:Own state suite"
+}
+
+# The check is one fatal step of the gate, once, unconditional, directly before its suite.
+test_the_check_is_one_fatal_step_before_its_suite() {
+  gate_step_is_one_fatal_step "README badge check" "checks/readme-badge.sh" "directly_before:README badge check suite"
 }
 
 # --- the runner ---
