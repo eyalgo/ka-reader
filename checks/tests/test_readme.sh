@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Version: 1.2.7 — the pinned gate list names the README badge check, directly before "README badge check suite"
+# Version: 1.2.6 — the pinned gate list names the README badge check suite, directly after "README picture check suite"
 # Version: 1.2.5 — the pinned gate list names the README picture check, directly before "README picture check suite"
 # Version: 1.2.4 — the pinned gate list names the README picture capture suite, after "Git beta walk suite"
 # Version: 1.2.3 — the pinned gate list names the README picture check suite, after "Release absent suite"
@@ -559,6 +561,8 @@ run_step '"'"'Release checksum suite'"'"' '"'"'checks/tests/test_release_sums.sh
 run_step '"'"'Release absent suite'"'"' '"'"'checks/tests/test_release_absent.sh'"'"'
 run_step '"'"'README picture check'"'"' '"'"'checks/readme-picture.sh'"'"'
 run_step '"'"'README picture check suite'"'"' '"'"'checks/tests/test_readme_picture.sh'"'"'
+run_step '"'"'README badge check'"'"' '"'"'checks/readme-badge.sh'"'"'
+run_step '"'"'README badge check suite'"'"' '"'"'checks/tests/test_readme_badge.sh'"'"'
 run_step '"'"'Own state suite'"'"' '"'"'checks/tests/test_own_state.sh'"'"'
 run_step '"'"'VM refusal suite'"'"' '"'"'checks/tests/test_vm_refusal.sh'"'"'
 run_step '"'"'Launch step suite'"'"' '"'"'checks/tests/test_launch.sh'"'"'

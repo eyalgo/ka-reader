@@ -2,7 +2,20 @@
 
 KA-Reader is a local, read-only reader of folders, files and Git repositories.
 
+Built by [KensaiApp](https://github.com/eyalgo/kensaiapp), a system of AI roles on Claude Code.
+
+![Licence: MIT](docs/readme/badges/licence.svg)
+![Release: 0.1.1](docs/readme/badges/release.svg)
+![Platform: macOS 26 or later](docs/readme/badges/platform.svg)
+![Languages: Rust, Swift, Shell](docs/readme/badges/languages.svg)
+![Status: before 1.0.0](docs/readme/badges/status.svg)
+![Built by KensaiApp](docs/readme/badges/built-by.svg)
+
+**[Install](https://github.com/eyalgo/ka-reader#install) · [Releases](https://github.com/eyalgo/ka-reader/releases) · [Build cost](https://github.com/eyalgo/ka-reader/blob/main/docs/build_cost.md) · [KensaiApp](https://github.com/eyalgo/kensaiapp)**
+
 ![KA-Reader's window with a repository open: Files is chosen in the sidebar, a letter stands beside a changed file in the file tree, and the reading panel shows one of the repository's files.](docs/readme/shell.png)
+
+### Install
 
 On macOS 26 or later, use this repository's [Releases page](https://github.com/eyalgo/ka-reader/releases) when a release is offered: download the disk image, open it, drag KA-Reader.app to Applications, then open KA-Reader. The app isn't notarized. If macOS blocks the first launch, open System Settings › Privacy & Security, scroll down and click Open Anyway, then click Open in the confirmation.
 
@@ -15,10 +28,6 @@ KA-Reader's own data is stored outside the folder you opened. Any file it writes
 KA-Reader sends no telemetry, and it makes no network call while it runs — downloading it uses the network; using it does not.
 
 ## Promises and limits
-
-KA-Reader never changes the folder you point it at. It writes no file in it, and it runs no Git command that alters your repository's state.
-
-KA-Reader sends no telemetry, and it makes no network call while it runs — downloading it uses the network; using it does not.
 
 KA-Reader is before version 1.0.0. Until 1.0.0, anything in it may change: what it does, how it looks, and how you start it.
 
@@ -78,14 +87,14 @@ The order, slice by slice, is `docs/SDD.md` § 6.
 
 Sidebar search and filtering, pane resizing and keyboard navigation are outside what KA-Reader is built to become.
 
-## Built by KensaiApp
-
-KA-Reader is built by [KensaiApp](https://github.com/eyalgo/kensaiapp), a system of AI roles that
-carries a software change from first ask to merged code. What that cost in Claude runs, tokens and
-money is in [`docs/build_cost.md`](docs/build_cost.md).
-
 ## Name
 
 *KA-Reader* was called *Nozoki* (覗き — *"to peek / peer in"*) until 2026-10-08.
 The tool is the same: it lets you look into a folder,
 but never reach in and change it.
+
+## Built by KensaiApp
+
+KA-Reader is built by [KensaiApp](https://github.com/eyalgo/kensaiapp), a system of AI roles that
+carries a software change from first ask to merged code. What that cost in Claude runs, tokens and
+money is in [`docs/build_cost.md`](https://github.com/eyalgo/ka-reader/blob/main/docs/build_cost.md).
