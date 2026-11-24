@@ -259,6 +259,18 @@ test_an_alternative_without_the_version_is_condition_ii() {
   run_check
   expect_status 1 || return 1
   expect_one_condition ii || return 1
+  SUB="the alternative text at 10.1.1"
+  fixture
+  write_readme "Release: 10.1.1"
+  run_check
+  expect_status 1 || return 1
+  expect_one_condition ii || return 1
+  SUB="the alternative text at 0.1.1.5"
+  fixture
+  write_readme "Release: 0.1.1.5"
+  run_check
+  expect_status 1 || return 1
+  expect_one_condition ii || return 1
   SUB="the alternative text with no version"
   fixture
   write_readme "Release"
@@ -301,7 +313,16 @@ test_a_picture_without_the_version_is_condition_iii() {
   run_check
   expect_status 1 || return 1
   expect_one_condition iii || return 1
-  expect_line_names iii "no file is there"
+  expect_line_names iii "no file is there" || return 1
+  # A folder where the file should be, not a file made unreadable with chmod (see the README case).
+  SUB="the picture present and not a file that can be read"
+  fixture
+  rm "${tree:?}/$BADGE"
+  mkdir "$tree/$BADGE"
+  run_check
+  expect_status 1 || return 1
+  expect_one_condition iii || return 1
+  expect_line_names iii "cannot read this file"
 }
 
 # When the product's version moves past the badge, both halves are named, each with the badge's
