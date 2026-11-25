@@ -111,7 +111,7 @@ xychart-beta
 
 ## What a walk costs
 
-A walk is one launch of a chain, and every run it started: *change* carries a change toward its seal, *product* and *agari* write the product's documents, *build-idea* moves the journey between changes.
+A walk is one launch of a chain, and every run it started: *walk* carries a change from its station to its seal and the review after it, *change* carries a change toward its seal (the older chain), *product* and *agari* write the product's documents, *build-idea* moves the journey between changes.
 
 | chain | walks | median | highest | total |
 |---|--:|--:|--:|--:|
