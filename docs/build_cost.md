@@ -1,6 +1,6 @@
 # What building ka-reader cost
 
-ka-reader was built by KensaiApp's roles, each step a Claude Code run. From 2026-10-08 to 2026-11-24 that took **1,049 runs**, **26,360 model requests** and **$2,219.75** of Claude usage. One change, every walk it took counted, typically cost **$24.19**.
+ka-reader was built by KensaiApp's roles, each step a Claude Code run. From 2026-10-08 to 2026-11-25 that took **1,056 runs**, **26,549 model requests** and **$2,230.27** of Claude usage. One change, every walk it took counted, typically cost **$24.19**.
 
 Every figure below is what Claude Code reported for each request, never a price worked out from tokens. Runs on Codex, and interactive sessions, are not counted. How each figure is measured is at the end. A step is one of KensaiApp's skills; its [glossary](https://github.com/eyalgo/kensaiapp/blob/main/about/glossary.md) says what each one does. The figures start when telemetry was first received for this project; work done before 2026-10-08 is not in them.
 
@@ -8,10 +8,10 @@ Every figure below is what Claude Code reported for each request, never a price 
 
 | model · effort | runs | entry | peak, median | peak, max | requests/run | minutes/run | $/run | $ total | cache hit |
 |---|--:|--:|--:|--:|--:|--:|--:|--:|--:|
-| claude-opus-5-5 · high | 282 | 24,259 | 158,212 | 412,632 | 36 | 6.3 | $3.02 | $852.58 | 96.6% |
+| claude-opus-5-5 · high | 287 | 24,279 | 156,462 | 412,632 | 35 | 6.2 | $3.00 | $860.97 | 96.6% |
 | claude-fable-5-1 · high | 83 | 27,127 | 195,093 | 497,602 | 16 | 9.3 | $7.69 | $638.21 | 90.5% |
-| claude-sonnet-5-5 · medium | 519 | 24,613 | 80,337 | 414,455 | 12 | 1.2 | $0.80 | $412.87 | 95.3% |
-| claude-opus-5-5 · medium | 90 | 26,446 | 130,304 | 215,747 | 27 | 3.8 | $1.96 | $176.33 | 96.2% |
+| claude-sonnet-5-5 · medium | 520 | 24,614 | 80,346 | 414,455 | 12 | 1.2 | $0.80 | $414.10 | 95.3% |
+| claude-opus-5-5 · medium | 91 | 26,436 | 129,802 | 215,747 | 26 | 3.8 | $1.95 | $177.24 | 96.2% |
 | claude-fable-5-1 · medium | 33 | 25,063 | 127,695 | 215,738 | 14 | 4.3 | $3.64 | $120.03 | 89.0% |
 | claude-sonnet-5-5 · low | 27 | 23,815 | 52,432 | 60,867 | 9 | 0.7 | $0.27 | $7.23 | 89.2% |
 | claude-sonnet-5-5 · high | 5 | 24,773 | 171,146 | 200,253 | 25 | 5.3 | $1.29 | $6.46 | 94.7% |
@@ -28,8 +28,8 @@ A run starts with its instructions and the files it is handed (*entry*). Each re
 xychart-beta
     title "Peak context per run, median, by step"
     x-axis ["product-sdd", "companion-self-answer (SDD)", "implementation", "code-integrity", "specs", "shukuba-refine", "security", "design", "product-architecture", "companion-self-answer (architecture)", "audit", "content"]
-    y-axis "tokens" 0 --> 281524
-    bar [223113, 186182, 255931, 206429, 191695, 152876, 127695, 241778, 137023, 127994, 65626, 164856]
+    y-axis "tokens" 0 --> 275524
+    bar [223113, 186182, 250477, 205962, 188726, 152876, 127695, 241364, 137023, 127994, 65626, 164856]
     line [250000, 250000, 250000, 250000, 250000, 250000, 250000, 250000, 250000, 250000, 250000, 250000]
 ```
 
@@ -37,18 +37,18 @@ xychart-beta
 |---|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|
 | product-sdd | 42 | 27,403 | 223,113 | 497,602 | 17 | 16 | 11.0 | $8.65 | $363.18 | 90.5% |
 | companion-self-answer (SDD) | 41 | 27,124 | 186,182 | 342,688 | 8 | 16 | 8.4 | $6.71 | $275.03 | 90.6% |
-| development-implementation | 113 | 25,056 | 255,931 | 414,455 | 57 | 43 | 34.6 | $2.03 | $229.53 | 97.1% |
-| development-code-integrity | 49 | 25,076 | 206,429 | 367,577 | 17 | 49 | 53.1 | $4.32 | $211.92 | 97.1% |
-| development-specs | 48 | 23,764 | 191,695 | 268,531 | 3 | 50 | 9.9 | $3.63 | $174.01 | 97.2% |
+| development-implementation | 114 | 25,057 | 250,477 | 414,455 | 57 | 42 | 35.7 | $2.02 | $230.75 | 97.1% |
+| development-code-integrity | 50 | 25,076 | 205,962 | 367,577 | 17 | 49 | 53.3 | $4.29 | $214.45 | 97.1% |
+| development-specs | 50 | 23,766 | 188,726 | 268,531 | 3 | 50 | 9.7 | $3.53 | $176.71 | 97.2% |
 | shukuba-refine | 46 | 27,227 | 152,876 | 215,747 | 0 | 40 | 5.3 | $2.62 | $120.57 | 96.8% |
 | development-security | 33 | 25,063 | 127,695 | 215,738 | 0 | 14 | 4.3 | $3.64 | $120.03 | 89.0% |
-| development-design | 24 | 23,994 | 241,778 | 412,632 | 9 | 52 | 11.7 | $4.86 | $116.56 | 97.1% |
+| development-design | 25 | 23,994 | 241,364 | 412,632 | 9 | 52 | 11.4 | $4.73 | $118.25 | 97.1% |
 | product-architecture | 51 | 24,734 | 137,023 | 229,117 | 0 | 33 | 4.6 | $2.21 | $112.80 | 96.3% |
 | companion-self-answer (architecture) | 49 | 24,803 | 127,994 | 212,966 | 0 | 28 | 3.9 | $2.12 | $103.92 | 95.8% |
 | development-audit | 201 | 24,197 | 65,626 | 113,290 | 0 | 11 | 1.1 | $0.37 | $73.51 | 88.9% |
 | development-content | 24 | 23,532 | 164,856 | 231,498 | 0 | 24 | 5.8 | $2.41 | $57.77 | 94.2% |
 | development-plan | 43 | 24,357 | 121,999 | 238,196 | 0 | 18 | 2.6 | $0.94 | $40.51 | 93.1% |
-| changelog-line | 31 | 23,898 | 80,100 | 97,394 | 0 | 16 | 1.7 | $0.98 | $30.48 | 92.5% |
+| changelog-line | 32 | 23,898 | 80,062 | 97,394 | 0 | 16 | 1.7 | $0.98 | $31.39 | 92.5% |
 | tobiishi-seal | 49 | 27,172 | 94,418 | 128,325 | 0 | 11 | 1.2 | $0.51 | $24.95 | 89.7% |
 | tobiishi-open | 53 | 27,145 | 76,943 | 119,680 | 0 | 10 | 0.8 | $0.46 | $24.21 | 89.9% |
 | nemawashi-refine | 9 | 26,937 | 139,937 | 188,748 | 0 | 30 | 3.8 | $2.23 | $20.08 | 96.1% |
@@ -68,13 +68,13 @@ xychart-beta
 | companion-self-answer (PRD) | 3 | 27,148 | 113,497 | 118,937 | 0 | 17 | 1.9 | $1.33 | $3.98 | 93.1% |
 | readme-status | 12 | 22,789 | 56,790 | 97,581 | 0 | 9 | 0.6 | $0.32 | $3.86 | 87.7% |
 | product-card | 3 | 24,294 | 100,834 | 105,172 | 0 | 14 | 1.7 | $1.17 | $3.52 | 90.6% |
+| change-blind-review | 2 | 25,614 | 115,355 | 130,536 | 0 | 22 | 4.0 | $1.64 | $3.27 | 93.0% |
 | nemawashi-pick | 8 | 26,420 | 53,936 | 85,709 | 0 | 10 | 0.7 | $0.40 | $3.18 | 89.9% |
 | companion-self-answer (DESIGN) | 2 | 27,134 | 133,592 | 164,645 | 0 | 16 | 1.9 | $1.52 | $3.04 | 91.6% |
 | product-content | 5 | 25,738 | 92,645 | 133,811 | 0 | 14 | 1.3 | $0.56 | $2.81 | 91.7% |
 | companion-self-answer (fdr) | 1 | 24,817 | 171,805 | 171,805 | 0 | 31 | 4.8 | $2.58 | $2.58 | 95.7% |
 | first-what-left | 1 | 25,594 | 143,209 | 143,209 | 0 | 37 | 6.3 | $2.02 | $2.02 | 95.8% |
 | red-behaviour | 2 | 24,197 | 80,009 | 96,405 | 0 | 14 | 2.0 | $0.96 | $1.92 | 90.8% |
-| change-blind-review | 1 | 25,302 | 130,536 | 130,536 | 0 | 22 | 4.0 | $1.82 | $1.82 | 93.1% |
 | nemawashi-unpick | 1 | 25,929 | 89,288 | 89,288 | 0 | 11 | 0.7 | $0.89 | $0.89 | 89.4% |
 | seed-pick | 2 | 27,158 | 62,305 | 68,223 | 0 | 10 | 0.6 | $0.31 | $0.61 | 89.2% |
 | nemawashi-retire | 5 | 23,719 | 47,487 | 77,829 | 0 | 11 | 0.7 | $0.09 | $0.46 | 88.4% |
@@ -99,7 +99,7 @@ Before any change, KensaiApp's definition roles write the product down, document
 
 ## What a change costs
 
-42 changes were walked to their seal. A change typically cost **$24.19**, the highest $69.85, $1,203.95 in all. 16 of them halted and were resumed, so their cost spans more than one walk; each change is counted whole. 1 more were not sealed when the data ends, dropped or still being walked, and are left out.
+42 changes were walked to their seal. A change typically cost **$24.19**, the highest $69.85, $1,203.95 in all. 16 of them halted and were resumed, so their cost spans more than one walk; each change is counted whole. 2 more were not sealed when the data ends, dropped or still being walked, and are left out.
 
 ```mermaid
 xychart-beta
@@ -116,7 +116,7 @@ A walk is one launch of a chain, and every run it started: *walk* carries a chan
 | chain | walks | median | highest | total |
 |---|--:|--:|--:|--:|
 | product | 50 | $17.23 | $67.08 | $918.09 |
-| walk | 46 | $20.30 | $59.33 | $881.90 |
+| walk | 46 | $20.30 | $59.33 | $892.42 |
 | change | 31 | $10.26 | $26.30 | $332.50 |
 | (none) | 1 | $47.90 | $47.90 | $47.90 |
 | build-idea | 15 | $0.85 | $4.99 | $26.06 |
@@ -139,7 +139,7 @@ xychart-beta
     title "Claude cost by week, USD"
     x-axis ["2026-W41", "2026-W42", "2026-W43", "2026-W44", "2026-W45", "2026-W46", "2026-W47", "2026-W48"]
     y-axis "USD" 0 --> 807
-    bar [12.86, 298.2, 210.58, 131.38, 733.64, 503.94, 210.48, 118.67]
+    bar [12.86, 298.2, 210.58, 131.38, 733.64, 503.94, 210.48, 129.19]
 ```
 
 ## How it was measured
@@ -151,4 +151,4 @@ xychart-beta
 - *Minutes* run from a run's first request to its last. A walk is every run sharing one `kensai.walk_id`.
 - A change is the walks of the walk, change and development chains from one walk that opens it and writes its spec to the next, in start order; a project walks one change at a time. A walk that only opened a change counts toward the change after it. A change counts once a walk sealed it.
 - A run started by a launcher arm rather than a skill, such as the self-answer of a document's open questions, is named by that arm and the document.
-- Generated 2026-11-24 from data up to 2026-11-24 22:33 UTC.
+- Generated 2026-11-25 from data up to 2026-11-25 03:03 UTC.
